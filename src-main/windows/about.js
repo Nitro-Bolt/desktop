@@ -22,7 +22,7 @@ class AboutWindow extends AbstractWindow {
       };
     });
 
-    this.loadURL('tw-about://./about.html');
+    this.loadURL('nb-about://./about.html');
   }
 
   getDimensions () {

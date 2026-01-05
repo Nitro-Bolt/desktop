@@ -22,12 +22,12 @@ const privilegedFetch = (url) => new Promise((resolve, reject) => {
       reject(new Error(`HTTP error ${statusCode} while fetching ${url}`))
       return;
     }
-  
+
     let chunks = [];
     response.on('data', (chunk) => {
       chunks.push(chunk);
     });
-  
+
     response.on('end', () => {
       resolve(Buffer.concat(chunks));
     });

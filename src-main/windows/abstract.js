@@ -103,7 +103,7 @@ class AbstractWindow {
 
   /**
    * @template T
-   * @param {{new(): T}} cls 
+   * @param {{new(): T}} cls
    * @returns {T[]}
    */
   static getWindowsByClass (cls) {
@@ -235,10 +235,10 @@ class AbstractWindow {
         this.window.setFullScreen(false);
       } else if (this.isPopup()) {
         event.preventDefault();
-        this.window.close();  
+        this.window.close();
       }
     }
-    
+
     // On macOS, these shortcuts are handled by the menu bar
     if (process.platform !== 'darwin') {
       const webContents = this.window.webContents;
@@ -296,7 +296,7 @@ class AbstractWindow {
   }
 
   /**
-   * @param {Electron.WillNavigateEvent} event 
+   * @param {Electron.WillNavigateEvent} event
    * @param {string} url
    */
   handleWillNavigate (event, url) {
@@ -348,7 +348,7 @@ class AbstractWindow {
 
   /**
    * @param {Electron.OnBeforeSendHeadersListenerDetails} details
-   * @param {(response: Electron.BeforeSendResponse) => void} callback 
+   * @param {(response: Electron.BeforeSendResponse) => void} callback
    */
   onBeforeSendHeaders (details, callback) {
     // to be overridden

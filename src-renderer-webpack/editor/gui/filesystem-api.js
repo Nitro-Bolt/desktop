@@ -1,6 +1,6 @@
 /**
  * Partial reimplementation of the FileSystem API (https://web.dev/file-system-access/)
- * 
+ *
  * Unlike the default FileSystem API, we can construct a file handle from an ID from
  * the main process without showing the file picker. The IDs are managed by the main
  * process, so malicious extensions can't abuse this to get arbitrary read/write,

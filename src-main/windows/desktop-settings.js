@@ -101,7 +101,7 @@ class DesktopSettingsWindow extends AbstractWindow {
       shell.showItemInFolder(app.getPath('userData'));
     });
 
-    this.loadURL('tw-desktop-settings://./desktop-settings.html');
+    this.loadURL('nb-desktop-settings://./desktop-settings.html');
   }
 
   getDimensions () {

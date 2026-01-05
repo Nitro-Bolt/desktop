@@ -17,7 +17,7 @@ const getTemporaryPath = (originalPath, mustUseTempDir) => {
   const randomNumbers = Math.floor(Math.random() * 10000)
     .toString()
     .padStart(4, '0');
-  const randomSuffix = `.tw${randomNumbers}`;
+  const randomSuffix = `.nb${randomNumbers}`;
 
   // Ideally the temporary file and destination file should be located on the
   // same drive and partition.

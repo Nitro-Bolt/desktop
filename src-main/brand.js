@@ -1,6 +1,6 @@
-const PLATFORM_NAME = 'TurboWarp';
-const APP_NAME = 'TurboWarp Desktop';
-const PACKAGER_NAME = 'TurboWarp Packager';
+const PLATFORM_NAME = 'NitroBolt';
+const APP_NAME = 'NitroBolt Desktop';
+const PACKAGER_NAME = 'NitroBolt Packager';
 
 module.exports = {
   PLATFORM_NAME,

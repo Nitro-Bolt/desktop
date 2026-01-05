@@ -21,7 +21,7 @@ class ExtensionDocumentationWindow extends AbstractWindow {
     });
 
     // The protocol handler will check for path traversal, so we don't need to check here.
-    this.loadURL(`tw-extensions://./${path}`);
+    this.loadURL(`nb-extensions://./${path}`);
   }
 
   getDimensions () {

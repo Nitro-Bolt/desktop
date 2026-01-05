@@ -69,7 +69,7 @@ class UpdateWindow extends AbstractWindow {
       this.show();
     });
 
-    this.loadURL('tw-update://./update.html');
+    this.loadURL('nb-update://./update.html');
   }
 
   getDimensions () {

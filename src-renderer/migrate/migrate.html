@@ -3,7 +3,7 @@
   <html>
     <meta charset="utf8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src file:; frame-src tw-editor: tw-packager:">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src file:; frame-src nb-editor: nb-packager:">
     <style>
       :root {
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -135,21 +135,21 @@
       Local Storage:
       twd:audio_id -> abandon (IDs differ across origins)
       twd:video_id -> abandon (IDs differ across origins)
-      tw:theme -> tw-editor
-      tw:addons -> tw-editor
-      tw:language -> tw-editor
-      tw:username -> tw-editor
-      extensions.turbowarp.org/local-storage: -> tw-editor
-      SelectProject.type -> tw-packager
-      SelectProject.id -> tw-packager
-      PackagerOptions.* -> tw-packager
-      P4.locale -> tw-packager
-      P4.theme -> tw-packager
+      tw:theme -> nb-editor
+      tw:addons -> nb-editor
+      tw:language -> nb-editor
+      tw:username -> nb-editor
+      extensions.turbowarp.org/local-storage: -> nb-editor
+      SelectProject.type -> nb-packager
+      SelectProject.id -> nb-packager
+      PackagerOptions.* -> nb-packager
+      P4.locale -> nb-packager
+      P4.theme -> nb-packager
 
       IndexedDB:
-      p4-local-settings -> tw-packager
+      p4-local-settings -> nb-packager
       p4-large-assets -> abandon
-      TW_Backpack -> tw-editor
+      TW_Backpack -> nb-editor
       TW_AutoSave -> abandon (likely to be very large)
       */
 
@@ -268,7 +268,7 @@
         setStepProgress(0, backpackKeys.length);
 
         return new Promise((resolve, reject) => {
-          const CHILD_ORIGIN = 'tw-editor://.';
+          const CHILD_ORIGIN = 'nb-editor://.';
 
           window.onmessage = async (e) => {
             try {
@@ -302,7 +302,7 @@
           };
 
           const iframe = document.createElement('iframe');
-          iframe.src = 'tw-editor://./gui/migrate-helper.html';
+          iframe.src = 'nb-editor://./gui/migrate-helper.html';
           document.body.appendChild(iframe);
         });
       };
@@ -322,7 +322,7 @@
         setStepProgress(0, blobKeys.length);
 
         return new Promise((resolve, reject) => {
-          const CHILD_ORIGIN = 'tw-packager://.';
+          const CHILD_ORIGIN = 'nb-packager://.';
 
           window.onmessage = async (e) => {
             try {
@@ -356,7 +356,7 @@
           };
 
           const iframe = document.createElement('iframe');
-          iframe.src = 'tw-packager://./migrate-helper.html';
+          iframe.src = 'nb-packager://./migrate-helper.html';
           document.body.appendChild(iframe);
         });
       };
@@ -450,7 +450,7 @@
         await runStep(strings['migrate.preparing'], gatherMetadata);
 
         if (!anyError && oldDataVersion < 2) {
-          // V2: Migrate data from file:// to tw-*://
+          // V2: Migrate data from file:// to nb-*://
           // Preparing must succeed for both of these, but each can fail independently.
           await runStep(strings['migrate.transfer-editor'], migrateEditor);
           await runStep(strings['migrate.transfer-packager'], migratePackager);

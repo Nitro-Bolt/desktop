@@ -19,7 +19,7 @@ class PrivacyWindow extends AbstractWindow {
     this.window.setTitle(`${translate('privacy-policy')} - ${APP_NAME}`);
     this.window.setMinimizable(false);
     this.window.setMaximizable(false);
-    this.loadURL('tw-privacy://./privacy.html');
+    this.loadURL('nb-privacy://./privacy.html');
   }
 
   getDimensions () {

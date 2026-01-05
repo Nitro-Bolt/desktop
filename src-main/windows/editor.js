@@ -568,7 +568,7 @@ class EditorWindow extends ProjectRunningWindow {
       this.isInEditorFullScreen = !!isFullScreen;
     });
 
-    this.loadURL('tw-editor://./gui/gui.html');
+    this.loadURL('nb-editor://./gui/gui.html');
     this.show();
   }
 
@@ -611,7 +611,7 @@ class EditorWindow extends ProjectRunningWindow {
 
     // Open extension sample projects in-app
     if (
-      url.protocol === 'tw-editor:' &&
+      url.protocol === 'nb-editor:' &&
       url.host === '.' &&
       params.has('project_url')
     ) {

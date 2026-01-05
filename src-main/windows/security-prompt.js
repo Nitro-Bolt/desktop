@@ -108,7 +108,7 @@ class SecurityPromptWindow extends AbstractWindow {
     });
 
     this.window.setTitle(`${translate('security-prompt.title')} - ${APP_NAME}`);
-    this.loadURL('tw-security-prompt://./security-prompt.html');
+    this.loadURL('nb-security-prompt://./security-prompt.html');
   }
 
   getDimensions () {

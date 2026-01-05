@@ -31,9 +31,9 @@ const {translate} = require('./l10n');
 const {getPlatform} = require('./platform');
 const settings = require('./settings');
 
-// Ask GarboMuffin for changes
+// Ask Cubester for changes
 // https://discord.com/developers/applications
-const APPLICATION_ID = '1243008354037665813';
+const APPLICATION_ID = '1243360959066800219';
 const LARGE_IMAGE_NAME = 'icon';
 
 const OP_HANDSHAKE = 0;

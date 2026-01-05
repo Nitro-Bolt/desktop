@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=NitroBolt
+# Change the path to match where you install the app.
+Exec=/opt/NitroBolt/nitrobolt-desktop %U
+Terminal=false
+Type=Application
+Icon=org.nitrobolt.NitroBolt
+StartupWMClass=nitrobolt-desktop
+Comment=NitroBolt is a mod of TurboWarp with tons of new features, and a haven for developers who don't want to be restricted by "compatibility".
+MimeType=application/x.scratch.sb3;application/x.scratch.sb2;application/x.scratch.sb;
+Categories=Development;
+Keywords=scratch;turbowarp;

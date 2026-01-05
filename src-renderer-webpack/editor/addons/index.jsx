@@ -11,7 +11,7 @@ const handleExportSettings = (settings) => {
 const WrappedAddonSettings = ErrorContainerHOC(AddonSettings);
 
 const appTarget = document.getElementById('app');
-document.body.classList.add('tw-loaded');
+document.body.classList.add('nb-loaded');
 
 ReactDOM.render((
   <WrappedAddonSettings

@@ -21,38 +21,38 @@ const packageJSON = require('../package.json');
 
 /** @type {Record<string, Metadata>} */
 const FILE_SCHEMES = {
-  'tw-editor': {
+  'nb-editor': {
     root: path.resolve(__dirname, '../dist-renderer-webpack/editor'),
     standard: true,
     supportFetch: true,
     secure: true,
     embeddable: true, // migration helper
   },
-  'tw-desktop-settings': {
+  'nb-desktop-settings': {
     root: path.resolve(__dirname, '../src-renderer/desktop-settings'),
     csp: "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'"
   },
-  'tw-privacy': {
+  'nb-privacy': {
     root: path.resolve(__dirname, '../src-renderer/privacy'),
     csp: "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'"
   },
-  'tw-about': {
+  'nb-about': {
     root: path.resolve(__dirname, '../src-renderer/about'),
     csp: "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'"
   },
-  'tw-packager': {
+  'nb-packager': {
     root: path.resolve(__dirname, '../src-renderer/packager'),
     standard: true,
     secure: true,
     embeddable: true, // migration helper
   },
-  'tw-library': {
+  'nb-library': {
     root: path.resolve(__dirname, '../dist-library-files'),
     supportFetch: true,
     brotli: true,
     csp: "default-src 'none';"
   },
-  'tw-extensions': {
+  'nb-extensions': {
     root: path.resolve(__dirname, '../dist-extensions'),
     supportFetch: true,
     brotli: true,
@@ -62,15 +62,15 @@ const FILE_SCHEMES = {
     defaultExtension: '.html',
     csp: "default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; script-src 'self' 'unsafe-inline'"
   },
-  'tw-update': {
+  'nb-update': {
     root: path.resolve(__dirname, '../src-renderer/update'),
-    csp: "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src https://desktop.turbowarp.org"
+    csp: "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src https://nitro-bolt.github.io/desktop"
   },
-  'tw-security-prompt': {
+  'nb-security-prompt': {
     root: path.resolve(__dirname, '../src-renderer/security-prompt'),
     csp: "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline';"
   },
-  'tw-file-access': {
+  'nb-file-access': {
     root: path.resolve(__dirname, '../src-renderer/file-access'),
     csp: "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'"
   }
@@ -154,7 +154,7 @@ const createErrorPageHTML = (request, errorMessage) => `<!DOCTYPE html>
   </head>
   <body bgcolor="white" text="black">
     <h1>Protocol handler error</h1>
-    <p>If you can see this page, <a href="https://github.com/TurboWarp/desktop/issues" target="_blank" rel="noreferrer">please open a GitHub issue</a> or <a href="mailto:contact@turbowarp.org" target="_blank" rel="noreferrer">email us</a> with all the information below.</p>
+    <p>If you can see this page, <a href="https://github.com/Nitro-Bolt/desktop/issues" target="_blank" rel="noreferrer">please open a GitHub issue</a> or <a href="mailto:contact@turbowarp.org" target="_blank" rel="noreferrer">email us</a> with all the information below.</p>
     <pre>${escapeXML(errorMessage)}</pre>
     <pre>URL: ${escapeXML(request.url)}</pre>
     <pre>Version ${escapeXML(packageJSON.version)}, Electron ${escapeXML(process.versions.electron)}, Platform ${escapeXML(getPlatform())} ${escapeXML(process.arch)}, Distribution ${escapeXML(getDist())}</pre>

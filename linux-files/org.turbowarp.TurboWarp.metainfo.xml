@@ -1,17 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright 2021-2025 Thomas Weber -->
 <component type="desktop-application">
-  <id>org.turbowarp.TurboWarp</id>
-  <launchable type="desktop-id">org.turbowarp.TurboWarp.desktop</launchable>
+  <id>org.nitrobolt.NitroBolt</id>
+  <launchable type="desktop-id">org.nitrobolt.NitroBolt.desktop</launchable>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0</project_license>
-  <name>TurboWarp</name>
-  <developer id="org.turbowarp">
-    <name>Thomas Weber</name>
-  </developer>
+  <name>NitroBolt</name>
+  <developer id="org.nitrobolt"></developer>
   <summary>Make games, animations, and stories</summary>
   <description>
-    <p>A mod of Scratch with a compiler to run projects faster, dark mode for your eyes, a bunch of addons to improve the editor, and more.</p>
+    <p>NitroBolt is a mod of TurboWarp with tons of new features, and a haven for developers who don't want to be restricted by "compatibility".</p>
     <p>Features:</p>
     <ul>
       <li>Runs projects up to 100x faster than Scratch</li>
@@ -25,7 +22,7 @@
       <li>Backpack</li>
       <li>and more</li>
     </ul>
-    <p>You can also use TurboWarp in your browser at https://turbowarp.org/editor</p>
+    <p>You can also use NitroBolt in your browser at https://turbowarp.org/editor</p>
     <p>Project shown in screenshots is https://scratch.mit.edu/projects/425020125/</p>
   </description>
   <screenshots>
@@ -38,15 +35,16 @@
       <image width="1153" height="734">https://raw.githubusercontent.com/TurboWarp/desktop-screenshots/bb4612ebefe99d816ae7e60f70f59e18d5fef3b9/flathub/pt-dark.png</image>
     </screenshot>
   </screenshots>
-  <url type="homepage">https://desktop.turbowarp.org/</url>
-  <url type="bugtracker">https://github.com/TurboWarp/desktop/issues</url>
+  <url type="homepage">https://nitro-bolt.github.io/desktop</url>
+  <url type="bugtracker">https://github.com/Nitro-Bolt/desktop/issues</url>
   <url type="translate">https://docs.turbowarp.org/translate</url>
-  <url type="vcs-browser">https://github.com/TurboWarp/desktop</url>
+  <url type="vcs-browser">https://github.com/Nitro-Bolt/desktop</url>
   <categories>
     <category>Development</category>
   </categories>
   <keywords>
     <keyword>scratch</keyword>
+    <keyword>turbowarp</keyword>
   </keywords>
   <recommends>
     <control>pointing</control>

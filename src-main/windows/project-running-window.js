@@ -113,7 +113,7 @@ class ProjectRunningWindow extends AbtractWindow {
         return listLocalFilesCached().then((localLibraryFiles) => {
           if (localLibraryFiles.includes(md5ext)) {
             return callback({
-              redirectURL: `tw-library://./${md5ext}`
+              redirectURL: `nb-library://./${md5ext}`
             });
           }
           callback({});
@@ -124,7 +124,7 @@ class ProjectRunningWindow extends AbtractWindow {
     if (parsed.origin === 'https://extensions.turbowarp.org') {
       return callback({
         // pathname always has a leading / already
-        redirectURL: `tw-extensions://.${parsed.pathname}`
+        redirectURL: `nb-extensions://.${parsed.pathname}`
       });
     }
 

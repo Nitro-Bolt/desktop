@@ -55,7 +55,7 @@ class PackagerWindow extends AbstractWindow {
       childWindow.protocol = this.protocol;
     });
 
-    this.loadURL('tw-packager://./standalone.html');
+    this.loadURL('nb-packager://./standalone.html');
     this.show();
   }
 

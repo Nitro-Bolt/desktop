@@ -53,7 +53,7 @@ class FileAccessWindow extends AbstractWindow {
     this.window.setTitle(`${translate('file-access.window-title')} - ${APP_NAME}`);
     this.window.setMinimizable(false);
     this.window.setMaximizable(false);
-    this.loadURL('tw-file-access://./file-access.html');
+    this.loadURL('nb-file-access://./file-access.html');
   }
 
   getDimensions () {
