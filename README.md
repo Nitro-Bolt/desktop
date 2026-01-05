@@ -1,12 +1,10 @@
-# TurboWarp Desktop
+# NitroBolt Desktop
 
-TurboWarp as a desktop app.
+NitroBolt as a desktop app. A fork of the TurboWarp Desktop app.
 
-If you're looking for downloads, head to: https://desktop.turbowarp.org/
+If you're looking for downloads, checkout the [releases](https://github.com/Nitro-Bolt/desktop/releases).
 
 Licensed under the GPLv3.0. See LICENSE for more information.
-
-Parts of this repository are based on [LLK/scratch-desktop](https://github.com/LLK/scratch-desktop).
 
 ## Website
 
@@ -17,7 +15,7 @@ The website source code is in the `docs` folder.
 We use submodules, so clone using:
 
 ```bash
-git clone --recursive https://github.com/TurboWarp/desktop turbowarp-desktop
+git clone --recursive https://github.com/Nitro-Bolt/desktop nitrobolt-desktop
 ```
 
 or run this after cloning:
@@ -112,7 +110,7 @@ npx electron-builder --linux deb
 
 You can typically only package for a certain operating system while on that operating system.
 
-## Code signing policy
+## Code signing policy (IGNORE)
 
 TurboWarp Desktop uses a free code signing provided by [SignPath.io](https://about.signpath.io/), certificate by [SignPath Foundation](https://signpath.org/).
 
@@ -122,19 +120,19 @@ TurboWarp Desktop uses a free code signing provided by [SignPath.io](https://abo
 
 ## Advanced customizations
 
-TurboWarp Desktop lets you configure custom JS and CSS without rebuilding the app.
+NitroBolt Desktop lets you configure custom JS and CSS without rebuilding the app.
 
-Find TurboWarp Desktop's data path by using the list below or by clicking "?" in the top right corner, then "Desktop Settings", then "Open User Data", then opening the highlighted folder, or refer to this list:
+Find NitroBolt Desktop's data path by using the list below or by clicking "?" in the top right corner, then "Desktop Settings", then "Open User Data", then opening the highlighted folder, or refer to this list:
 
- - Windows (except Microsoft Store): `%APPDATA%/turbowarp-desktop`
- - Microsoft Store: Open `%LOCALAPPDATA%/Packages`, find the folder with the word `TurboWarpDesktop` in it, then open `LocalCache/Roaming/turbowarp-desktop`
- - macOS (except Mac App Store): `~/Library/Application Support/turbowarp-desktop`
- - Mac App Store: `~/Library/Containers/org.turbowarp.desktop/Data/Library/Application Support/turbowarp-desktop` (note that the `org.turbowarp.desktop` part may appear as `TurboWarp` in Finder)
- - Linux (except Flatpak and Snap): `~/.config/turbowarp-desktop`
- - Linux (Flatpak): `~/.var/app/org.turbowarp.TurboWarp/config/turbowarp-desktop`
- - Linux (Snap): `~/snap/turbowarp-desktop/current/.config/turbowarp-desktop`
+ - Windows (except Microsoft Store): `%APPDATA%/nitrobolt-desktop`
+ - Microsoft Store: Open `%LOCALAPPDATA%/Packages`, find the folder with the word `NitroBoltDesktop` in it, then open `LocalCache/Roaming/nitrobolt-desktop`
+ - macOS (except Mac App Store): `~/Library/Application Support/nitrobolt-desktop`
+ - Mac App Store: `~/Library/Containers/org.nitrobolt.desktop/Data/Library/Application Support/nitrobolt-desktop` (note that the `org.nitrobolt.desktop` part may appear as `NitroBolt` in Finder)
+ - Linux (except Flatpak and Snap): `~/.config/nitrobolt-desktop`
+ - Linux (Flatpak): `~/.var/app/org.nitrobolt.NitroBolt/config/nitrobolt-desktop`
+ - Linux (Snap): `~/snap/nitrobolt-desktop/current/.config/nitrobolt-desktop`
 
-Create the file `userscript.js` in this folder to configure custom JS. Create the file `userstyle.css` in this folder to configure custom CSS. Completely restart TurboWarp Desktop (including all windows) to apply.
+Create the file `userscript.js` in this folder to configure custom JS. Create the file `userstyle.css` in this folder to configure custom CSS. Completely restart NitroBolt Desktop (including all windows) to apply.
 
 ## Uninstall
 

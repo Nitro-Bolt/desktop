@@ -1,12 +1,8 @@
 {
-  "name": "turbowarp-desktop",
-  "description": "Scratch mod with a compiler, dark mode, a bunch of addons, and more.",
-  "version": "1.15.1",
+  "name": "nitrobolt-desktop",
+  "description": "A mod of TurboWarp with tons of new features, and a haven for developers who don't want to be restricted by \"compatibility\".",
+  "version": "1.0.0",
   "license": "GPL-3.0",
-  "author": {
-    "email": "contact@turbowarp.org",
-    "name": "Thomas Weber"
-  },
   "type": "commonjs",
   "scripts": {
     "fetch": "node scripts/download-library-files.mjs && node scripts/download-packager.mjs && node scripts/prepare-extensions.mjs",
@@ -38,7 +34,7 @@
     "postcss-import": "^14.0.0",
     "postcss-loader": "^4.2.0",
     "postcss-simple-vars": "^6.0.3",
-    "scratch-gui": "github:TurboWarp/scratch-gui#develop",
+    "scratch-gui": "github:Nitro-Bolt/scratch-gui#develop",
     "style-loader": "^0.23.0",
     "url-loader": "^4.1.1",
     "webpack": "4.47.0",
@@ -52,16 +48,16 @@
   "homepage": "https://desktop.turbowarp.org/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/TurboWarp/desktop.git"
+    "url": "https://github.com/Nitro-Bolt/desktop.git"
   },
   "bugs": {
-    "url": "https://github.com/TurboWarp/desktop/issues",
+    "url": "https://github.com/Nitro-Bolt/desktop/issues",
     "email": "contact@turbowarp.org"
   },
   "main": "./src-main/entrypoint.js",
   "build": {
-    "appId": "org.turbowarp.desktop",
-    "productName": "TurboWarp",
+    "appId": "org.nitrobolt.desktop",
+    "productName": "NitroBolt",
     "files": [
       "node_modules/**/*",
       "src-main/**/*",
@@ -151,16 +147,16 @@
       "provisioningProfile": "build/development.provisionprofile"
     },
     "linux": {
-      "executableName": "turbowarp-desktop",
+      "executableName": "nitrobolt-desktop",
       "artifactName": "${productName}-${os}-${arch}-${version}.${ext}",
       "icon": "./build/",
       "synopsis": "Mod of Scratch with a compiler and more features.",
-      "description": "TurboWarp is a Scratch mod with a compiler to run projects faster, dark mode for your eyes, a bunch of addons to improve the editor, and more.",
+      "description": "NitroBolt is a mod of TurboWarp with tons of new features, and a haven for developers who don't want to be restricted by \"compatibility\".",
       "category": "Development",
       "desktop": {
         "entry": {
-          "StartupWMClass": "turbowarp-desktop",
-          "Keywords": "scratch;"
+          "StartupWMClass": "nitrobolt-desktop",
+          "Keywords": "scratch; turbowarp;"
         }
       },
       "extraFiles": [
@@ -179,7 +175,7 @@
       ]
     },
     "snap": {
-      "summary": "Scratch mod with a compiler, dark mode, a bunch of addons, and more.",
+      "summary": "A mod of TurboWarp with tons of new features, and a haven for developers who don't want to be restricted by \"compatibility\".",
       "allowNativeWayland": true,
       "plugs": [
         "default",
