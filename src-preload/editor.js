@@ -24,6 +24,26 @@ contextBridge.exposeInMainWorld('EditorPreload', {
   setIsFullScreen: (isFullScreen) => ipcRenderer.invoke('set-is-full-screen', isFullScreen)
 });
 
+contextBridge.exposeInMainWorld('Git', {
+  isAvailable: () => ipcRenderer.invoke('git-is-available'),
+  status: (repoPath) => ipcRenderer.invoke('git-status', repoPath),
+  init: (repoPath) => ipcRenderer.invoke('git-init', repoPath),
+  add: (repoPath, files = []) => ipcRenderer.invoke('git-add', repoPath, files),
+  reset: (repoPath, files = []) => ipcRenderer.invoke('git-reset', repoPath, files),
+  commit: (repoPath, message, author) => ipcRenderer.invoke('git-commit', repoPath, message, author),
+  log: (repoPath, maxCount = 10) => ipcRenderer.invoke('git-log', repoPath, maxCount),
+  currentBranch: (repoPath) => ipcRenderer.invoke('git-current-branch', repoPath),
+  listBranches: (repoPath) => ipcRenderer.invoke('git-list-branches', repoPath),
+  createBranch: (repoPath, branchName) => ipcRenderer.invoke('git-create-branch', repoPath, branchName),
+  switchBranch: (repoPath, branchName) => ipcRenderer.invoke('git-switch-branch', repoPath, branchName),
+  diff: (repoPath, filePath) => ipcRenderer.invoke('git-diff', repoPath, filePath),
+  stagedDiff: (repoPath, filePath) => ipcRenderer.invoke('git-staged-diff', repoPath, filePath),
+  push: (repoPath, remote = 'origin', branch) => ipcRenderer.invoke('git-push', repoPath, remote, branch),
+  pull: (repoPath, remote = 'origin', branch) => ipcRenderer.invoke('git-pull', repoPath, remote, branch),
+  discard: (repoPath, filePath) => ipcRenderer.invoke('git-discard', repoPath, filePath),
+  remotes: (repoPath) => ipcRenderer.invoke('git-remotes', repoPath)
+});
+
 let exportForPackager = () => Promise.reject(new Error('exportForPackager missing'));
 
 ipcRenderer.on('export-project-to-port', (e) => {
