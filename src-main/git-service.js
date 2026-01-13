@@ -73,7 +73,12 @@ class GitService {
   async status(repoPath) {
     try {
       const statusOutput = await this.execGit(['status', '--porcelain=v2', '--branch'], repoPath);
-      const logOutput = await this.execGit(['log', '--oneline', '-n', '1'], repoPath);
+      let logOutput = '';
+      try {
+        logOutput = await this.execGit(['log', '--oneline', '-n', '1'], repoPath);
+      } catch (err) {
+        logOutput = '';
+      }
 
       // Parse status
       const lines = statusOutput.split('\n');
@@ -177,14 +182,22 @@ class GitService {
    * @returns {Promise<string>} - Commit hash
    */
   async commit(repoPath, message, author = null) {
-    const args = ['commit', '-m', message];
-    if (author) {
-      args.push('--author', author);
+    try {
+      const args = ['commit', '-m', message];
+      if (author) {
+        args.push('--author', author);
+      }
+      const output = await this.execGit(args, repoPath);
+      // Extract commit hash from output
+      const match = output.match(/\[.+\s([a-f0-9]+)\]/);
+      return match ? match[1] : output;
+    } catch (error) {
+      // Check if it's a user.name/user.email configuration issue
+      if (error.message.includes('user.name') || error.message.includes('user.email')) {
+        throw new Error('Git user.name and user.email not configured. Please set them globally or use: git config user.name "Your Name" && git config user.email "your@email.com"');
+      }
+      throw error;
     }
-    const output = await this.execGit(args, repoPath);
-    // Extract commit hash from output
-    const match = output.match(/\[.+\s([a-f0-9]+)\]/);
-    return match ? match[1] : output;
   }
 
   /**
