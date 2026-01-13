@@ -385,6 +385,25 @@ class EditorWindow extends ProjectRunningWindow {
       };
     });
 
+    this.ipc.handle('show-open-directory-picker', async () => {
+      const result = await dialog.showOpenDialog(this.window, {
+        properties: ['openDirectory', 'createDirectory'],
+        defaultPath: settings.lastDirectory
+      });
+
+      if (result.canceled) {
+        return null;
+      }
+
+      const directoryPath = result.filePaths[0];
+      settings.lastDirectory = directoryPath;
+      await settings.save();
+
+      return {
+        path: directoryPath
+      };
+    });
+
     this.ipc.handle('show-save-file-picker', async (event, suggestedName) => {
       const result = await dialog.showSaveDialog(this.window, {
         defaultPath: path.join(settings.lastDirectory, suggestedName),
