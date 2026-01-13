@@ -182,22 +182,14 @@ class GitService {
    * @returns {Promise<string>} - Commit hash
    */
   async commit(repoPath, message, author = null) {
-    try {
-      const args = ['commit', '-m', message];
-      if (author) {
-        args.push('--author', author);
-      }
-      const output = await this.execGit(args, repoPath);
-      // Extract commit hash from output
-      const match = output.match(/\[.+\s([a-f0-9]+)\]/);
-      return match ? match[1] : output;
-    } catch (error) {
-      // Check if it's a user.name/user.email configuration issue
-      if (error.message.includes('user.name') || error.message.includes('user.email')) {
-        throw new Error('Git user.name and user.email not configured. Please set them globally or use: git config user.name "Your Name" && git config user.email "your@email.com"');
-      }
-      throw error;
+    const args = ['commit', '-m', message];
+    if (author) {
+      args.push('--author', author);
     }
+    const output = await this.execGit(args, repoPath);
+    // Extract commit hash from output
+    const match = output.match(/\[.+\s([a-f0-9]+)\]/);
+    return match ? match[1] : output;
   }
 
   /**
