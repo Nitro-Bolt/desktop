@@ -72,7 +72,7 @@ class GitService {
    */
   async status(repoPath) {
     try {
-      const statusOutput = await this.execGit(['status', '--porcelain=v2', '--branch'], repoPath);
+      const statusOutput = await this.execGit(['status', '--porcelain', '--branch'], repoPath);
       let logOutput = '';
       try {
         logOutput = await this.execGit(['log', '--oneline', '-n', '1'], repoPath);
@@ -88,28 +88,34 @@ class GitService {
       const untracked = [];
 
       for (const line of lines) {
-        if (line.startsWith('# branch.oid')) {
-          // Current commit hash
-        } else if (line.startsWith('# branch.head')) {
-          branch = line.substring('# branch.head '.length);
-        } else if (line.startsWith('1 ')) {
-          // Modified file
-          const parts = line.split('\t');
-          const status = parts[0];
-          const filename = parts[1];
+        if (!line) continue;
 
-          if (status.includes('M')) {
-            unstaged.push(filename);
+        if (line.startsWith('## ')) {
+          // Branch line (format: "## branch...tracking" or just "## branch")
+          const branchLine = line.substring(3);
+          const branchEnd = branchLine.indexOf('...');
+          branch = branchEnd !== -1 ? branchLine.substring(0, branchEnd) : branchLine;
+        } else {
+          // File status line (format: XY filename)
+          const statusCode = line.substring(0, 2);
+          const filename = line.substring(3);
+
+          const stagedStatus = statusCode[0]; // First char is staged
+          const unstagedStatus = statusCode[1]; // Second char is unstaged
+
+          // ? = untracked, ! = ignored
+          if (stagedStatus === '?' && unstagedStatus === '?') {
+            untracked.push(filename);
+          } else {
+            // Add to staged if first char is not space
+            if (stagedStatus !== ' ' && stagedStatus !== '?') {
+              staged.push(filename);
+            }
+            // Add to unstaged if second char is not space
+            if (unstagedStatus !== ' ' && unstagedStatus !== '?') {
+              unstaged.push(filename);
+            }
           }
-        } else if (line.startsWith('2 ')) {
-          // Rename/copy
-          const parts = line.split('\t');
-          const filename = parts[2];
-          unstaged.push(filename);
-        } else if (line.startsWith('? ')) {
-          // Untracked
-          const filename = line.substring(2);
-          untracked.push(filename);
         }
       }
 
