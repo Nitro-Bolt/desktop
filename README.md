@@ -2,7 +2,7 @@
 
 NitroBolt as a desktop app. A fork of the TurboWarp Desktop app.
 
-If you're looking for downloads, checkout the [releases](https://github.com/Nitro-Bolt/desktop/releases).
+If you're looking for downloads, checkout the [releases](https://desktop.nitrobolt.org/).
 
 Licensed under the GPLv3.0. See LICENSE for more information.
 

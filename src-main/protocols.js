@@ -64,7 +64,7 @@ const FILE_SCHEMES = {
   },
   'nb-update': {
     root: path.resolve(__dirname, '../src-renderer/update'),
-    csp: "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src https://nitro-bolt.github.io/desktop"
+    csp: "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src https://desktop.nitrobolt.org/"
   },
   'nb-security-prompt': {
     root: path.resolve(__dirname, '../src-renderer/security-prompt'),
