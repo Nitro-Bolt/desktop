@@ -31,13 +31,22 @@ Install dependencies using:
 npm ci
 ```
 
+**Desktop's GUI is almost always out of date.**
+
+Run this to install the latest GUI:
+
+```bash
+npm uninstall scratch-gui
+npm i github:Nitro-Bolt/scratch-gui#develop --save-dev
+```
+
 Then fetch extra library, packager, and extension files using:
 
 ```bash
 npm run fetch
 ```
 
-Repeat the three previous sets of commands every time you pull changes from GitHub.
+Repeat the four previous sets of commands every time you pull changes from GitHub.
 
 Due to the security requirements mandated by custom extensions existing, our desktop app is significantly more complicated than Scratch's.
 
