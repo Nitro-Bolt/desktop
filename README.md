@@ -73,7 +73,7 @@ We've found that development can work pretty well if you open two terminals side
 
 On some Linux distributions, Electron will crash with the message `The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now. You need to make sure that /home/.../turbowarp-desktop/node_modules/electron/dist/chrome-sandbox is owned by root and has mode 4755.`. Notably we have seen this happen on Debian 10 and earlier and Ubuntu 24.04 and later.
 
-For development, you can run these commands to enable unprivileged user namespaces until you reboot:
+For development, run `electron_build_fix_until_reboot.sh` as sudo, or you can run these commands to enable unprivileged user namespaces until you reboot:
 
 ```bash
 # Enable unprivileged user namespaces.
