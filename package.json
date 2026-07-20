@@ -61,6 +61,7 @@
     "email": "contact@turbowarp.org"
   },
   "main": "./src-main/entrypoint.js",
+  "desktopName":"org.nitrobolt.desktop",
   "build": {
     "appId": "org.nitrobolt.desktop",
     "productName": "NitroBolt",
