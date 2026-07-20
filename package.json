@@ -83,9 +83,6 @@
         "to": "icon.svg"
       }
     ],
-
-
-
     "win": {
       "artifactName": "${productName}-Win-${version}-${arch}.${ext}",
       "icon": "build/icon.ico",
@@ -109,9 +106,6 @@
     "portable": {
       "artifactName": "${productName}-Win-Portable-${version}-${arch}.${ext}"
     },
-
-
-
     "mac": {
       "artifactName": "${productName}-Mac-${version}.${ext}",
       "icon": "build/icon.icns",
@@ -144,9 +138,6 @@
       "type": "development",
       "provisioningProfile": "build/development.provisionprofile"
     },
-
-
-
     "linux": {
       "executableName": "nitrobolt-desktop",
       "artifactName": "${productName}-Linux-${version}-${arch}.${ext}",
@@ -204,9 +195,6 @@
     "flatpak": {
       "artifactName": "${productName}-Linux-Flatpak-${version}-${arch}.${ext}"
     },
-
-
-
     "fileAssociations": [
       {
         "ext": "sb3",
