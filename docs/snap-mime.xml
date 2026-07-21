@@ -14,7 +14,6 @@
     This file will tell your system that sb, sb2, and sb3 files should be treated separately so you
     can set TurboWarp (or any other app) as the associated app without affecting normal zip files.
   -->
-
   <mime-type type="application/x.scratch.sb3">
     <sub-class-of type="application/zip" />
     <glob pattern="*.sb3" />

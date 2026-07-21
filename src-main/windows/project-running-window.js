@@ -5,6 +5,8 @@ const settings = require('../settings');
 const askForMediaAccess = require('../media-permissions');
 const SecurityPromptWindow = require('./security-prompt');
 
+// TODO: migrate turbowarp links to nitrobolt links
+
 const listLocalFiles = async () => {
   const files = await fsPromises.readdir(path.join(__dirname, '../../dist-library-files/'));
   return files.map(filename => filename.replace('.br', ''));

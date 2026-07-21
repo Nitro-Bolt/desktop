@@ -4,6 +4,8 @@ const PackagerPreviewWindow = require('./packager-preview');
 const prompts = require('../prompts');
 const FileAccessWindow = require('./file-access-window');
 
+// possibly TODO: migrate turbowarp links to nitrobolt links..?
+
 class PackagerWindow extends AbstractWindow {
   constructor (editorWindow) {
     super();

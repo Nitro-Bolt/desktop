@@ -26,6 +26,8 @@ const TYPE_URL = 'url';
 const TYPE_SCRATCH = 'scratch';
 const TYPE_SAMPLE = 'sample';
 
+// possibly TODO: migrate to nitrobolt links..?
+
 class OpenedFile {
   constructor (type, path) {
     /** @type {TYPE_FILE|TYPE_URL|TYPE_SCRATCH|TYPE_SAMPLE} */
@@ -170,6 +172,16 @@ const getUnsafePaths = () => {
     {
       path: app.getPath('userData'),
       app: APP_NAME,
+    },
+
+    // NitroBolt Desktop fefaults
+    {
+      path: path.join(appData, 'nitrobolt-desktop'),
+      app: 'NitroBolt Desktop'
+    },
+    {
+      path: path.join(localPrograms, 'NitroBolt'),
+      app: 'NitroBolt Desktop'
     },
 
     // TurboWarp Desktop defaults
