@@ -9,6 +9,7 @@ const packageJSON = require('../package.json');
  * @typedef Metadata
  * @property {string} root
  * @property {boolean} [standard] Defaults to false
+ * @property {boolean} [cors] Defaults to false
  * @property {boolean} [supportFetch] Defaults to false
  * @property {boolean} [secure] Defaults to false
  * @property {boolean} [brotli] Defaults to false
@@ -49,12 +50,15 @@ const FILE_SCHEMES = {
   'nb-library': {
     root: path.resolve(__dirname, '../dist-library-files'),
     supportFetch: true,
+    cors: true,
     brotli: true,
     csp: "default-src 'none';"
   },
   'nb-extensions': {
     root: path.resolve(__dirname, '../dist-extensions'),
+    standard: true,
     supportFetch: true,
+    cors: true,
     brotli: true,
     embeddable: true,
     stream: true,
@@ -64,7 +68,7 @@ const FILE_SCHEMES = {
   },
   'nb-update': {
     root: path.resolve(__dirname, '../src-renderer/update'),
-    csp: "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src https://nitro-bolt.github.io/desktop"
+    csp: "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src https://desktop.nitrobolt.org/"
   },
   'nb-security-prompt': {
     root: path.resolve(__dirname, '../src-renderer/security-prompt'),
@@ -107,6 +111,7 @@ protocol.registerSchemesAsPrivileged(Object.entries(FILE_SCHEMES).map(([scheme, 
   privileges: {
     standard: !!metadata.standard,
     supportFetchAPI: !!metadata.supportFetch,
+    corsEnabled: !!metadata.cors,
     secure: !!metadata.secure,
     stream: !!metadata.stream
   }
@@ -154,7 +159,7 @@ const createErrorPageHTML = (request, errorMessage) => `<!DOCTYPE html>
   </head>
   <body bgcolor="white" text="black">
     <h1>Protocol handler error</h1>
-    <p>If you can see this page, <a href="https://github.com/Nitro-Bolt/desktop/issues" target="_blank" rel="noreferrer">please open a GitHub issue</a> or <a href="mailto:contact@turbowarp.org" target="_blank" rel="noreferrer">email us</a> with all the information below.</p>
+    <p>If you can see this page, <a href="https://github.com/Nitro-Bolt/desktop/issues" target="_blank" rel="noreferrer">please open a GitHub issue</a> or <a href="mailto:contact@nitrobolt.org" target="_blank" rel="noreferrer">email us</a> with all the information below.</p>
     <pre>${escapeXML(errorMessage)}</pre>
     <pre>URL: ${escapeXML(request.url)}</pre>
     <pre>Version ${escapeXML(packageJSON.version)}, Electron ${escapeXML(process.versions.electron)}, Platform ${escapeXML(getPlatform())} ${escapeXML(process.arch)}, Distribution ${escapeXML(getDist())}</pre>

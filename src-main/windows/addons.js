@@ -28,6 +28,7 @@ class AddonsWindow extends AbstractWindow {
 
     this.ipc.handle('export-settings', async (event, settings) => {
       const result = await dialog.showSaveDialog(this.window, {
+                                                      // i'm not going to modify this but we'd need to migrate this i think
         defaultPath: path.join(app.getPath('downloads'), 'turbowarp-addon-settings.json'),
         filters: [
           {

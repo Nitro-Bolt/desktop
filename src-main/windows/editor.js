@@ -20,11 +20,14 @@ const RichPresence = require('../rich-presence.js');
 const FileAccessWindow = require('./file-access-window.js');
 const ExtensionDocumentationWindow = require('./extension-documentation.js');
 const gitService = require('../git-service');
+const SecurityPromptWindow = require('./security-prompt.js');
 
 const TYPE_FILE = 'file';
 const TYPE_URL = 'url';
 const TYPE_SCRATCH = 'scratch';
 const TYPE_SAMPLE = 'sample';
+
+// possibly TODO: migrate to nitrobolt links..?
 
 class OpenedFile {
   constructor (type, path) {
@@ -172,6 +175,16 @@ const getUnsafePaths = () => {
       app: APP_NAME,
     },
 
+    // NitroBolt Desktop fefaults
+    {
+      path: path.join(appData, 'nitrobolt-desktop'),
+      app: 'NitroBolt Desktop'
+    },
+    {
+      path: path.join(localPrograms, 'NitroBolt'),
+      app: 'NitroBolt Desktop'
+    },
+
     // TurboWarp Desktop defaults
     {
       path: path.join(appData, 'turbowarp-desktop'),
@@ -216,9 +229,12 @@ class EditorWindow extends ProjectRunningWindow {
   /**
    * @param {OpenedFile|null} initialFile
    * @param {boolean} isInitiallyFullscreen
+   * @param {boolean} nodeIntegration
    */
-  constructor (initialFile, isInitiallyFullscreen) {
-    super();
+  constructor (initialFile, isInitiallyFullscreen, nodeIntegration) {
+    super({
+      nodeIntegration
+    });
 
     /**
      * Ideally we would revoke access after loading a new project, but our file handle handling in
@@ -285,19 +301,20 @@ class EditorWindow extends ProjectRunningWindow {
       });
     });
 
+    const titlePrefix = nodeIntegration ? `[${translate('node-integration.prefix')}] ` : '';
     this.window.on('page-title-updated', (event, title, explicitSet) => {
       event.preventDefault();
       if (explicitSet && title) {
-        this.window.setTitle(`${title} - ${APP_NAME}`);
+        this.window.setTitle(`${titlePrefix}${title} - ${APP_NAME}`);
         this.projectTitle = title;
       } else {
-        this.window.setTitle(APP_NAME);
+        this.window.setTitle(`${titlePrefix}${APP_NAME}`);
         this.projectTitle = '';
       }
 
       this.updateRichPresence();
     });
-    this.window.setTitle(APP_NAME);
+    this.window.setTitle(`${titlePrefix}${APP_NAME}`);
 
     this.window.on('focus', () => {
       this.updateRichPresence();
@@ -540,7 +557,7 @@ class EditorWindow extends ProjectRunningWindow {
     });
 
     this.ipc.handle('open-new-window', () => {
-      EditorWindow.newWindow();
+      EditorWindow.newWindow(null, false, false);
     });
 
     this.ipc.handle('open-addon-settings', (event, search) => {
@@ -791,7 +808,7 @@ class EditorWindow extends ProjectRunningWindow {
       const projectUrl = params.get('project_url');
       const parsedFile = parseOpenedFile(projectUrl, null);
       if (parsedFile.type === TYPE_SAMPLE) {
-        new EditorWindow(parsedFile, null);
+        EditorWindow.newWindow(parsedFile, false, false);
         return {
           action: 'deny'
         };
@@ -821,26 +838,36 @@ class EditorWindow extends ProjectRunningWindow {
   }
 
   /**
-   * @param {string[]} files
+   * @param {string[]} paths
    * @param {boolean} fullscreen
+   * @param {boolean} nodeIntegration
    * @param {string|null} workingDirectory
+   * @returns {Promise<void>}
    */
-  static openFiles (files, fullscreen, workingDirectory) {
-    if (files.length === 0) {
-      EditorWindow.newWindow(fullscreen);
-    } else {
-      for (const file of files) {
-        new EditorWindow(parseOpenedFile(file, workingDirectory), fullscreen);
-      }
+  static openPaths (paths, fullscreen, nodeIntegration, workingDirectory) {
+    if (paths.length === 0) {
+      return EditorWindow.newWindow(null, fullscreen, nodeIntegration);
     }
+    return Promise.all(paths.map(path => (
+      EditorWindow.newWindow(parseOpenedFile(path, workingDirectory), fullscreen, nodeIntegration)
+    )));
   }
 
   /**
-   * Open a new window with the default project.
+   * Try to open a new window.
+   * @param {OpenedFile|null} file
    * @param {boolean} fullscreen
+   * @param {boolean} nodeIntegration
+   * @returns {Promise<void>}
    */
-  static newWindow (fullscreen) {
-    new EditorWindow(null, fullscreen);
+  static async newWindow (file, fullscreen, nodeIntegration) {
+    if (nodeIntegration) {
+      const allowed = await SecurityPromptWindow.requestNodeIntegration();
+      if (!allowed) {
+        return;
+      }
+    }
+    new EditorWindow(file, fullscreen, nodeIntegration);
   }
 }
 

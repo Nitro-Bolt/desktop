@@ -5,6 +5,8 @@ const settings = require('../settings');
 const askForMediaAccess = require('../media-permissions');
 const SecurityPromptWindow = require('./security-prompt');
 
+// TODO: migrate turbowarp links to nitrobolt links
+
 const listLocalFiles = async () => {
   const files = await fsPromises.readdir(path.join(__dirname, '../../dist-library-files/'));
   return files.map(filename => filename.replace('.br', ''));
@@ -140,6 +142,7 @@ class ProjectRunningWindow extends AbtractWindow {
       // revealing any metadata that they couldn't already have access to.
       return callback({
         requestHeaders: {
+          ...details.requestHeaders,
           referer: 'https://desktop.turbowarp.org/referer.html'
         }
       });

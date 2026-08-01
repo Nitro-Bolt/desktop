@@ -4,7 +4,7 @@ const packageJSON = require('../package.json');
 const privilegedFetch = require('./fetch');
 
 const currentVersion = packageJSON.version;
-const URL = 'https://nitro-bolt.github.io/desktop/version.json';
+const URL = 'https://desktop.nitrobolt.org/version.json';
 
 /**
  * Determines whether the update checker is even allowed to be enabled

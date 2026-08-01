@@ -142,7 +142,7 @@ const rebuildMenuBar = () => {
           {
             label: translate('menu.learn-more'),
             click: () => {
-              openExternal('https://nitro-bolt.github.io/desktop')
+              openExternal('https://desktop.nitrobolt.org/')
             }
           }
         ]
