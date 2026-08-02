@@ -2,6 +2,12 @@ const path = require('path');
 const {DefinePlugin} = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
+const scratchGuiPath = path.dirname(require.resolve('scratch-gui/package.json'));
+const scratchGuiNodeModules = path.join(scratchGuiPath, 'node_modules');
+const scratchBlocksPath = path.dirname(require.resolve('scratch-blocks/package.json', {
+    paths: [scratchGuiPath]
+}));
+
 const base = {
     mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
     devtool: process.env.NODE_ENV === 'production' ? false : 'cheap-source-map',
@@ -66,8 +72,18 @@ const base = {
                 ]
             }
         ]
+    },
+    resolve: {
+        // npm does not hoist dependencies from packages installed with `npm link`.
+        // Fall back to the GUI's dependencies so linking a local GUI works without
+        // separately linking React, Redux, scratch-blocks, and other dependencies.
+        modules: [
+            path.resolve(__dirname, 'node_modules'),
+            scratchGuiNodeModules,
+            'node_modules'
+        ]
     }
-}
+};
 
 module.exports = [
     {
@@ -86,11 +102,11 @@ module.exports = [
             new CopyWebpackPlugin({
                 patterns: [
                     {
-                        from: 'node_modules/scratch-blocks/media',
+                        from: path.join(scratchBlocksPath, 'media'),
                         to: 'static/blocks-media/default'
                     },
                     {
-                        from: 'node_modules/scratch-blocks/media',
+                        from: path.join(scratchBlocksPath, 'media'),
                         to: 'static/blocks-media/high-contrast'
                     },
                     {
@@ -106,6 +122,7 @@ module.exports = [
             })
         ],
         resolve: {
+            ...base.resolve,
             alias: {
                 'scratch-gui$': path.resolve(__dirname, 'node_modules/scratch-gui/src/index.js'),
                 'scratch-render-fonts$': path.resolve(__dirname, 'node_modules/scratch-gui/src/lib/tw-scratch-render-fonts'),
