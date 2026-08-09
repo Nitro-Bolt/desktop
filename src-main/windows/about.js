@@ -10,6 +10,8 @@ class AboutWindow extends AbstractWindow {
 
     this.window.setMinimizable(false);
     this.window.setMaximizable(false);
+    this.window.setResizable(false);
+    this.window.isPopup = true;
     this.window.setTitle(translate('about').replace('{APP_NAME}', APP_NAME));
 
     this.ipc.on('get-info', (event) => {
@@ -18,7 +20,7 @@ class AboutWindow extends AbstractWindow {
         dist: getDist(),
         electron: process.versions.electron,
         platform: getPlatform(),
-        arch: process.arch
+        arch: process.arch,
       };
     });
 
@@ -27,8 +29,8 @@ class AboutWindow extends AbstractWindow {
 
   getDimensions () {
     return {
-      width: 750,
-      height: 650
+      width: 640,
+      height: 600
     };
   }
 

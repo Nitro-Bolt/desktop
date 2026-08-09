@@ -14,7 +14,8 @@ class DesktopSettingsWindow extends AbstractWindow {
     this.window.setTitle(`${translate('desktop-settings.title')} - ${APP_NAME}`);
     this.window.setMinimizable(false);
     this.window.setMaximizable(false);
-
+    this.window.isPopup = true;
+    this.window.setResizable(false);
     this.ipc.on('init', (event) => {
       event.returnValue = {
         locale: getLocale(),
@@ -122,8 +123,8 @@ class DesktopSettingsWindow extends AbstractWindow {
 
   getDimensions () {
     return {
-      width: 550,
-      height: 500
+      width: 600,
+      height: 750,
     };
   }
 

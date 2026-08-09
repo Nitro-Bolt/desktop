@@ -14,6 +14,7 @@
     "webpack:watch": "webpack --watch",
     "webpack:prod": "cross-env NODE_ENV=production webpack",
     "electron:start": "electron src-main/entrypoint.js",
+    "electron:linux": "./electron_build_fix_until_reboot.sh; electron src-main/entrypoint.js",
     "electron:package:dir": "electron-builder --dir"
   },
   "dependencies": {
