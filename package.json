@@ -2,6 +2,7 @@
   "name": "nitrobolt-desktop",
   "description": "A mod of TurboWarp with tons of new features, and a haven for developers who don't want to be restricted by \"compatibility\".",
   "version": "1.0.0",
+  "packageManager": "pnpm@10.33.0",
   "license": "GPL-3.0",
   "type": "commonjs",
   "author": {
@@ -42,6 +43,7 @@
     "postcss-loader": "^4.2.0",
     "postcss-simple-vars": "^6.0.3",
     "scratch-gui": "github:Nitro-Bolt/scratch-gui#develop",
+    "scratch-render-fonts": "github:TurboWarp/scratch-render-fonts#master",
     "style-loader": "^0.23.0",
     "url-loader": "^4.1.1",
     "webpack": "4.47.0",
@@ -51,6 +53,13 @@
     "webpack@4.47.0": {
       "terser-webpack-plugin": "^4.2.3"
     }
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "core-js",
+      "electron-winstaller",
+      "scratch-gui"
+    ]
   },
   "homepage": "https://desktop.turbowarp.org/",
   "repository": {
