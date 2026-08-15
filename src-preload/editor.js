@@ -34,24 +34,35 @@ exposeInMainWorld('EditorPreload', {
   setIsFullScreen: (isFullScreen) => ipcRenderer.invoke('set-is-full-screen', isFullScreen)
 });
 
-contextBridge.exposeInMainWorld('Git', {
+exposeInMainWorld('Git', {
   isAvailable: () => ipcRenderer.invoke('git-is-available'),
   status: (repoPath) => ipcRenderer.invoke('git-status', repoPath),
-  init: (repoPath) => ipcRenderer.invoke('git-init', repoPath),
+  init: (repoPath, branchName) => ipcRenderer.invoke('git-init', repoPath, branchName),
   add: (repoPath, files = []) => ipcRenderer.invoke('git-add', repoPath, files),
   reset: (repoPath, files = []) => ipcRenderer.invoke('git-reset', repoPath, files),
-  commit: (repoPath, message, author) => ipcRenderer.invoke('git-commit', repoPath, message, author),
+  commit: (repoPath, message) => ipcRenderer.invoke('git-commit', repoPath, message),
+  revertToCommit: (repoPath, commitHash) => ipcRenderer.invoke('git-revert-to-commit', repoPath, commitHash),
   log: (repoPath, maxCount = 10) => ipcRenderer.invoke('git-log', repoPath, maxCount),
-  currentBranch: (repoPath) => ipcRenderer.invoke('git-current-branch', repoPath),
   listBranches: (repoPath) => ipcRenderer.invoke('git-list-branches', repoPath),
   createBranch: (repoPath, branchName) => ipcRenderer.invoke('git-create-branch', repoPath, branchName),
+  renameBranch: (repoPath, branch, newName) => ipcRenderer.invoke('git-rename-branch', repoPath, branch, newName),
+  deleteBranch: (repoPath, branch) => ipcRenderer.invoke('git-delete-branch', repoPath, branch),
   switchBranch: (repoPath, branchName) => ipcRenderer.invoke('git-switch-branch', repoPath, branchName),
-  diff: (repoPath, filePath) => ipcRenderer.invoke('git-diff', repoPath, filePath),
-  stagedDiff: (repoPath, filePath) => ipcRenderer.invoke('git-staged-diff', repoPath, filePath),
+  projectDiff: (repoPath, filePath, staged = false, originalPath = null) =>
+    ipcRenderer.invoke('git-project-diff', repoPath, filePath, staged, originalPath),
   push: (repoPath, remote = 'origin', branch) => ipcRenderer.invoke('git-push', repoPath, remote, branch),
   pull: (repoPath, remote = 'origin', branch) => ipcRenderer.invoke('git-pull', repoPath, remote, branch),
-  discard: (repoPath, filePath) => ipcRenderer.invoke('git-discard', repoPath, filePath),
-  remotes: (repoPath) => ipcRenderer.invoke('git-remotes', repoPath)
+  discard: (repoPath, filePath, originalPath = null) =>
+    ipcRenderer.invoke('git-discard', repoPath, filePath, originalPath),
+  remotes: (repoPath) => ipcRenderer.invoke('git-remotes', repoPath),
+  addRemote: (repoPath, name, url) => ipcRenderer.invoke('git-add-remote', repoPath, name, url),
+  removeRemote: (repoPath, name) => ipcRenderer.invoke('git-remove-remote', repoPath, name),
+  merge: (repoPath, branch, targetBranch) => ipcRenderer.invoke('git-merge', repoPath, branch, targetBranch),
+  readReadme: (repoPath) => ipcRenderer.invoke('git-read-readme', repoPath),
+  writeReadme: (repoPath, contents) => ipcRenderer.invoke('git-write-readme', repoPath, contents),
+  syncProject: (repoPath, archive, workspaceXML) =>
+    ipcRenderer.invoke('git-sync-project', repoPath, archive, workspaceXML),
+  readProject: (repoPath) => ipcRenderer.invoke('git-read-project', repoPath)
 });
 
 let exportForPackager = () => Promise.reject(new Error('exportForPackager missing'));

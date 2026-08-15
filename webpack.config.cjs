@@ -4,6 +4,9 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const scratchGuiPath = path.dirname(require.resolve('scratch-gui/package.json'));
 const scratchGuiNodeModules = path.join(scratchGuiPath, 'node_modules');
+const MonacoWebpackPlugin = require(require.resolve('monaco-editor-webpack-plugin', {
+    paths: [__dirname, scratchGuiPath]
+}));
 const scratchBlocksPath = path.dirname(require.resolve('scratch-blocks/package.json', {
     paths: [scratchGuiPath]
 }));
@@ -99,6 +102,7 @@ module.exports = [
             new DefinePlugin({
                 'process.env.ROOT': '""'
             }),
+            new MonacoWebpackPlugin(),
             new CopyWebpackPlugin({
                 patterns: [
                     {

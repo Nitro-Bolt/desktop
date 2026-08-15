@@ -1,4 +1,5 @@
-const fsPromises = require('fs/promises');
+const fs = require('fs');
+const fsPromises = fs.promises;
 const path = require('path');
 const nodeURL = require('url');
 const zlib = require('zlib');
@@ -20,18 +21,20 @@ const RichPresence = require('../rich-presence.js');
 const FileAccessWindow = require('./file-access-window.js');
 const ExtensionDocumentationWindow = require('./extension-documentation.js');
 const gitService = require('../git-service');
+const gitProject = require('../git-project');
 const SecurityPromptWindow = require('./security-prompt.js');
 
 const TYPE_FILE = 'file';
 const TYPE_URL = 'url';
 const TYPE_SCRATCH = 'scratch';
 const TYPE_SAMPLE = 'sample';
+const TYPE_GIT_PROJECT = 'git-project';
 
 // possibly TODO: migrate to nitrobolt links..?
 
 class OpenedFile {
   constructor (type, path) {
-    /** @type {TYPE_FILE|TYPE_URL|TYPE_SCRATCH|TYPE_SAMPLE} */
+    /** @type {TYPE_FILE|TYPE_URL|TYPE_SCRATCH|TYPE_SAMPLE|TYPE_GIT_PROJECT} */
     this.type = type;
 
     /**
@@ -95,9 +98,25 @@ class OpenedFile {
       throw new Error('Unsafe join');
     }
 
+    if (this.type === TYPE_GIT_PROJECT) {
+      return readGitProject(this.path);
+    }
+
     throw new Error(`Unknown type: ${this.type}`);
   }
 }
+
+const parseLocalPath = (file, workingDirectory) => {
+  const resolvedPath = path.resolve(workingDirectory || process.cwd(), file);
+  try {
+    if (fs.statSync(resolvedPath).isDirectory()) {
+      return new OpenedFile(TYPE_GIT_PROJECT, resolvedPath);
+    }
+  } catch (e) {
+    // Let the normal file-loading path report missing and inaccessible paths.
+  }
+  return new OpenedFile(TYPE_FILE, resolvedPath);
+};
 
 /**
  * @param {string} file
@@ -142,7 +161,7 @@ const parseOpenedFile = (file, workingDirectory) => {
       }
 
       if (filePath) {
-        return new OpenedFile(TYPE_FILE, path.resolve(workingDirectory, filePath));
+        return parseLocalPath(filePath, workingDirectory);
       }
     }
 
@@ -150,7 +169,29 @@ const parseOpenedFile = (file, workingDirectory) => {
     // Windows paths look close enough to real URLs to be parsed successfully.
   }
 
-  return new OpenedFile(TYPE_FILE, path.resolve(workingDirectory, file));
+  return parseLocalPath(file, workingDirectory);
+};
+
+const registerResultHandler = (ipc, channel, operation, formatResult = () => ({})) => {
+  ipc.handle(channel, async (_event, ...args) => {
+    try {
+      return {
+        success: true,
+        ...formatResult(await operation(...args))
+      };
+    } catch (error) {
+      return {success: false, error: error instanceof Error ? error.message : String(error)};
+    }
+  });
+};
+
+const readGitProject = async selectedPath => {
+  const projectPath = await gitService.resolveRepository(selectedPath);
+  return {
+    name: path.basename(projectPath),
+    data: await gitProject.readProject(projectPath),
+    projectPath
+  };
 };
 
 /**
@@ -330,11 +371,12 @@ class EditorWindow extends ProjectRunningWindow {
 
     this.ipc.handle('get-file', async (event, id) => {
       const file = getFileById(id);
-      const {name, data} = await file.read();
+      const {name, data, projectPath} = await file.read();
       return {
         name,
         type: file.type,
-        data
+        data,
+        projectPath
       };
     });
 
@@ -417,6 +459,7 @@ class EditorWindow extends ProjectRunningWindow {
       await settings.save();
 
       return {
+        name: path.basename(directoryPath),
         path: directoryPath
       };
     });
@@ -595,158 +638,50 @@ class EditorWindow extends ProjectRunningWindow {
       FileAccessWindow.check(filePath);
     });
 
-    this.ipc.handle('git-is-available', async () => {
-      return await gitService.isGitAvailable();
-    });
-
-    this.ipc.handle('git-status', async (event, repoPath) => {
-      try {
-        return {
-          success: true,
-          data: await gitService.status(repoPath)
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error.message
-        };
-      }
-    });
-
-    this.ipc.handle('git-init', async (event, repoPath) => {
-      try {
-        await gitService.init(repoPath);
-        return {success: true};
-      } catch (error) {
-        return {success: false, error: error.message};
-      }
-    });
-
-    this.ipc.handle('git-add', async (event, repoPath, files) => {
-      try {
-        await gitService.add(repoPath, files);
-        return {success: true};
-      } catch (error) {
-        return {success: false, error: error.message};
-      }
-    });
-
-    this.ipc.handle('git-reset', async (event, repoPath, files) => {
-      try {
-        await gitService.reset(repoPath, files);
-        return {success: true};
-      } catch (error) {
-        return {success: false, error: error.message};
-      }
-    });
-
-    this.ipc.handle('git-commit', async (event, repoPath, message, author) => {
-      try {
-        const commitHash = await gitService.commit(repoPath, message, author);
-        return {success: true, commitHash};
-      } catch (error) {
-        return {success: false, error: error.message};
-      }
-    });
-
-    this.ipc.handle('git-log', async (event, repoPath, maxCount) => {
-      try {
-        const commits = await gitService.log(repoPath, maxCount);
-        return {success: true, commits};
-      } catch (error) {
-        return {success: false, error: error.message};
-      }
-    });
-
-    this.ipc.handle('git-current-branch', async (event, repoPath) => {
-      try {
-        const branch = await gitService.currentBranch(repoPath);
-        return {success: true, branch};
-      } catch (error) {
-        return {success: false, error: error.message};
-      }
-    });
-
-    this.ipc.handle('git-list-branches', async (event, repoPath) => {
-      try {
-        const branches = await gitService.listBranches(repoPath);
-        return {success: true, branches};
-      } catch (error) {
-        return {success: false, error: error.message};
-      }
-    });
-
-    this.ipc.handle('git-create-branch', async (event, repoPath, branchName) => {
-      try {
-        await gitService.createBranch(repoPath, branchName);
-        return {success: true};
-      } catch (error) {
-        return {success: false, error: error.message};
-      }
-    });
-
-    this.ipc.handle('git-switch-branch', async (event, repoPath, branchName) => {
-      try {
-        await gitService.switchBranch(repoPath, branchName);
-        return {success: true};
-      } catch (error) {
-        return {success: false, error: error.message};
-      }
-    });
-
-    this.ipc.handle('git-diff', async (event, repoPath, filePath) => {
-      try {
-        const diff = await gitService.diff(repoPath, filePath);
-        return {success: true, diff};
-      } catch (error) {
-        return {success: false, error: error.message};
-      }
-    });
-
-    this.ipc.handle('git-staged-diff', async (event, repoPath, filePath) => {
-      try {
-        const diff = await gitService.stagedDiff(repoPath, filePath);
-        return {success: true, diff};
-      } catch (error) {
-        return {success: false, error: error.message};
-      }
-    });
-
-    this.ipc.handle('git-push', async (event, repoPath, remote, branch) => {
-      try {
-        const output = await gitService.push(repoPath, remote, branch);
-        return {success: true, output};
-      } catch (error) {
-        return {success: false, error: error.message};
-      }
-    });
-
-    this.ipc.handle('git-pull', async (event, repoPath, remote, branch) => {
-      try {
-        const output = await gitService.pull(repoPath, remote, branch);
-        return {success: true, output};
-      } catch (error) {
-        return {success: false, error: error.message};
-      }
-    });
-
-    this.ipc.handle('git-discard', async (event, repoPath, filePath) => {
-      try {
-        await gitService.discard(repoPath, filePath);
-        return {success: true};
-      } catch (error) {
-        return {success: false, error: error.message};
-      }
-    });
-
-    this.ipc.handle('git-remotes', async (event, repoPath) => {
-      try {
-        const remotes = await gitService.remotes(repoPath);
-        return {success: true, remotes};
-      } catch (error) {
-        return {success: false, error: error.message};
-      }
-    });
+    this.ipc.handle('git-is-available', () => gitService.isGitAvailable());
+    registerResultHandler(this.ipc, 'git-status', repoPath => gitService.status(repoPath), data => ({data}));
+    registerResultHandler(this.ipc, 'git-init', (repoPath, branchName) => gitService.init(repoPath, branchName));
+    registerResultHandler(this.ipc, 'git-add', (repoPath, files) => gitService.add(repoPath, files));
+    registerResultHandler(this.ipc, 'git-reset', (repoPath, files) => gitService.reset(repoPath, files));
+    registerResultHandler(this.ipc, 'git-commit', (repoPath, message) => gitService.commit(repoPath, message));
+    registerResultHandler(this.ipc, 'git-log', (repoPath, maxCount) => gitService.log(repoPath, maxCount),
+      commits => ({commits}));
+    registerResultHandler(this.ipc, 'git-list-branches', repoPath => gitService.listBranches(repoPath),
+      branches => ({branches}));
+    registerResultHandler(this.ipc, 'git-create-branch', (repoPath, branchName) =>
+      gitService.createBranch(repoPath, branchName));
+    registerResultHandler(this.ipc, 'git-switch-branch', (repoPath, branchName) =>
+      gitService.switchBranch(repoPath, branchName));
+    registerResultHandler(this.ipc, 'git-push', (repoPath, remote, branch) =>
+      gitService.push(repoPath, remote, branch));
+    registerResultHandler(this.ipc, 'git-pull', (repoPath, remote, branch) =>
+      gitService.pull(repoPath, remote, branch));
+    registerResultHandler(this.ipc, 'git-discard', (repoPath, filePath, originalPath) =>
+      gitService.discard(repoPath, filePath, originalPath), result => result);
+    registerResultHandler(this.ipc, 'git-remotes', repoPath => gitService.remotes(repoPath),
+      remotes => ({remotes}));
+    registerResultHandler(this.ipc, 'git-rename-branch', (repoPath, branch, newName) =>
+      gitService.renameBranch(repoPath, branch, newName));
+    registerResultHandler(this.ipc, 'git-delete-branch', (repoPath, branch) =>
+      gitService.deleteBranch(repoPath, branch));
+    registerResultHandler(this.ipc, 'git-revert-to-commit', (repoPath, commitHash) =>
+      gitService.revertToCommit(repoPath, commitHash));
+    registerResultHandler(this.ipc, 'git-add-remote', (repoPath, name, url) =>
+      gitService.addRemote(repoPath, name, url));
+    registerResultHandler(this.ipc, 'git-remove-remote', (repoPath, name) =>
+      gitService.removeRemote(repoPath, name));
+    registerResultHandler(this.ipc, 'git-merge', (repoPath, branch, targetBranch) =>
+      gitService.merge(repoPath, branch, targetBranch));
+    registerResultHandler(this.ipc, 'git-read-readme', repoPath => gitService.readReadme(repoPath),
+      contents => ({contents}));
+    registerResultHandler(this.ipc, 'git-write-readme', (repoPath, contents) =>
+      gitService.writeReadme(repoPath, contents));
+    registerResultHandler(this.ipc, 'git-project-diff', (repoPath, filePath, staged, originalPath) =>
+      gitService.projectDiff(repoPath, filePath, staged, originalPath), data => ({data}));
+    registerResultHandler(this.ipc, 'git-sync-project', (repoPath, archive, workspaceXML) =>
+      gitProject.syncProject(repoPath, archive, workspaceXML));
+    registerResultHandler(this.ipc, 'git-read-project', readGitProject,
+      result => ({data: result.data, repositoryRoot: result.projectPath}));
 
     /**
      * Refers to the full screen button in the editor, not the OS-level fullscreen through

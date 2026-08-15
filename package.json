@@ -17,6 +17,7 @@
     "electron:package:dir": "electron-builder --dir"
   },
   "dependencies": {
+    "adm-zip": "^0.5.16",
     "semver": "^7.7.3"
   },
   "devDependencies": {
@@ -25,7 +26,6 @@
     "@babel/preset-react": "^7.13.13",
     "@electron/fuses": "^2.1.2",
     "@turbowarp/extensions": "github:TurboWarp/extensions#master",
-    "adm-zip": "^0.5.16",
     "autoprefixer": "^9.8.8",
     "babel-loader": "^8.4.1",
     "copy-webpack-plugin": "^6.4.1",
@@ -36,11 +36,12 @@
     "exports-loader": "0.7.0",
     "file-loader": "^6.2.0",
     "imports-loader": "0.8.0",
+    "monaco-editor-webpack-plugin": "^4.2.0",
     "postcss": "^8.4.13",
     "postcss-import": "^14.0.0",
     "postcss-loader": "^4.2.0",
     "postcss-simple-vars": "^6.0.3",
-    "scratch-gui": "github:Nitro-Bolt/scratch-gui#master",
+    "scratch-gui": "github:Nitro-Bolt/scratch-gui#develop",
     "style-loader": "^0.23.0",
     "url-loader": "^4.1.1",
     "webpack": "4.47.0",
@@ -61,7 +62,7 @@
     "email": "contact@turbowarp.org"
   },
   "main": "./src-main/entrypoint.js",
-  "desktopName":"org.nitrobolt.desktop",
+  "desktopName": "org.nitrobolt.desktop",
   "build": {
     "appId": "org.nitrobolt.desktop",
     "productName": "NitroBolt",
