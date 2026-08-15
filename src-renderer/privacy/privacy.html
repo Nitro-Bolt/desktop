@@ -1,88 +1,226 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-        color: black;
-        background-color: white;
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    html {
+      scrollbar-color: var(--interact-border) var(--background);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      background-color: var(--background);
+      color: var(--text);
+    }
+
+    a {
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --background: #fff;
+        --text: black;
+        --highlight: hsla(215, 100%, 95%, 1);
+        --accent-header: hsla(13.55, 100%, 57.45%, 0.75);
+        --interact-border: #0004;
+        --accent: hsla(13.55, 100%, 57.45%, 1);
       }
-      main {
-        padding: 20px;
-        box-sizing: border-box;
-        width: 100%;
-        min-height: 100vh;
-        border: 20px solid hsla(13.55, 100%, 57.45%, 1);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: #040404;
+        --text: white;
+        --highlight: #333;
+        --interact-border: #fff4;
+        --accent-header: hsla(13.55, 100%, 57.45%, 0.75);
+        --accent: hsla(13.55, 100%, 57.45%, 1);
       }
-      pre {
-        font-size: 0.8em;
-        overflow-x: hidden;
+    }
+
+    pre {
+      margin: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      background: var(--highlight);
+      overflow-x: hidden;
+    }
+
+    h1 {
+      margin: 0;
+    }
+
+    div.header {
+      margin: 10px;
+      margin-bottom: 0px;
+      padding: 20px;
+      border-radius: 10px;
+      background-color: var(--accent);
+      display: flex;
+      color: #fff;
+    }
+
+    div.notices {
+      margin: 10px;
+      padding: 5px 20px;
+      border-radius: 10px;
+      background: var(--highlight);
+    }
+
+    div.main-about {
+      margin: 0px;
+      padding: 0px 20px;
+      border-radius: 10px;
+    }
+
+    pre {
+      font-size: 0.8em;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    [update-checker="false"] .if-update-checker {
+      display: none;
+    }
+
+    svg {
+      margin: -4px;
+      margin-bottom: -8px;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+
+<body>
+  <script>
+    document.body.setAttribute('update-checker', PrivacyPreload.isUpdateCheckerAllowed());
+  </script>
+  <div class="header">
+    <svg version="1.1" width="48" height="48" viewBox="0 0 511.99999 512" id="svg7" sodipodi:docname="icon.svg"
+      inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+      inkscape:export-filename="../Documents/nitrobolt/desquetop/art/icon.png" inkscape:export-xdpi="96"
+      inkscape:export-ydpi="96" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+      xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg"
+      xmlns:svg="http://www.w3.org/2000/svg">
+      <defs id="defs7" />
+      <sodipodi:namedview id="namedview7" pagecolor="#505050" bordercolor="#eeeeee" borderopacity="1"
+        inkscape:showpageshadow="0" inkscape:pageopacity="0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#505050"
+        inkscape:zoom="1.4142136" inkscape:cx="149.90664" inkscape:cy="258.44753" inkscape:window-width="3440"
+        inkscape:window-height="1382" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1"
+        inkscape:current-layer="svg7" />
+      <g transform="matrix(2.2453426,0,0,2.199474,-282.88096,-139.90401)" id="g7">
+        <g stroke-miterlimit="10" id="g6">
+          <path
+            d="m 146.58514,82.73938 186.27541,-3.32635 c 0.0924,-0.0017 0.18477,-0.0025 0.27716,-0.0025 8.57309,0 15.52295,6.94986 15.52295,15.52295 V 253.7641 c 0,8.57309 -6.94986,15.52295 -15.52295,15.52295 h -27.48128 c -2.2628,0 -4.41292,0.98749 -5.88741,2.70392 l -16.31606,18.99325 c -2.94898,3.43286 -7.24923,5.40784 -11.77483,5.40784 h -63.35626 c -4.5256,0 -8.82585,-1.97498 -11.77483,-5.40784 l -16.31606,-18.99325 c -1.47449,-1.71643 -3.62462,-2.70392 -5.88742,-2.70392 h -27.48128 c -8.57309,0 -15.52295,-6.94986 -15.52295,-15.52295 V 98.25987 c 0,-8.46505 6.7821,-15.36934 15.2458,-15.52048 z"
+            fill="#e83800" fill-rule="evenodd" stroke="none" stroke-width="1" id="path1" />
+          <path
+            d="M 146.86228,63.60794 H 333.1377 c 8.57309,0 15.52295,6.94986 15.52295,15.52295 v 162.99099 c 0,8.57309 -6.94986,15.52295 -15.52295,15.52295 h -31.08809 c -2.41919,0 -4.70004,1.12803 -6.16836,3.05065 l -12.41426,16.25524 c -2.93665,3.84525 -7.49834,6.1013 -12.33671,6.1013 h -62.26056 c -4.83838,0 -9.40007,-2.25605 -12.33671,-6.1013 l -12.41426,-16.25524 c -1.46832,-1.92262 -3.74918,-3.05065 -6.16836,-3.05065 H 146.8623 c -8.57309,0 -15.52295,-6.94986 -15.52295,-15.52295 V 79.13089 c 0,-8.57309 6.94986,-15.52295 15.52295,-15.52295 z"
+            fill="#ff5726" fill-rule="evenodd" stroke="none" stroke-width="1" id="path2" />
+          <path
+            d="m 278.55219,127.57841 c -4.93302,0.30209 -7.75141,0.55441 -8.45514,0.75351 -0.10127,2.11292 1.15687,69.80384 0.75523,79.5669 -0.0995,0.59348 0.80791,4.87722 -3.93132,5.68324 -4.31177,0.58603 -7.04012,-2.81508 -7.54303,-3.72135 -1.89634,-2.84128 -33.38136,-55.04967 -37.08555,-61.19301 -0.23195,-0.38469 -0.38253,-0.0694 -0.39292,0.30321 -0.19969,7.15698 0.4133,41.09144 0.79833,43.67571 1.32074,0.75061 11.12346,-0.0161 11.83407,-0.0161 2.94197,0 4.95436,1.67418 6.27773,3.78882 0.5012,2.01509 -0.55441,3.62338 -3.17196,4.83175 -2.21419,1.10881 -33.01557,4.1778 -35.32932,4.07653 -4.52966,-0.40165 -6.91249,-2.46188 -6.79363,-6.08503 0.13474,-4.10729 4.74078,-5.39103 8.83276,-5.39103 0.49776,0 8.03462,-0.35015 8.83276,-1.05561 0,-0.6059 0.11838,-56.11359 -0.63514,-56.61822 -0.75523,-0.50292 -11.39191,-0.14933 -12.1952,-0.14933 -3.82593,0 -5.73631,-2.01337 -5.73631,-6.04012 0,-0.50292 0.21325,-3.23156 3.60622,-3.62339 1.30105,-0.30209 17.29621,-0.59061 18.29851,-0.60418 2.74142,-0.0371 6.20012,3.58046 6.80259,4.60346 0.0984,0 30.64291,51.95167 36.79826,62.89128 0.17687,0.31434 0.50729,0.54404 0.52482,0.21611 0.28939,-5.41373 0.27267,-42.65228 -0.19667,-65.14479 -0.39993,-0.0996 -6.05073,0.44791 -9.13657,0.40147 -3.08584,-0.0464 -8.96748,0.0557 -8.98896,-2.96752 -0.56483,-5.78554 4.02331,-5.58699 6.3405,-5.88908 3.72593,-0.46267 18.97171,-0.95605 30.04441,-1.9636 1.51046,-0.19911 3.11876,0.22657 4.83176,1.28389 5.21961,4.68668 -1.96532,8.08611 -4.98623,8.38649 z"
+            fill="#ff5726" fill-rule="nonzero" stroke="#ffffff" stroke-width="50" id="path3" />
+          <path
+            d="m 278.55219,127.57841 c -4.93302,0.30209 -7.75141,0.55441 -8.45514,0.75351 -0.10127,2.11292 1.15687,69.80384 0.75523,79.5669 -0.0995,0.59348 0.80791,4.87722 -3.93132,5.68324 -4.31177,0.58603 -7.04012,-2.81508 -7.54303,-3.72135 -1.89634,-2.84128 -33.38136,-55.04966 -37.08555,-61.193 -0.23195,-0.38469 -0.38253,-0.0694 -0.39292,0.3032 -0.19969,7.15698 0.4133,41.09144 0.79833,43.67571 1.32074,0.75061 11.12346,-0.0161 11.83407,-0.0161 2.94197,0 4.95436,1.67418 6.27773,3.78882 0.5012,2.01509 -0.55441,3.62338 -3.17196,4.83175 -2.21419,1.10881 -33.01557,4.1778 -35.32932,4.07653 -4.52966,-0.40165 -6.91249,-2.46188 -6.79363,-6.08503 0.13474,-4.10729 4.74078,-5.39103 8.83276,-5.39103 0.49776,0 8.03462,-0.35015 8.83276,-1.05561 0,-0.6059 0.11838,-56.11359 -0.63514,-56.61822 -0.75523,-0.50292 -11.39191,-0.14933 -12.1952,-0.14933 -3.82593,0 -5.73631,-2.01337 -5.73631,-6.04012 0,-0.50292 0.21325,-3.23156 3.60622,-3.62339 1.30105,-0.30209 17.29621,-0.59061 18.29851,-0.60418 2.74142,-0.0371 6.20012,3.58046 6.80259,4.60346 0.0984,0 30.64291,51.95166 36.79826,62.89128 0.17687,0.31434 0.50729,0.54404 0.52482,0.2161 0.28939,-5.41372 0.27266,-42.65228 -0.19667,-65.14479 -0.39993,-0.0996 -6.05073,0.44791 -9.13657,0.40147 -3.08584,-0.0464 -8.96747,0.0557 -8.98896,-2.96752 -0.56483,-5.78554 4.02331,-5.58699 6.3405,-5.88908 3.72593,-0.46267 18.97171,-0.95605 30.04441,-1.9636 1.51046,-0.19911 3.11876,0.22657 4.83176,1.28389 5.21961,4.68668 -1.96532,8.08611 -4.98623,8.38649 z"
+            fill="#ffffff" fill-rule="nonzero" stroke="#ff5726" stroke-width="30.7075" id="path4" />
+          <path
+            d="m 139.10081,79.13089 v 162.99099 c 0,4.28654 3.47493,7.76148 7.76147,7.76148 h 31.08809 c 4.83838,0 9.40006,2.25605 12.33671,6.10129 l 12.41427,16.25524 c 1.46832,1.92262 3.74918,3.05065 6.16836,3.05065 h 62.26056 c 2.41919,0 4.70003,-1.12803 6.16836,-3.05065 l 12.41427,-16.25524 c 2.93665,-3.84525 7.49834,-6.10129 12.33672,-6.10129 h 31.08809 c 4.28654,0 7.76147,-3.47493 7.76147,-7.76148 V 79.13089 c 0,-4.28655 -3.47493,-7.76147 -7.76147,-7.76147 H 146.86229 c -4.28654,0 -7.76147,3.47493 -7.76147,7.76147 z m -7.76147,0 c 0,-8.57309 6.94986,-15.52295 15.52295,-15.52295 h 186.27542 c 8.57309,0 15.52295,6.94986 15.52295,15.52295 v 162.99099 c 0,8.57309 -6.94986,15.52295 -15.52295,15.52295 h -31.08809 c -2.41919,0 -4.70004,1.12803 -6.16836,3.05065 L 283.467,276.95072 c -2.93665,3.84525 -7.49834,6.1013 -12.33671,6.1013 h -62.26056 c -4.83838,0 -9.40007,-2.25605 -12.33671,-6.1013 l -12.41426,-16.25524 c -1.46832,-1.92262 -3.74918,-3.05065 -6.16836,-3.05065 h -31.08809 c -8.57309,0 -15.52295,-6.94986 -15.52295,-15.52295 z"
+            fill-opacity="0.2" fill="#ffffff" fill-rule="nonzero" stroke="none" stroke-width="1" id="path5" />
+          <path
+            d="m 278.55219,127.57841 c -4.93302,0.30209 -7.75141,0.55441 -8.45514,0.75351 -0.10127,2.11292 1.15687,69.80384 0.75523,79.5669 -0.0995,0.59348 0.8079,4.87722 -3.93132,5.68324 -4.31177,0.58603 -7.04012,-2.81508 -7.54303,-3.72135 -2.01509,-3.0192 -37.44053,-61.78176 -37.44053,-61.78176 -0.30209,4.43011 0.3553,41.84884 0.76038,44.56767 1.32074,0.75061 11.12346,-0.0161 11.83407,-0.0161 2.94197,0 4.95436,1.67418 6.27773,3.78883 0.5012,2.01509 -0.55441,3.62338 -3.17196,4.83175 -2.21419,1.10881 -33.01557,4.1778 -35.32932,4.07653 -4.52966,-0.40165 -6.91248,-2.46188 -6.79363,-6.08503 0.13474,-4.10729 4.74078,-5.39103 8.83276,-5.39103 0.49776,0 8.03462,-0.35015 8.83276,-1.05561 0,-0.6059 0.11838,-56.11359 -0.63514,-56.61822 -0.75523,-0.50292 -11.39191,-0.14933 -12.1952,-0.14933 -3.82593,0 -5.73631,-2.01337 -5.73631,-6.04012 0,-0.50292 0.21325,-3.23156 3.60622,-3.62339 1.30105,-0.30209 17.29621,-0.59061 18.29851,-0.60418 2.74142,-0.0371 6.20012,3.58046 6.80259,4.60346 0.10127,0 32.42339,54.98014 37.26716,63.73051 0.34568,-1.47136 0.35702,-41.91294 -0.14074,-65.76791 -0.39993,-0.0996 -6.05074,0.44791 -9.13657,0.40147 -3.08584,-0.0464 -8.96748,0.0557 -8.98896,-2.96753 -0.56483,-5.78554 4.02331,-5.58699 6.3405,-5.88908 3.72593,-0.46267 18.97171,-0.95605 30.04441,-1.9636 1.51046,-0.19911 3.11876,0.22657 4.83176,1.28389 5.21961,4.68668 -1.96532,8.08611 -4.98623,8.38649 z"
+            fill="#ffffff" fill-rule="nonzero" stroke="none" stroke-width="1" id="path6" />
+        </g>
+      </g>
+    </svg>
+    <h1> Privacy Policy</h1>
+  </div>
+
+  <div class="notices">
+    <p><i>Updated August 6, 2026</i></p>
+
+    <p>A comprehensive privacy policy for all of NitroBolt can be found at <a
+        href="https://nitrobolt.org/privacy.html">https://nitrobolt.org/privacy.html</a>. Here, we have simplified it
+      down to just the parts relevant to the desktop app.</p>
+  </div>
+  <div class="main-about">
+    <h2 class="if-update-checker">Update Checker</h2>
+    <p class="if-update-checker">The desktop app contains an update checker which <a href="#"
+        class="open-desktop-settings">can be disabled in desktop settings</a>.</p>
+
+    <h2>Abuse</h2>
+    <p>When a service is being abused, we may take measures to collect information to protect the service. For example,
+      we could log IP addresses making excessive amounts of requests. We strive to do this carefully so that no one is
+      caught in the crossfire. Data is kept only as long as needed to stop the abuse.</p>
+
+    <h2>Rich Presence</h2>
+    <p>The desktop app has a disabled-by-default option to enable "Rich Presence" which shares the name of the project
+      you have open and how long it has been open with chat apps running on your computer, which may be displayed on
+      your public profile. This <a href="#" class="open-desktop-settings">can be configured in desktop settings</a>.</p>
+
+    <script>
+      for (const el of document.querySelectorAll('.open-desktop-settings')) {
+        el.addEventListener('click', () => {
+          PrivacyPreload.openDesktopSettings();
+        });
       }
-      h1 {
-        margin-top: 0;
-      }
+    </script>
 
-      [update-checker="false"] .if-update-checker {
-        display: none;
-      }
-    </style>
-  </head>
-  <body>
-    <main>
-      <script>
-        document.body.setAttribute('update-checker', PrivacyPreload.isUpdateCheckerAllowed());
-      </script>
+    <h2>Loading projects</h2>
+    <p>When you load a project from another website, you are subject to the privacy practices of that website. For
+      example, when loading projects from Scratch, you are subject to the <a
+        href="https://scratch.mit.edu/privacy_policy">Scratch privacy policy</a>. When loading projects from Scratch
+      specifically, the project ID will also be shared with TurboWarp as part of Scratch's API does not allow direct
+      access. We may briefly log the project ID for caching.</p>
 
-      <h1>Privacy Policy</h1>
+    <h2>Cloud variables</h2>
+    <p>When connecting to our cloud variable servers, the project ID and username may be logged for 14 days. Data in
+      cloud variables is public and sent to anyone else connected at the same time. Custom cloud variable servers are
+      outside of our control.</p>
 
-      <p><i>Updated September 27, 2025</i></p>
+    <h2>Extensions</h2>
+    <p>Some extensions must communicate with external APIs to function. For example, the translate and text-to-speech
+      extensions rely on the Scratch API, which is covered by the <a
+        href="https://scratch.mit.edu/privacy_policy">Scratch
+        privacy policy</a>. To improve performance, some
+      extensions access TurboWarp's APIs instead where both the request (for example, the text being translated) and the
+      result after forwarding to Scratch (for example, the translated version of the text) may be cached.</p>
+    <p>Most extensions on the <a href="https://extensions.turbowarp.org/">official extension gallery</a> will ask for
+      permission when the project attempts to use the extension to access an untrusted website, however we cannot
+      guarantee this is 100% reliable.</p>
+    <p>When loading a custom extension from a place other than the official gallery such as a URL or file on your
+      computer, the editor will ask for permission to load the extension. If you approve this dialog, the extension can
+      bypass the permission dialogs that official extensions show.</p>
 
-      <p>A comprehensive privacy policy for all of NitroBolt can be found at <a href="https://nitrobolt.org/privacy.html">https://nitrobolt.org/privacy.html</a>. Here, we have simplified it down to just the parts relevant to the desktop app.</p>
+    <h2>NitroBolt Packager</h2>
+    <p>The integrated copy of the NitroBolt Packager may download files such as Electron binaries from a server
+      controlled by TurboWarp. These downloads will be cached after being downloaded.</p>
+    <p>When packaging a project using custom extensions, the packager may access those websites to download the
+      extensions.</p>
 
-      <h2 class="if-update-checker">Update Checker</h2>
-      <p class="if-update-checker">The desktop app contains an update checker which <a href="#" class="open-desktop-settings">can be disabled in desktop settings</a>.</p>
+    <h2>Projects generated by the NitroBolt Packager</h2>
+    <p>Packaged projects include all scripts, costumes, and sounds to run the project. The packager tries to include all
+      custom extensions too, but in some cases, the packaged project may need to download certain extensions each time
+      it runs.</p>
+    <p>Advanced features such as third-party custom extensions, custom cloud host, custom JS, and custom CSS are outside
+      of our control.</p>
+    <p>Note that, unlike the TurboWarp editor, custom extensions in packaged projects will not ask for permission before
+      contacting websites.</p>
+    <p>You are responsible for informing end users about the privacy practices of the files you distribute. Do not link
+      to this document as your project's privacy policy as it may change in the future. You must write your own.</p>
+  </div>
+  <div class="notices">
+    <h2>Contact</h2>
+    <p>Any concerns related to privacy or any other matter should be sent to: <a
+        href="mailto:contact@nitrobolt.org">contact@nitrobolt.org</a></p>
+  </div>
+</body>
 
-      <h2>Abuse</h2>
-      <p>When a service is being abused, we may take measures to collect information to protect the service. For example, we could log IP addresses making excessive amounts of requests. We strive to do this carefully so that no one is caught in the crossfire. Data is kept only as long as needed to stop the abuse.</p>
-
-      <h2>Rich Presence</h2>
-      <p>The desktop app has a disabled-by-default option to enable "Rich Presence" which shares the name of the project you have open and how long it has been open with chat apps running on your computer, which may be displayed on your public profile. This <a href="#" class="open-desktop-settings">can be configured in desktop settings</a>.</p>
-
-      <script>
-        for (const el of document.querySelectorAll('.open-desktop-settings')) {
-          el.addEventListener('click', () => {
-            PrivacyPreload.openDesktopSettings();
-          });
-        }
-      </script>
-
-      <h2>Loading projects</h2>
-      <p>When you load a project from another website, you are subject to the privacy practices of that website. For example, when loading projects from Scratch, you are subject to the <a href="https://scratch.mit.edu/privacy_policy">Scratch privacy policy</a>. When loading projects from Scratch specifically, the project ID will also be shared with TurboWarp as part of Scratch's API does not allow direct access. We may briefly log the project ID for caching.</p>
-
-      <h2>Cloud variables</h2>
-      <p>When connecting to our cloud variable servers, the project ID and username may be logged for 14 days. Data in cloud variables is public and sent to anyone else connected at the same time. Custom cloud variable servers are outside of our control.</p>
-
-      <h2>Extensions</h2>
-      <p>Some extensions must communicate with external APIs to function. For example, the translate and text-to-speech extensions rely on the Scratch API, which is covered by the <a href="https://scratch.mit.edu/privacy_policy">Scratch privacy policy</a>. To improve performance, some extensions access TurboWarp's APIs instead where both the request (for example, the text being translated) and the result after forwarding to Scratch (for example, the translated version of the text) may be cached.</p>
-      <p>Most extensions on the <a href="https://extensions.turbowarp.org/">official extension gallery</a> will ask for permission when the project attempts to use the extension to access an untrusted website, however we cannot guarantee this is 100% reliable.</p>
-      <p>When loading a custom extension from a place other than the official gallery such as a URL or file on your computer, the editor will ask for permission to load the extension. If you approve this dialog, the extension can bypass the permission dialogs that official extensions show.</p>
-
-      <h2>NitroBolt Packager</h2>
-      <p>The integrated copy of the NitroBolt Packager may download files such as Electron binaries from a server controlled by TurboWarp. These downloads will be cached after being downloaded.</p>
-      <p>When packaging a project using custom extensions, the packager may access those websites to download the extensions.</p>
-
-      <h2>Projects generated by the NitroBolt Packager</h2>
-      <p>Packaged projects include all scripts, costumes, and sounds to run the project. The packager tries to include all custom extensions too, but in some cases, the packaged project may need to download certain extensions each time it runs.</p>
-      <p>Advanced features such as third-party custom extensions, custom cloud host, custom JS, and custom CSS are outside of our control.</p>
-      <p>Note that, unlike the TurboWarp editor, custom extensions in packaged projects will not ask for permission before contacting websites.</p>
-      <p>You are responsible for informing end users about the privacy practices of the files you distribute. Do not link to this document as your project's privacy policy as it may change in the future. You must write your own.</p>
-
-      <h2>Contact</h2>
-      <p>Any concerns related to privacy or any other matter should be sent to: <a href="mailto:contact@turbowarp.org">contact@turbowarp.org</a></p>
-    </main>
-  </body>
 </html>

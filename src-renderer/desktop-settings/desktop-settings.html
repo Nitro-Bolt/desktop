@@ -1,374 +1,562 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-        color: black;
-        background-color: white;
-        accent-color: #ff5726;
-      }
-      main {
-        padding: 20px;
-        box-sizing: border-box;
-        width: 100%;
-        min-height: 100vh;
-        border: 20px solid hsla(13.55, 100%, 57.45%, 1);
-      }
-      .title {
-        margin-top: 0;
-      }
-      label {
-        display: block;
-        margin: 0.5rem 0;
-      }
-      .label {
-        font-weight: bold;
-        margin-bottom: 0.25rem;
-      }
-      select {
-        width: 100%;
-        font: inherit;
-      }
-      button {
-        display: block;
-        cursor: pointer;
-        font: inherit;
-        margin: 0.5rem 0;
-      }
-      .button-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        margin: 0.5rem 0;
-      }
-      .button-row button {
-        margin: 0;
-      }
-      .warning {
-        background-color: yellow;
-        color: black;
-        border: 1px solid black;
-        border-radius: 0.25rem;
-        padding: 0.5rem;
-      }
 
-      [hidden] {
-        display: none !important;
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    html {
+      scrollbar-color: var(--interact-border) var(--background);
+    }
+
+    label {
+      display: block;
+      margin: 0.5rem 0;
+    }
+
+    .label {
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+    }
+
+    select {
+      width: 100%;
+      font: inherit;
+    }
+
+    button {
+      display: block;
+      cursor: pointer;
+      font: inherit;
+      margin: 0.5rem 0;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      margin: 0.5rem 0;
+    }
+
+    .button-row button {
+      margin: 0;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      background-color: var(--background);
+      color: var(--text);
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --background: #fff;
+        --text: black;
+        --highlight: hsla(215, 100%, 95%, 1);
+        --interact-border: #0004;
+        --accent-header: hsla(13.55, 100%, 57.45%, 0.75);
+        --accent: hsla(13.55, 100%, 57.45%, 1);
+        --accent-but-sooo-evil: #f00;
       }
-    </style>
-  </head>
-  <body>
-    <main>
-      <script>
-        const {locale, strings, settings} = DesktopSettingsPreload.init();
-        document.documentElement.lang = locale;
-      </script>
+    }
 
-      <h1 class="title"></h1>
-      <script>document.querySelector('.title').textContent = strings['desktop-settings.title'];</script>
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: #040404;
+        --text: white;
+        --highlight: #333;
+        --interact-border: #fff4;
+        --accent-header: hsla(13.55, 100%, 57.45%, 0.75);
+        --accent: hsla(13.55, 100%, 57.45%, 1);
+        --accent-but-sooo-evil: #ff0;
+      }
+    }
 
-      <p class="update-checker-disabled"></p>
-      <label class="update-checker-outer">
-        <div class="label update-checker-label"></div>
-        <select class="update-checker-select" autocomplete="off">
-          <option value="unstable"></option>
-          <option value="stable"></option>
-          <option value="security"></option>
-          <option value="never"></option>
-        </select>
-      </label>
-      <div class="warning update-checker-warning"></div>
-      <script>
-        const updateCheckerDisabledMessage = document.querySelector('.update-checker-disabled');
-        const updateCheckerOuter = document.querySelector('.update-checker-outer');
-        const updateCheckerWarning = document.querySelector('.update-checker-warning');
+    button,
+    select {
+      background-color: var(--highlight);
+      color: var(--text);
+      border-style: solid;
+      border-width: 1px;
+      border-color: var(--interact-border);
+      border-radius: 10px;
+      padding: 5px;
+      padding-top: 6px;
+    }
 
-        updateCheckerDisabledMessage.hidden = settings.updateCheckerAllowed;
-        updateCheckerOuter.hidden = !settings.updateCheckerAllowed;
-        updateCheckerWarning.hidden = !settings.updateCheckerAllowed;
+    pre {
+      margin: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      background: var(--highlight);
+      overflow-x: hidden;
+    }
 
-        if (settings.updateCheckerAllowed) {
-          const updateCheckerSelect = document.querySelector('.update-checker-select');
-          updateCheckerSelect.onchange = () => {
-            DesktopSettingsPreload.setUpdateChecker(updateCheckerSelect.value);
-            updateCheckerWarning.hidden = updateCheckerSelect.value !== 'never';
-          };
-          updateCheckerSelect.value = settings.updateChecker;
+    main {
+      box-sizing: border-box;
+      width: 100%;
+      /* border: 20px solid hsla(13.55, 100%, 57.45%, 1); */
+    }
+
+    h1 {
+      margin: 0;
+    }
+
+    div.header {
+      margin: 10px;
+      margin-bottom: 0px;
+      padding: 20px;
+      border-radius: 10px;
+      background-color: var(--accent);
+      color: #fff;
+      display: flex;
+    }
+
+    div.important {
+      margin: 10px;
+      margin-bottom: 0px;
+      padding: 20px;
+      padding-bottom: 17.5px;
+      border-radius: 10px;
+      background-color: var(--highlight);
+    }
+
+    .warning {
+      background-color: var(--highlight);
+      border-color: var(--text);
+      color: var(--accent-but-sooo-evil);
+      margin: -5px;
+      margin-top: -34px;
+      margin-bottom: 12.5px;
+      padding: 10px 20px;
+      padding-top: 30px;
+      border-radius: 10px;
+    }
+
+    div.section {
+      margin: 10px 10px;
+      padding: 10px 20px;
+      border-radius: 10px;
+      background-color: var(--highlight);
+    }
+
+    div.section2 {
+      margin: 10px 10px;
+      padding: 0px 20px;
+      border-radius: 10px;
+    }
+
+    p {
+      margin: 2.5px 0 2.5px 0
+    }
+
+    a {
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    svg {
+      margin: -4px;
+      margin-bottom: -8px;
+      margin-right: 6px;
+    }
+
+    /* Selectors REMAKE ‼️ */
+    select,
+    ::picker(select) {
+      appearance: base-select;
+    }
+
+    select:open {
+      border-radius: 10px 10px 0px 0px;
+      border-bottom: 0px;
+      /* background-color: var(--accent-header); */
+    }
+
+    ::picker(select) {
+      margin: 0;
+      border-color: var(--interact-border);
+      background-color: var(--highlight);
+      border-top: 0px;
+      border-radius: 0px 0px 10px 10px;
+      color: var(--text);
+    }
+
+    .crash-dumps-select::picker(select) {
+      bottom: -77.5px;
+    }
+
+    option:nth-of-type(odd) {
+      background-color: var(--background);
+    }
+
+    option:hover {
+      background-color: var(--accent);
+      color: #fff;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    <svg version="1.1" width="48" height="48" viewBox="0 0 511.99999 512" id="svg7" sodipodi:docname="icon.svg"
+      inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+      inkscape:export-filename="../Documents/nitrobolt/desquetop/art/icon.png" inkscape:export-xdpi="96"
+      inkscape:export-ydpi="96" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+      xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg"
+      xmlns:svg="http://www.w3.org/2000/svg">
+      <defs id="defs7" />
+      <sodipodi:namedview id="namedview7" pagecolor="#505050" bordercolor="#eeeeee" borderopacity="1"
+        inkscape:showpageshadow="0" inkscape:pageopacity="0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#505050"
+        inkscape:zoom="1.4142136" inkscape:cx="149.90664" inkscape:cy="258.44753" inkscape:window-width="3440"
+        inkscape:window-height="1382" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1"
+        inkscape:current-layer="svg7" />
+      <g transform="matrix(2.2453426,0,0,2.199474,-282.88096,-139.90401)" id="g7">
+        <g stroke-miterlimit="10" id="g6">
+          <path
+            d="m 146.58514,82.73938 186.27541,-3.32635 c 0.0924,-0.0017 0.18477,-0.0025 0.27716,-0.0025 8.57309,0 15.52295,6.94986 15.52295,15.52295 V 253.7641 c 0,8.57309 -6.94986,15.52295 -15.52295,15.52295 h -27.48128 c -2.2628,0 -4.41292,0.98749 -5.88741,2.70392 l -16.31606,18.99325 c -2.94898,3.43286 -7.24923,5.40784 -11.77483,5.40784 h -63.35626 c -4.5256,0 -8.82585,-1.97498 -11.77483,-5.40784 l -16.31606,-18.99325 c -1.47449,-1.71643 -3.62462,-2.70392 -5.88742,-2.70392 h -27.48128 c -8.57309,0 -15.52295,-6.94986 -15.52295,-15.52295 V 98.25987 c 0,-8.46505 6.7821,-15.36934 15.2458,-15.52048 z"
+            fill="#e83800" fill-rule="evenodd" stroke="none" stroke-width="1" id="path1" />
+          <path
+            d="M 146.86228,63.60794 H 333.1377 c 8.57309,0 15.52295,6.94986 15.52295,15.52295 v 162.99099 c 0,8.57309 -6.94986,15.52295 -15.52295,15.52295 h -31.08809 c -2.41919,0 -4.70004,1.12803 -6.16836,3.05065 l -12.41426,16.25524 c -2.93665,3.84525 -7.49834,6.1013 -12.33671,6.1013 h -62.26056 c -4.83838,0 -9.40007,-2.25605 -12.33671,-6.1013 l -12.41426,-16.25524 c -1.46832,-1.92262 -3.74918,-3.05065 -6.16836,-3.05065 H 146.8623 c -8.57309,0 -15.52295,-6.94986 -15.52295,-15.52295 V 79.13089 c 0,-8.57309 6.94986,-15.52295 15.52295,-15.52295 z"
+            fill="#ff5726" fill-rule="evenodd" stroke="none" stroke-width="1" id="path2" />
+          <path
+            d="m 278.55219,127.57841 c -4.93302,0.30209 -7.75141,0.55441 -8.45514,0.75351 -0.10127,2.11292 1.15687,69.80384 0.75523,79.5669 -0.0995,0.59348 0.80791,4.87722 -3.93132,5.68324 -4.31177,0.58603 -7.04012,-2.81508 -7.54303,-3.72135 -1.89634,-2.84128 -33.38136,-55.04967 -37.08555,-61.19301 -0.23195,-0.38469 -0.38253,-0.0694 -0.39292,0.30321 -0.19969,7.15698 0.4133,41.09144 0.79833,43.67571 1.32074,0.75061 11.12346,-0.0161 11.83407,-0.0161 2.94197,0 4.95436,1.67418 6.27773,3.78882 0.5012,2.01509 -0.55441,3.62338 -3.17196,4.83175 -2.21419,1.10881 -33.01557,4.1778 -35.32932,4.07653 -4.52966,-0.40165 -6.91249,-2.46188 -6.79363,-6.08503 0.13474,-4.10729 4.74078,-5.39103 8.83276,-5.39103 0.49776,0 8.03462,-0.35015 8.83276,-1.05561 0,-0.6059 0.11838,-56.11359 -0.63514,-56.61822 -0.75523,-0.50292 -11.39191,-0.14933 -12.1952,-0.14933 -3.82593,0 -5.73631,-2.01337 -5.73631,-6.04012 0,-0.50292 0.21325,-3.23156 3.60622,-3.62339 1.30105,-0.30209 17.29621,-0.59061 18.29851,-0.60418 2.74142,-0.0371 6.20012,3.58046 6.80259,4.60346 0.0984,0 30.64291,51.95167 36.79826,62.89128 0.17687,0.31434 0.50729,0.54404 0.52482,0.21611 0.28939,-5.41373 0.27267,-42.65228 -0.19667,-65.14479 -0.39993,-0.0996 -6.05073,0.44791 -9.13657,0.40147 -3.08584,-0.0464 -8.96748,0.0557 -8.98896,-2.96752 -0.56483,-5.78554 4.02331,-5.58699 6.3405,-5.88908 3.72593,-0.46267 18.97171,-0.95605 30.04441,-1.9636 1.51046,-0.19911 3.11876,0.22657 4.83176,1.28389 5.21961,4.68668 -1.96532,8.08611 -4.98623,8.38649 z"
+            fill="#ff5726" fill-rule="nonzero" stroke="#ffffff" stroke-width="50" id="path3" />
+          <path
+            d="m 278.55219,127.57841 c -4.93302,0.30209 -7.75141,0.55441 -8.45514,0.75351 -0.10127,2.11292 1.15687,69.80384 0.75523,79.5669 -0.0995,0.59348 0.80791,4.87722 -3.93132,5.68324 -4.31177,0.58603 -7.04012,-2.81508 -7.54303,-3.72135 -1.89634,-2.84128 -33.38136,-55.04966 -37.08555,-61.193 -0.23195,-0.38469 -0.38253,-0.0694 -0.39292,0.3032 -0.19969,7.15698 0.4133,41.09144 0.79833,43.67571 1.32074,0.75061 11.12346,-0.0161 11.83407,-0.0161 2.94197,0 4.95436,1.67418 6.27773,3.78882 0.5012,2.01509 -0.55441,3.62338 -3.17196,4.83175 -2.21419,1.10881 -33.01557,4.1778 -35.32932,4.07653 -4.52966,-0.40165 -6.91249,-2.46188 -6.79363,-6.08503 0.13474,-4.10729 4.74078,-5.39103 8.83276,-5.39103 0.49776,0 8.03462,-0.35015 8.83276,-1.05561 0,-0.6059 0.11838,-56.11359 -0.63514,-56.61822 -0.75523,-0.50292 -11.39191,-0.14933 -12.1952,-0.14933 -3.82593,0 -5.73631,-2.01337 -5.73631,-6.04012 0,-0.50292 0.21325,-3.23156 3.60622,-3.62339 1.30105,-0.30209 17.29621,-0.59061 18.29851,-0.60418 2.74142,-0.0371 6.20012,3.58046 6.80259,4.60346 0.0984,0 30.64291,51.95166 36.79826,62.89128 0.17687,0.31434 0.50729,0.54404 0.52482,0.2161 0.28939,-5.41372 0.27266,-42.65228 -0.19667,-65.14479 -0.39993,-0.0996 -6.05073,0.44791 -9.13657,0.40147 -3.08584,-0.0464 -8.96747,0.0557 -8.98896,-2.96752 -0.56483,-5.78554 4.02331,-5.58699 6.3405,-5.88908 3.72593,-0.46267 18.97171,-0.95605 30.04441,-1.9636 1.51046,-0.19911 3.11876,0.22657 4.83176,1.28389 5.21961,4.68668 -1.96532,8.08611 -4.98623,8.38649 z"
+            fill="#ffffff" fill-rule="nonzero" stroke="#ff5726" stroke-width="30.7075" id="path4" />
+          <path
+            d="m 139.10081,79.13089 v 162.99099 c 0,4.28654 3.47493,7.76148 7.76147,7.76148 h 31.08809 c 4.83838,0 9.40006,2.25605 12.33671,6.10129 l 12.41427,16.25524 c 1.46832,1.92262 3.74918,3.05065 6.16836,3.05065 h 62.26056 c 2.41919,0 4.70003,-1.12803 6.16836,-3.05065 l 12.41427,-16.25524 c 2.93665,-3.84525 7.49834,-6.10129 12.33672,-6.10129 h 31.08809 c 4.28654,0 7.76147,-3.47493 7.76147,-7.76148 V 79.13089 c 0,-4.28655 -3.47493,-7.76147 -7.76147,-7.76147 H 146.86229 c -4.28654,0 -7.76147,3.47493 -7.76147,7.76147 z m -7.76147,0 c 0,-8.57309 6.94986,-15.52295 15.52295,-15.52295 h 186.27542 c 8.57309,0 15.52295,6.94986 15.52295,15.52295 v 162.99099 c 0,8.57309 -6.94986,15.52295 -15.52295,15.52295 h -31.08809 c -2.41919,0 -4.70004,1.12803 -6.16836,3.05065 L 283.467,276.95072 c -2.93665,3.84525 -7.49834,6.1013 -12.33671,6.1013 h -62.26056 c -4.83838,0 -9.40007,-2.25605 -12.33671,-6.1013 l -12.41426,-16.25524 c -1.46832,-1.92262 -3.74918,-3.05065 -6.16836,-3.05065 h -31.08809 c -8.57309,0 -15.52295,-6.94986 -15.52295,-15.52295 z"
+            fill-opacity="0.2" fill="#ffffff" fill-rule="nonzero" stroke="none" stroke-width="1" id="path5" />
+          <path
+            d="m 278.55219,127.57841 c -4.93302,0.30209 -7.75141,0.55441 -8.45514,0.75351 -0.10127,2.11292 1.15687,69.80384 0.75523,79.5669 -0.0995,0.59348 0.8079,4.87722 -3.93132,5.68324 -4.31177,0.58603 -7.04012,-2.81508 -7.54303,-3.72135 -2.01509,-3.0192 -37.44053,-61.78176 -37.44053,-61.78176 -0.30209,4.43011 0.3553,41.84884 0.76038,44.56767 1.32074,0.75061 11.12346,-0.0161 11.83407,-0.0161 2.94197,0 4.95436,1.67418 6.27773,3.78883 0.5012,2.01509 -0.55441,3.62338 -3.17196,4.83175 -2.21419,1.10881 -33.01557,4.1778 -35.32932,4.07653 -4.52966,-0.40165 -6.91248,-2.46188 -6.79363,-6.08503 0.13474,-4.10729 4.74078,-5.39103 8.83276,-5.39103 0.49776,0 8.03462,-0.35015 8.83276,-1.05561 0,-0.6059 0.11838,-56.11359 -0.63514,-56.61822 -0.75523,-0.50292 -11.39191,-0.14933 -12.1952,-0.14933 -3.82593,0 -5.73631,-2.01337 -5.73631,-6.04012 0,-0.50292 0.21325,-3.23156 3.60622,-3.62339 1.30105,-0.30209 17.29621,-0.59061 18.29851,-0.60418 2.74142,-0.0371 6.20012,3.58046 6.80259,4.60346 0.10127,0 32.42339,54.98014 37.26716,63.73051 0.34568,-1.47136 0.35702,-41.91294 -0.14074,-65.76791 -0.39993,-0.0996 -6.05074,0.44791 -9.13657,0.40147 -3.08584,-0.0464 -8.96748,0.0557 -8.98896,-2.96753 -0.56483,-5.78554 4.02331,-5.58699 6.3405,-5.88908 3.72593,-0.46267 18.97171,-0.95605 30.04441,-1.9636 1.51046,-0.19911 3.11876,0.22657 4.83176,1.28389 5.21961,4.68668 -1.96532,8.08611 -4.98623,8.38649 z"
+            fill="#ffffff" fill-rule="nonzero" stroke="none" stroke-width="1" id="path6" />
+        </g>
+      </g>
+    </svg>
+    <h1 class="title"></h1>
+  </div>
+  <script>
+    const { locale, strings, settings } = DesktopSettingsPreload.init();
+    document.documentElement.lang = locale;
+  </script>
+
+  <script>document.querySelector('.title').textContent = strings['desktop-settings.title'];</script>
+  <div class="section">
+    <p class="update-checker-disabled"></p>
+    <label class="update-checker-outer">
+      <div class="label update-checker-label"></div>
+      <select class="update-checker-select" autocomplete="off">
+        <option value="unstable"></option>
+        <option value="stable"></option>
+        <option value="security"></option>
+        <option value="never"></option>
+      </select>
+    </label>
+    <div class="warning update-checker-warning"></div>
+    <script>
+      const updateCheckerDisabledMessage = document.querySelector('.update-checker-disabled');
+      const updateCheckerOuter = document.querySelector('.update-checker-outer');
+      const updateCheckerWarning = document.querySelector('.update-checker-warning');
+
+      updateCheckerDisabledMessage.hidden = settings.updateCheckerAllowed;
+      updateCheckerOuter.hidden = !settings.updateCheckerAllowed;
+      updateCheckerWarning.hidden = !settings.updateCheckerAllowed;
+
+      if (settings.updateCheckerAllowed) {
+        const updateCheckerSelect = document.querySelector('.update-checker-select');
+        updateCheckerSelect.onchange = () => {
+          DesktopSettingsPreload.setUpdateChecker(updateCheckerSelect.value);
           updateCheckerWarning.hidden = updateCheckerSelect.value !== 'never';
+        };
+        updateCheckerSelect.value = settings.updateChecker;
+        updateCheckerWarning.hidden = updateCheckerSelect.value !== 'never';
 
-          document.querySelector('.update-checker-label').textContent = strings['desktop-settings.update-checker'];
-          updateCheckerSelect.querySelector('[value=unstable]').textContent = strings['desktop-settings.notify-unstable'];
-          updateCheckerSelect.querySelector('[value=stable]').textContent = strings['desktop-settings.notify-stable'];
-          updateCheckerSelect.querySelector('[value=security]').textContent = strings['desktop-settings.notify-security'];
-          updateCheckerSelect.querySelector('[value=never]').textContent = strings['desktop-settings.notify-never'];
-          updateCheckerWarning.textContent = strings['desktop-settings.disabled-updates'];
-        } else {
-          updateCheckerDisabledMessage.textContent = strings['desktop-settings.update-checker-not-allowed'];
+        document.querySelector('.update-checker-label').textContent = strings['desktop-settings.update-checker'];
+        updateCheckerSelect.querySelector('[value=unstable]').textContent = strings['desktop-settings.notify-unstable'];
+        updateCheckerSelect.querySelector('[value=stable]').textContent = strings['desktop-settings.notify-stable'];
+        updateCheckerSelect.querySelector('[value=security]').textContent = strings['desktop-settings.notify-security'];
+        updateCheckerSelect.querySelector('[value=never]').textContent = strings['desktop-settings.notify-never'];
+        updateCheckerWarning.textContent = strings['desktop-settings.disabled-updates'];
+      } else {
+        updateCheckerDisabledMessage.textContent = strings['desktop-settings.update-checker-not-allowed'];
+      }
+    </script>
+  </div>
+  <div class="section2">
+    <label>
+      <div class="label selected-microphone-label"></div>
+      <select class="selected-microphone-select" autocomplete="off">
+        <option selected disabled></option>
+      </select>
+      <script>
+        const selectedMicrophoneSelect = document.querySelector('.selected-microphone-select');
+        selectedMicrophoneSelect.onchange = () => {
+          DesktopSettingsPreload.setMicrophone(selectedMicrophoneSelect.value);
+          mediaDeviceWarning.hidden = false;
+        };
+
+        document.querySelector('.selected-microphone-label').textContent = strings['desktop-settings.microphone'];
+        selectedMicrophoneSelect.firstChild.textContent = strings['desktop-settings.loading'];
+      </script>
+    </label>
+
+    <label>
+      <div class="label selected-camera-label"></div>
+      <select class="selected-camera-select" autocomplete="off">
+        <option selected disabled></option>
+      </select>
+      <script>
+        const selectedCameraSelect = document.querySelector('.selected-camera-select');
+        selectedCameraSelect.onchange = () => {
+          DesktopSettingsPreload.setCamera(selectedCameraSelect.value);
+          mediaDeviceWarning.hidden = false;
+        };
+        selectedCameraSelect.value = settings.microphone;
+
+        document.querySelector('.selected-camera-label').textContent = strings['desktop-settings.camera'];
+        selectedCameraSelect.firstChild.textContent = strings['desktop-settings.loading'];
+      </script>
+    </label>
+
+    <div class="warning media-device-warning" hidden></div>
+
+    <script>
+      const mediaDeviceWarning = document.querySelector('.media-device-warning');
+      mediaDeviceWarning.textContent = strings['desktop-settings.media-devices-changed'];
+
+      const createStatusMessageOption = (text) => {
+        const option = document.createElement('option');
+        option.selected = true;
+        option.disabled = true;
+        option.textContent = text;
+        return option;
+      };
+
+      const addLoadingOption = (element) => {
+        while (element.firstChild) {
+          element.removeChild(element.firstChild);
         }
-      </script>
+        element.appendChild(createStatusMessageOption(strings['desktop-settings.loading']));
+      };
 
-      <label>
-        <div class="label selected-microphone-label"></div>
-        <select class="selected-microphone-select" autocomplete="off">
-          <option selected disabled></option>
-        </select>
-        <script>
-          const selectedMicrophoneSelect = document.querySelector('.selected-microphone-select');
-          selectedMicrophoneSelect.onchange = () => {
-            DesktopSettingsPreload.setMicrophone(selectedMicrophoneSelect.value);
-            mediaDeviceWarning.hidden = false;
-          };
+      const addOptions = (element, selected, devices) => {
+        while (element.firstChild) {
+          element.removeChild(element.firstChild);
+        }
 
-          document.querySelector('.selected-microphone-label').textContent = strings['desktop-settings.microphone'];
-          selectedMicrophoneSelect.firstChild.textContent = strings['desktop-settings.loading'];
-        </script>
-      </label>
-
-      <label>
-        <div class="label selected-camera-label"></div>
-        <select class="selected-camera-select" autocomplete="off">
-          <option selected disabled></option>
-        </select>
-        <script>
-          const selectedCameraSelect = document.querySelector('.selected-camera-select');
-          selectedCameraSelect.onchange = () => {
-            DesktopSettingsPreload.setCamera(selectedCameraSelect.value);
-            mediaDeviceWarning.hidden = false;
-          };
-          selectedCameraSelect.value = settings.microphone;
-
-          document.querySelector('.selected-camera-label').textContent = strings['desktop-settings.camera'];
-          selectedCameraSelect.firstChild.textContent = strings['desktop-settings.loading'];
-        </script>
-      </label>
-
-      <div class="warning media-device-warning" hidden></div>
-
-      <script>
-        const mediaDeviceWarning = document.querySelector('.media-device-warning');
-        mediaDeviceWarning.textContent = strings['desktop-settings.media-devices-changed'];
-
-        const createStatusMessageOption = (text) => {
-          const option = document.createElement('option');
-          option.selected = true;
-          option.disabled = true;
-          option.textContent = text;
-          return option;
-        };
-
-        const addLoadingOption = (element) => {
-          while (element.firstChild) {
-            element.removeChild(element.firstChild);
+        if (devices.length === 0) {
+          element.appendChild(createStatusMessageOption(strings['desktop-settings.no-devices']));
+        } else {
+          for (const device of devices) {
+            const option = document.createElement('option');
+            option.value = device.deviceId;
+            option.textContent = device.label;
+            element.appendChild(option);
           }
-          element.appendChild(createStatusMessageOption(strings['desktop-settings.loading']));
-        };
-
-        const addOptions = (element, selected, devices) => {
-          while (element.firstChild) {
-            element.removeChild(element.firstChild);
+          if (selected) {
+            element.value = selected;
           }
+        }
+      };
 
-          if (devices.length === 0) {
-            element.appendChild(createStatusMessageOption(strings['desktop-settings.no-devices']));
-          } else {
-            for (const device of devices) {
-              const option = document.createElement('option');
-              option.value = device.deviceId;
-              option.textContent = device.label;
-              element.appendChild(option);
-            }
-            if (selected) {
-              element.value = selected;
-            }
-          }
-        };
+      const addErrorOption = (element, error) => {
+        while (element.firstChild) {
+          element.removeChild(element.firstChild);
+        }
+        const message = `${error}`.includes('Editor must be open') ? (
+          strings['desktop-settings.editor-must-be-open']
+        ) : (
+          strings['desktop-settings.error'].replace('{error}', error)
+        );
+        element.appendChild(createStatusMessageOption(message));
+      };
 
-        const addErrorOption = (element, error) => {
-          while (element.firstChild) {
-            element.removeChild(element.firstChild);
-          }
-          const message = `${error}`.includes('Editor must be open') ? (
-            strings['desktop-settings.editor-must-be-open']
-          ) : (
-            strings['desktop-settings.error'].replace('{error}', error)
-          );
-          element.appendChild(createStatusMessageOption(message));
-        };
+      const updateLists = async () => {
+        addLoadingOption(selectedCameraSelect);
+        addLoadingOption(selectedMicrophoneSelect);
+        try {
+          // We can't use enumerateDevices() directly because we run on a different origin than the editor,
+          // and the browser randomizes the IDs per origin for privacy (which is silly for us, but thankfully
+          // easy to work around)
+          const mediaDevices = await DesktopSettingsPreload.enumerateMediaDevices();
+          addOptions(selectedMicrophoneSelect, settings.microphone, mediaDevices.filter((i) => i.kind === 'audioinput'));
+          addOptions(selectedCameraSelect, settings.camera, mediaDevices.filter((i) => i.kind === 'videoinput'));
+        } catch (error) {
+          console.error(error);
+          addErrorOption(selectedMicrophoneSelect, error);
+          addErrorOption(selectedCameraSelect, error);
+        }
+      };
 
-        const updateLists = async () => {
-          addLoadingOption(selectedCameraSelect);
-          addLoadingOption(selectedMicrophoneSelect);
-          try {
-            // We can't use enumerateDevices() directly because we run on a different origin than the editor,
-            // and the browser randomizes the IDs per origin for privacy (which is silly for us, but thankfully
-            // easy to work around)
-            const mediaDevices = await DesktopSettingsPreload.enumerateMediaDevices();
-            addOptions(selectedMicrophoneSelect, settings.microphone, mediaDevices.filter((i) => i.kind === 'audioinput'));
-            addOptions(selectedCameraSelect, settings.camera, mediaDevices.filter((i) => i.kind === 'videoinput'));
-          } catch (error) {
-            console.error(error);
-            addErrorOption(selectedMicrophoneSelect, error);
-            addErrorOption(selectedCameraSelect, error);
-          }
-        };
-
-        updateLists();
-      </script>
-
-      <label>
-        <input type="checkbox" class="hardware-acceleration-checkbox" autocomplete="off">
-        <span class="hardware-acceleration-label"></span>
-      </label>
-      <div class="warning hardware-acceleration-warning"></div>
-      <script>
-        const hardwareAcceleration = document.querySelector('.hardware-acceleration-checkbox');
-        const hardwareAccelerationWarning = document.querySelector('.hardware-acceleration-warning');
-        hardwareAcceleration.onchange = () => {
-          DesktopSettingsPreload.setHardwareAcceleration(hardwareAcceleration.checked);
-          hardwareAccelerationWarning.hidden = hardwareAcceleration.checked;
-        };
-        hardwareAcceleration.checked = settings.hardwareAcceleration;
+      updateLists();
+    </script>
+    <div style="padding: 0.5px;"></div>
+    <label>
+      <input type="checkbox" class="hardware-acceleration-checkbox" autocomplete="off">
+      <span class="hardware-acceleration-label"></span>
+    </label>
+    <div class="warning hardware-acceleration-warning"></div>
+    <script>
+      const hardwareAcceleration = document.querySelector('.hardware-acceleration-checkbox');
+      const hardwareAccelerationWarning = document.querySelector('.hardware-acceleration-warning');
+      hardwareAcceleration.onchange = () => {
+        DesktopSettingsPreload.setHardwareAcceleration(hardwareAcceleration.checked);
         hardwareAccelerationWarning.hidden = hardwareAcceleration.checked;
+      };
+      hardwareAcceleration.checked = settings.hardwareAcceleration;
+      hardwareAccelerationWarning.hidden = hardwareAcceleration.checked;
 
-        const chromiumMajorVersion = +(navigator.userAgent.match(/Chrome\/(\d+)/)[1]);
-        document.querySelector('.hardware-acceleration-label').textContent = (
-          // Chromium 139 no longer does software fallback for WebGL by default
-          // https://chromestatus.com/feature/5166674414927872
-          chromiumMajorVersion >= 139 ?
+      const chromiumMajorVersion = +(navigator.userAgent.match(/Chrome\/(\d+)/)[1]);
+      document.querySelector('.hardware-acceleration-label').textContent = (
+        // Chromium 139 no longer does software fallback for WebGL by default
+        // https://chromestatus.com/feature/5166674414927872
+        chromiumMajorVersion >= 139 ?
           strings['desktop-settings.hardware-acceleration'] :
           strings['desktop-settings.hardware-acceleration-when-available']
-        );
-        hardwareAccelerationWarning.textContent = strings['desktop-settings.hardware-acceleration-disabled'];
-      </script>
+      );
+      hardwareAccelerationWarning.textContent = strings['desktop-settings.hardware-acceleration-disabled'];
+    </script>
 
-      <label>
-        <input type="checkbox" class="background-throttling-checkbox" autocomplete="off">
-        <span class="background-throttling-label"></span>
-      </label>
-      <div class="warning background-throttling-warning"></div>
-      <script>
-        const backgroundThrottling = document.querySelector('.background-throttling-checkbox');
-        const backgroundThrottlingWarning = document.querySelector('.background-throttling-warning');
-        backgroundThrottling.onchange = () => {
-          DesktopSettingsPreload.setBackgroundThrottling(backgroundThrottling.checked);
-          backgroundThrottlingWarning.hidden = backgroundThrottling.checked;
-        };
-        backgroundThrottling.checked = settings.backgroundThrottling;
+    <label>
+      <input type="checkbox" class="background-throttling-checkbox" autocomplete="off">
+      <span class="background-throttling-label"></span>
+    </label>
+    <div class="warning background-throttling-warning"></div>
+    <script>
+      const backgroundThrottling = document.querySelector('.background-throttling-checkbox');
+      const backgroundThrottlingWarning = document.querySelector('.background-throttling-warning');
+      backgroundThrottling.onchange = () => {
+        DesktopSettingsPreload.setBackgroundThrottling(backgroundThrottling.checked);
         backgroundThrottlingWarning.hidden = backgroundThrottling.checked;
+      };
+      backgroundThrottling.checked = settings.backgroundThrottling;
+      backgroundThrottlingWarning.hidden = backgroundThrottling.checked;
 
-        document.querySelector('.background-throttling-label').textContent = strings['desktop-settings.background-throttling'];
-        backgroundThrottlingWarning.textContent = strings['desktop-settings.background-throttling-disabled'];
-      </script>
+      document.querySelector('.background-throttling-label').textContent = strings['desktop-settings.background-throttling'];
+      backgroundThrottlingWarning.textContent = strings['desktop-settings.background-throttling-disabled'];
+    </script>
 
-      <label>
-        <input type="checkbox" class="bypass-cors-checkbox" autocomplete="off">
-        <span class="bypass-cors-label"></span>
-      </label>
-      <div class="warning bypass-cors-warning"></div>
-      <script>
-        const bypassCORS = document.querySelector('.bypass-cors-checkbox');
-        const bypassCORSWarning = document.querySelector('.bypass-cors-warning');
-        bypassCORS.onchange = () => {
-          DesktopSettingsPreload.setBypassCORS(bypassCORS.checked);
-          bypassCORSWarning.hidden = !bypassCORS.checked;
-        };
-        bypassCORS.checked = settings.bypassCORS;
+    <label>
+      <input type="checkbox" class="bypass-cors-checkbox" autocomplete="off">
+      <span class="bypass-cors-label"></span>
+    </label>
+    <div class="warning bypass-cors-warning"></div>
+    <script>
+      const bypassCORS = document.querySelector('.bypass-cors-checkbox');
+      const bypassCORSWarning = document.querySelector('.bypass-cors-warning');
+      bypassCORS.onchange = () => {
+        DesktopSettingsPreload.setBypassCORS(bypassCORS.checked);
         bypassCORSWarning.hidden = !bypassCORS.checked;
+      };
+      bypassCORS.checked = settings.bypassCORS;
+      bypassCORSWarning.hidden = !bypassCORS.checked;
 
-        document.querySelector('.bypass-cors-label').textContent = strings['desktop-settings.bypass-cors'];
-        bypassCORSWarning.textContent = strings['desktop-settings.bypass-cors-enabled'];
-      </script>
+      document.querySelector('.bypass-cors-label').textContent = strings['desktop-settings.bypass-cors'];
+      bypassCORSWarning.textContent = strings['desktop-settings.bypass-cors-enabled'];
+    </script>
 
-      <label>
-        <input type="checkbox" class="spellchecker-checkbox" autocomplete="off">
-        <span class="spellchecker-label"></span>
-      </label>
-      <script>
-        const spellchecker = document.querySelector('.spellchecker-checkbox');
-        spellchecker.onchange = () => {
-          DesktopSettingsPreload.setSpellchecker(spellchecker.checked);
+    <label>
+      <input type="checkbox" class="spellchecker-checkbox" autocomplete="off">
+      <span class="spellchecker-label"></span>
+    </label>
+    <script>
+      const spellchecker = document.querySelector('.spellchecker-checkbox');
+      spellchecker.onchange = () => {
+        DesktopSettingsPreload.setSpellchecker(spellchecker.checked);
+      };
+      spellchecker.checked = settings.spellchecker;
+      document.querySelector('.spellchecker-label').textContent = strings['desktop-settings.spellchecker'];
+    </script>
+
+    <label>
+      <input type="checkbox" class="exit-fullscreen-on-escape-checkbox" autocomplete="off">
+      <span class="exit-fullscreen-on-escape-label"></span>
+    </label>
+    <script>
+      const exitFullscreenOnEscape = document.querySelector('.exit-fullscreen-on-escape-checkbox');
+      exitFullscreenOnEscape.onchange = () => {
+        DesktopSettingsPreload.setExitFullscreenOnEscape(exitFullscreenOnEscape.checked);
+      };
+      exitFullscreenOnEscape.checked = settings.exitFullscreenOnEscape;
+      document.querySelector('.exit-fullscreen-on-escape-label').textContent = strings['desktop-settings.exit-fullscreen-on-escape'];
+    </script>
+
+    <label>
+      <input type="checkbox" class="rich-presence-checkbox" autocomplete="off">
+      <span class="rich-presence-label"></span>
+      <a class="rich-presence-more-information" href="https://docs.turbowarp.org/desktop/rich-presence" target="_blank"
+        rel="noreferrer"></a>
+    </label>
+    <script>
+      const richPresence = document.querySelector('.rich-presence-checkbox');
+      const richPresenceLabel = document.querySelector('.rich-presence-label');
+      const richPresenceMoreInformation = document.querySelector('.rich-presence-more-information');
+      if (settings.richPresenceAvailable) {
+        richPresence.onchange = () => {
+          DesktopSettingsPreload.setRichPresence(richPresence.checked);
         };
-        spellchecker.checked = settings.spellchecker;
-        document.querySelector('.spellchecker-label').textContent = strings['desktop-settings.spellchecker'];
-      </script>
+        richPresence.checked = settings.richPresence;
+        richPresenceLabel.textContent = strings['desktop-settings.rich-presence'];
+      } else {
+        richPresence.disabled = true;
+        richPresence.checked = false;
+        richPresenceLabel.textContent = strings['desktop-settings.rich-presence-unavailable'];
+        richPresenceMoreInformation.href += '#supported-platforms';
+      }
+      richPresenceMoreInformation.textContent = strings['desktop-settings.more-information'];
+    </script>
+  </div>
+  <div class="section">
+    <label>
+      <div class="label crash-dumps-label"></div>
+      <select class="crash-dumps-select" autocomplete="off">
+        <option value="none"></option>
+        <option value="local"></option>
+      </select>
+    </label>
+    <script>
+      const crashDumpsSelect = document.querySelector('.crash-dumps-select');
+      crashDumpsSelect.onchange = () => {
+        DesktopSettingsPreload.setCrashDumps(crashDumpsSelect.value);
+      };
+      crashDumpsSelect.value = settings.crashDumps;
+      document.querySelector('.crash-dumps-label').textContent = strings['desktop-settings.crash-dumps'];
+      crashDumpsSelect.querySelector('[value=none]').textContent = strings['desktop-settings.crash-dumps-none'];
+      crashDumpsSelect.querySelector('[value=local]').textContent = strings['desktop-settings.crash-dumps-local'];
+    </script>
 
-      <label>
-        <input type="checkbox" class="exit-fullscreen-on-escape-checkbox" autocomplete="off">
-        <span class="exit-fullscreen-on-escape-label"></span>
-      </label>
-      <script>
-        const exitFullscreenOnEscape = document.querySelector('.exit-fullscreen-on-escape-checkbox');
-        exitFullscreenOnEscape.onchange = () => {
-          DesktopSettingsPreload.setExitFullscreenOnEscape(exitFullscreenOnEscape.checked);
-        };
-        exitFullscreenOnEscape.checked = settings.exitFullscreenOnEscape;
-        document.querySelector('.exit-fullscreen-on-escape-label').textContent = strings['desktop-settings.exit-fullscreen-on-escape'];
-      </script>
+    <div class="button-row">
+      <button class="open-user-data"></button>
+      <button class="open-crash-dumps"></button>
+    </div>
+    <script>
+      const openUserData = document.querySelector('.open-user-data');
+      openUserData.addEventListener('click', () => {
+        DesktopSettingsPreload.openUserData();
+      });
+      openUserData.textContent = strings['desktop-settings.open-user-data'];
 
-      <label>
-        <input type="checkbox" class="rich-presence-checkbox" autocomplete="off">
-        <span class="rich-presence-label"></span>
-        <a class="rich-presence-more-information" href="https://docs.turbowarp.org/desktop/rich-presence" target="_blank" rel="noreferrer"></a>
-      </label>
-      <script>
-        const richPresence = document.querySelector('.rich-presence-checkbox');
-        const richPresenceLabel = document.querySelector('.rich-presence-label');
-        const richPresenceMoreInformation = document.querySelector('.rich-presence-more-information');
-        if (settings.richPresenceAvailable) {
-          richPresence.onchange = () => {
-            DesktopSettingsPreload.setRichPresence(richPresence.checked);
-          };
-          richPresence.checked = settings.richPresence;
-          richPresenceLabel.textContent = strings['desktop-settings.rich-presence'];
-        } else {
-          richPresence.disabled = true;
-          richPresence.checked = false;
-          richPresenceLabel.textContent = strings['desktop-settings.rich-presence-unavailable'];
-          richPresenceMoreInformation.href += '#supported-platforms';
-        }
-        richPresenceMoreInformation.textContent = strings['desktop-settings.more-information'];
-      </script>
-
-      <label>
-        <div class="label crash-dumps-label"></div>
-        <select class="crash-dumps-select" autocomplete="off">
-          <option value="none"></option>
-          <option value="local"></option>
-        </select>
-      </label>
-      <script>
-        const crashDumpsSelect = document.querySelector('.crash-dumps-select');
-        crashDumpsSelect.onchange = () => {
-          DesktopSettingsPreload.setCrashDumps(crashDumpsSelect.value);
-        };
-        crashDumpsSelect.value = settings.crashDumps;
-        document.querySelector('.crash-dumps-label').textContent = strings['desktop-settings.crash-dumps'];
-        crashDumpsSelect.querySelector('[value=none]').textContent = strings['desktop-settings.crash-dumps-none'];
-        crashDumpsSelect.querySelector('[value=local]').textContent = strings['desktop-settings.crash-dumps-local'];
-      </script>
-
-      <div class="button-row">
-        <button class="open-user-data"></button>
-        <button class="open-crash-dumps"></button>
-      </div>
-      <script>
-        const openUserData = document.querySelector('.open-user-data');
-        openUserData.addEventListener('click', () => {
-          DesktopSettingsPreload.openUserData();
-        });
-        openUserData.textContent = strings['desktop-settings.open-user-data'];
-
-        const openCrashDumps = document.querySelector('.open-crash-dumps');
-        openCrashDumps.addEventListener('click', () => {
-          DesktopSettingsPreload.openCrashDumps();
-        });
-        openCrashDumps.textContent = strings['desktop-settings.open-crash-dumps'];
-      </script>
+      const openCrashDumps = document.querySelector('.open-crash-dumps');
+      openCrashDumps.addEventListener('click', () => {
+        DesktopSettingsPreload.openCrashDumps();
+      });
+      openCrashDumps.textContent = strings['desktop-settings.open-crash-dumps'];
+    </script>
     </main>
-  </body>
+  </div>
+  <div class="section">
+    <p>
+      NitroBolt Desktop is in <b>(early) beta</b>. Expect bugs.
+    </p>
+  </div>
+</body>
+
 </html>
