@@ -72,7 +72,7 @@ Once compiled and fetched, you can start an Electron instance for development:
 pnpm run electron:start
 ```
 
-In Linux, The app icon won't work in the development version, but it will work in the packaged version.
+The app icon won't work in the development version, but it will work in the packaged version.
 
 We've found that development can work pretty well if you open two terminals side-by-side and run `pnpm run webpack:watch` in one and `pnpm run electron:start` in the other. You can refresh the windows with ctrl+R or cmd+R for renderer file changes to apply, and manually restart the app for main file changes to apply.
 
