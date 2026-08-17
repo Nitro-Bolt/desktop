@@ -55,15 +55,15 @@ Repeat the three previous sets of commands every time you pull changes from GitH
 Due to the security requirements mandated by custom extensions existing, our desktop app is significantly more complicated than Scratch's.
 
  - **src-main** is what runs in Electron's main process. There is no build step; this code is included as-is. `src-main/entrypoint.js` is the entry point to the entire app.
- - **src-renderer-webpack** runs in an Electron renderer process to make the editor work. This is built by webpack as **dist-renderer-webpack**.
- - **src-renderer** also runs in an Electron renderer process, but without webpack. This is used for things like the privacy policy window.
+ - **src-renderer-webpack** runs in an Electron renderer process to make the editor work. This is built by Rspack as **dist-renderer-webpack**.
+ - **src-renderer** also runs in an Electron renderer process, but without Rspack. This is used for things like the privacy policy window.
  - **src-preload** runs as preload scripts in an Electron renderer process. They export glue functions to allow renderer and main to talk to each other in a somewhat controlled manner.
  - **dist-library-files** and **dist-extensions** contain additional static resources managed by `npm run fetch`
 
-To build the webpack portions in src-renderer-webpack for development builds, run this:
+To build the Rspack portions in src-renderer-webpack for development builds, run this:
 
 ```bash
-pnpm run webpack:compile
+pnpm run rspack:compile
 ```
 
 Once compiled and fetched, you can start an Electron instance for development:
@@ -74,7 +74,7 @@ pnpm run electron:start
 
 The app icon won't work in the development version, but it will work in the packaged version.
 
-We've found that development can work pretty well if you open two terminals side-by-side and run `pnpm run webpack:watch` in one and `pnpm run electron:start` in the other. You can refresh the windows with ctrl+R or cmd+R for renderer file changes to apply, and manually restart the app for main file changes to apply.
+We've found that development can work pretty well if you open two terminals side-by-side and run `pnpm run rspack:watch` in one and `pnpm run electron:start` in the other. You can refresh the windows with ctrl+R or cmd+R for renderer file changes to apply, and manually restart the app for main file changes to apply.
 
 ## Linux sandbox helper error
 
@@ -101,10 +101,10 @@ This error won't happen in the final deb package, rpm package, Flathub, or Snap 
 
 The development version of the app will be larger and slower than the final release builds.
 
-Build an optimized version of the webpack portions with:
+Build an optimized version of the Rspack portions with:
 
 ```bash
-pnpm run webpack:prod
+pnpm run rspack:prod
 # this seems to dramatically reduce package
 ```
 

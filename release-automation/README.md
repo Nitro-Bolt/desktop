@@ -167,7 +167,7 @@ Keychain Access.app > Menu bar > Certificate Assistant > Request a certificate f
 npm ci
 rm -rf dist* # might need to do this manually in finder ...
 npm run fetch
-npm run webpack:prod
+npm run rspack:prod
 npx electron-builder --mac mas --universal --config.extraMetadata.tw_dist=prod-mas
 ```
 

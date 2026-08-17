@@ -27,6 +27,6 @@ jobs:
       # Don't need to do a full fetch, that would just cause a lot of unnecessary traffic
       run: node scripts/prepare-extensions.mjs
     - name: Compile
-      run: pnpm run webpack:compile
+      run: pnpm run rspack:compile
     - name: Package
       run: pnpm run electron:package:dir

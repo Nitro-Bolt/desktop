@@ -1,6 +1,8 @@
 const path = require('path');
-const {DefinePlugin} = require('webpack');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+const rspack = require('@rspack/core');
+const autoprefixer = require('autoprefixer');
+const postcssImport = require('postcss-import');
+const postcssSimpleVars = require('postcss-simple-vars');
 
 const scratchGuiPath = path.dirname(require.resolve('scratch-gui/package.json'));
 const scratchGuiNodeModules = path.join(scratchGuiPath, 'node_modules');
@@ -18,15 +20,17 @@ const base = {
                 test: /\.jsx?$/,
                 loader: 'babel-loader',
                 options: {
-                    presets: ['@babel/preset-env', '@babel/preset-react']
+                    presets: [
+                        ['@babel/preset-env', {modules: 'commonjs'}],
+                        '@babel/preset-react'
+                    ]
                 }
             },
             {
                 test: /\.(svg|png|wav|gif|jpg|mp3|woff2|woff|ttf|hex)$/,
-                loader: 'file-loader',
-                options: {
-                    outputPath: 'static/assets/',
-                    esModule: false
+                type: 'asset/resource',
+                generator: {
+                    filename: 'static/assets/[name].[contenthash][ext]'
                 }
             },
             {
@@ -51,10 +55,12 @@ const base = {
                     {
                         loader: 'css-loader',
                         options: {
-                            modules: true,
+                            esModule: false,
+                            modules: {
+                                exportLocalsConvention: 'camel-case',
+                                localIdentName: '[name]_[local]_[hash:base64:5]'
+                            },
                             importLoaders: 1,
-                            localIdentName: '[name]_[local]_[hash:base64:5]',
-                            camelCase: true
                         }
                     },
                     {
@@ -62,9 +68,9 @@ const base = {
                         options: {
                             postcssOptions: {
                                 plugins: [
-                                    'postcss-import',
-                                    'postcss-simple-vars',
-                                    'autoprefixer'
+                                    postcssImport(),
+                                    postcssSimpleVars(),
+                                    autoprefixer()
                                 ]
                             }
                         }
@@ -81,7 +87,13 @@ const base = {
             path.resolve(__dirname, 'node_modules'),
             scratchGuiNodeModules,
             'node_modules'
-        ]
+        ],
+        fallback: {
+            buffer: require.resolve('buffer/'),
+            events: require.resolve('events/'),
+            path: require.resolve('path-browserify'),
+            url: require.resolve('url/')
+        }
     }
 };
 
@@ -96,10 +108,10 @@ module.exports = [
         },
         entry: './src-renderer-webpack/editor/gui/index.jsx',
         plugins: [
-            new DefinePlugin({
+            new rspack.DefinePlugin({
                 'process.env.ROOT': '""'
             }),
-            new CopyWebpackPlugin({
+            new rspack.CopyRspackPlugin({
                 patterns: [
                     {
                         from: path.join(scratchBlocksPath, 'media'),
@@ -126,6 +138,7 @@ module.exports = [
             alias: {
                 'scratch-gui$': path.resolve(__dirname, 'node_modules/scratch-gui/src/index.js'),
                 'scratch-render-fonts$': path.resolve(__dirname, 'node_modules/scratch-gui/src/lib/tw-scratch-render-fonts'),
+                'istextorbinary$': path.join(scratchGuiNodeModules, 'istextorbinary/edition-browsers/index.js'),
             }
         }
     },
@@ -138,7 +151,7 @@ module.exports = [
         },
         entry: './src-renderer-webpack/editor/addons/index.jsx',
         plugins: [
-            new CopyWebpackPlugin({
+            new rspack.CopyRspackPlugin({
                 patterns: [
                     {
                         context: 'src-renderer-webpack/editor/addons/',

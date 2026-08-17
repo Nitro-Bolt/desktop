@@ -26,7 +26,7 @@ jobs:
       - name: Fetch
         run: pnpm run fetch
       - name: Compile
-        run: pnpm run webpack:prod
+        run: pnpm run rspack:prod
       - name: Package
         run: |
           node release-automation/build.mjs --debian --tarball --appimage --x64 --armv7l --arm64
@@ -61,7 +61,7 @@ jobs:
       - name: Fetch
         run: pnpm run fetch
       - name: Compile
-        run: pnpm run webpack:prod
+        run: pnpm run rspack:prod
       - name: Package
         run: |
           # Need to run the universal builds as separate commands or it breaks when @electron/universal
@@ -119,7 +119,7 @@ jobs:
         run: pnpm run fetch
       - name: Compile
         working-directory: D:\repo
-        run: pnpm run webpack:prod
+        run: pnpm run rspack:prod
       - name: Package
         working-directory: D:\repo
         run: |
