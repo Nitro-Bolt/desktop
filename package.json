@@ -27,6 +27,7 @@
     "@babel/preset-env": "^7.12.16",
     "@babel/preset-react": "^7.13.13",
     "@electron/fuses": "^2.1.2",
+    "@nitro-bolt/extensions": "github:Nitro-Bolt/extensions#master",
     "@turbowarp/extensions": "github:TurboWarp/extensions#master",
     "autoprefixer": "^9.8.8",
     "babel-loader": "^8.4.1",

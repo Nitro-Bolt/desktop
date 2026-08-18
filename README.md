@@ -28,13 +28,26 @@ git submodule update
 Install dependencies using:
 
 ```bash
-npm ci
+pnpm i
 ```
+You can also link other components (i.e. `scratch-gui`):
+
+```bash
+# this is assuming scratch-gui and desktop are under the same parent folder
+pnpm i
+pnpm run build
+
+cd ../desktop
+pnpm i
+pnpm link ../scratch-gui
+```
+> [!IMPORTANT]
+> If you're looking to develop, for example, `scratch-paint`, you would only link `scratch-gui` to desktop, and have `scratch-paint` linked to `scratch-gui`.
 
 Then fetch extra library, packager, and extension files using:
 
 ```bash
-npm run fetch
+pnpm run fetch
 ```
 
 Repeat the three previous sets of commands every time you pull changes from GitHub.
@@ -50,30 +63,24 @@ Due to the security requirements mandated by custom extensions existing, our des
 To build the webpack portions in src-renderer-webpack for development builds, run this:
 
 ```bash
-npm run webpack:compile
+pnpm run webpack:compile
 ```
 
-You can also run this instead for source file changes to immediately trigger rebuilds:
+Once compiled and fetched, you can start an Electron instance for development:
 
 ```bash
-npm run webpack:watch
+pnpm run electron:start
 ```
 
-Once you have everything compiled and fetched, you are ready to package it up for Electron. For development, start a development Electron instance with:
+The app icon won't work in the development version, but it will work in the packaged version.
 
-```bash
-npm run electron:start
-```
-
-In Linux, The app icon won't work in the development version, but it will work in the packaged version.
-
-We've found that development can work pretty well if you open two terminals side-by-side and run `npm run webpack:watch` in one and `npm run electron:start` in the other. You can refresh the windows with ctrl+R or cmd+R for renderer file changes to apply, and manually restart the app for main file changes to apply.
+We've found that development can work pretty well if you open two terminals side-by-side and run `pnpm run webpack:watch` in one and `pnpm run electron:start` in the other. You can refresh the windows with ctrl+R or cmd+R for renderer file changes to apply, and manually restart the app for main file changes to apply.
 
 ## Linux sandbox helper error
 
 On some Linux distributions, Electron will crash with the message `The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now. You need to make sure that /home/.../turbowarp-desktop/node_modules/electron/dist/chrome-sandbox is owned by root and has mode 4755.`. Notably we have seen this happen on Debian 10 and earlier and Ubuntu 24.04 and later.
 
-For development, run `electron_build_fix_until_reboot.sh` as sudo, or you can run these commands to enable unprivileged user namespaces until you reboot:
+For development, run `electron_build_fix_until_reboot.sh`, or you can run these commands to enable unprivileged user namespaces until you reboot:
 
 ```bash
 # Enable unprivileged user namespaces.
@@ -84,7 +91,11 @@ sudo sysctl -w kernel.unprivileged_userns_clone=1
 sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 ```
 
-There are ways to make this permanent, but we don't think you should be making permanent kernel configuration changes just to develop this app. This error won't happen in the final .deb package, Flathub, or Snap Store releases.
+There are ways to make this permanent, but we don't think you should be making permanent kernel configuration changes just to develop this app. 
+
+This error won't happen in the final deb package, rpm package, Flathub, or Snap releases. **It will in the in the AppImage.**
+
+<!-- The flatpak wiki has more on this. https://github.com/flatpak/flatpak/wiki/User-namespace-requirements -->
 
 ## Final production-ready builds
 
@@ -93,7 +104,8 @@ The development version of the app will be larger and slower than the final rele
 Build an optimized version of the webpack portions with:
 
 ```bash
-npm run webpack:prod
+pnpm run webpack:prod
+# this seems to dramatically reduce package
 ```
 
 Then to package up the final Electron binaries, use either our build script `release-automation/build.mjs` (see [release-automation/README.md](release-automation/README.md)) or the [electron-builder CLI](https://www.electron.build/cli). Either way the final builds are saved in the `dist` folder. Here are some examples using the electron-builder CLI directly:
@@ -101,14 +113,18 @@ Then to package up the final Electron binaries, use either our build script `rel
 ```bash
 # You can also do manual builds with electron-builder's CLI, for example:
 # Windows installer
-npx electron-builder --windows nsis --x64
+pnpm dlx electron-builder --windows nsis --x64
 # macOS DMG
-npx electron-builder --mac dmg --universal
+pnpm dlx electron-builder --mac dmg --universal
 # Linux Debian
-npx electron-builder --linux deb
+pnpm dlx electron-builder --linux deb
+
+# Or, you can do multiple at once.
+# Windows and Linux Installers and Portables
+pnpm dlx electron-builder -w nsis portable -l deb rpm appimage
 ```
 
-You can typically only package for a certain operating system while on that operating system.
+You can *usually* package cross-platform (i.e. Linux can build for Windows), but it isn't guaranteed possible
 
 ## Code signing policy (IGNORE)
 
