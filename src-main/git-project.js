@@ -7,14 +7,14 @@ const PROJECT_FILE = 'project.json';
 const TARGET_FILE = 'target.json';
 const BLOCKS_FILE = 'blocks.json';
 const ASSET_DIRECTORY = 'assets';
-const RESERVED_TARGET_FOLDERS = new Set([
+const RESERVED_TARGET_FOLDERS = [
   '.git',
   '.gitattributes',
   'assets',
   'project.json',
   'readme.md'
-]);
-const BINARY_ASSET_EXTENSIONS = new Set([
+];
+const BINARY_ASSET_EXTENSIONS = [
   '.gif',
   '.ico',
   '.jpeg',
@@ -34,7 +34,7 @@ const BINARY_ASSET_EXTENSIONS = new Set([
   '.woff',
   '.woff2',
   '.zip'
-]);
+];
 
 const defineOwn = (object, key, value) => {
   Object.defineProperty(object, key, {
@@ -44,6 +44,11 @@ const defineOwn = (object, key, value) => {
     writable: true
   });
 };
+
+const uniqueStrings = values => values.filter((value, index) => values.indexOf(value) === index);
+
+const findPathIgnoreCase = (paths, value) => paths.find(candidate =>
+  candidate.toLowerCase() === value.toLowerCase());
 
 const sortValue = value => {
   if (Array.isArray(value)) return value.map(sortValue);
@@ -107,10 +112,10 @@ const blockPosition = block => Array.isArray(block) ? {x: block[3] || 0, y: bloc
 };
 
 const orderedScripts = blocks => {
-  const visited = new Set();
+  const visited = [];
   const visit = (id, ordered) => {
-    if (!id || visited.has(id) || !blocks[id]) return;
-    visited.add(id);
+    if (!id || visited.includes(id) || !blocks[id]) return;
+    visited.push(id);
     ordered.push(id);
     const block = blocks[id];
     if (Array.isArray(block)) return;
@@ -131,7 +136,7 @@ const orderedScripts = blocks => {
     scripts.push({root, blocks: ordered});
   });
   Object.keys(blocks).sort().forEach(id => {
-    if (visited.has(id)) return;
+    if (visited.includes(id)) return;
     const ordered = [];
     visit(id, ordered);
     scripts.push({root: id, blocks: ordered});
@@ -145,9 +150,9 @@ const targetDocuments = (target, workspaceTarget = null) => {
   const comments = metadata.comments || {};
   delete metadata.blocks;
   delete metadata.comments;
-  const xmlByRoot = new Map(((workspaceTarget && workspaceTarget.scripts) || [])
-    .map(script => [script.id, script.xml]));
-  const claimedComments = new Set();
+  const workspaceScripts = workspaceTarget && Array.isArray(workspaceTarget.scripts) ?
+    workspaceTarget.scripts : [];
+  const claimedComments = [];
   const scripts = orderedScripts(blocks).map(script => {
     const scriptBlocks = {};
     script.blocks.forEach(id => defineOwn(scriptBlocks, id, blocks[id]));
@@ -155,19 +160,19 @@ const targetDocuments = (target, workspaceTarget = null) => {
     Object.keys(comments).sort().forEach(id => {
       if (!script.blocks.includes(comments[id].blockId)) return;
       defineOwn(scriptComments, id, comments[id]);
-      claimedComments.add(id);
+      claimedComments.push(id);
     });
     const root = blockPosition(blocks[script.root]);
     return {
       id: script.root,
       position: root,
-      xml: xmlByRoot.get(script.root) || null,
+      xml: (workspaceScripts.find(item => item.id === script.root) || {}).xml || null,
       blocks: sortValue(scriptBlocks),
       comments: sortValue(scriptComments)
     };
   });
   const workspaceComments = {};
-  Object.keys(comments).sort().filter(id => !claimedComments.has(id))
+  Object.keys(comments).sort().filter(id => !claimedComments.includes(id))
     .forEach(id => defineOwn(workspaceComments, id, comments[id]));
   return {
     target: {
@@ -233,7 +238,7 @@ const isTargetFilePath = filePath => {
   const normalized = path.posix.normalize(filePath);
   const parts = normalized.split('/');
   return normalized === filePath && parts.length === 2 && parts[0] !== '.' && parts[0] !== '..' &&
-    !RESERVED_TARGET_FOLDERS.has(parts[0].toLowerCase()) && parts[1] === TARGET_FILE;
+    !RESERVED_TARGET_FOLDERS.includes(parts[0].toLowerCase()) && parts[1] === TARGET_FILE;
 };
 
 const stringifyManifest = (project, targetFiles) => {
@@ -255,7 +260,8 @@ const parseManifest = source => {
   document.targets.forEach(filePath => {
     if (!isTargetFilePath(filePath)) throw new Error(`Invalid target path in manifest: ${filePath}`);
   });
-  if (new Set(document.targets.map(filePath => filePath.toLowerCase())).size !== document.targets.length) {
+  if (document.targets.some((filePath, index) => document.targets.findIndex(candidate =>
+    candidate.toLowerCase() === filePath.toLowerCase()) !== index)) {
     throw new Error('Manifest contains duplicate target paths');
   }
   return {metadata: document.metadata, targetFiles: document.targets};
@@ -271,18 +277,18 @@ const targetFolderBase = (target, index) => {
     .trim();
   if (!name) name = fallback;
   if (/^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(name)) name = `_${name}`;
-  if (RESERVED_TARGET_FOLDERS.has(name.toLowerCase())) name = `_${name}`;
+  if (RESERVED_TARGET_FOLDERS.includes(name.toLowerCase())) name = `_${name}`;
   return name.substring(0, 80).replace(/[. ]+$/g, '') || fallback;
 };
 
 const targetFilePaths = targets => {
-  const used = new Set();
+  const used = [];
   return targets.map((target, index) => {
     const base = targetFolderBase(target, index);
     let folder = base;
     let suffix = 2;
-    while (used.has(folder.toLowerCase())) folder = `${base} ${suffix++}`;
-    used.add(folder.toLowerCase());
+    while (used.includes(folder.toLowerCase())) folder = `${base} ${suffix++}`;
+    used.push(folder.toLowerCase());
     return `${folder}/${TARGET_FILE}`;
   });
 };
@@ -302,14 +308,14 @@ const safeAssetFilename = (asset, index, used) => {
   base = base.substring(0, 100).replace(/[. ]+$/g, '') || fallback;
   let filename = `${base}.${extension}`;
   let suffix = 2;
-  while (used.has(filename.toLowerCase())) filename = `${base} ${suffix++}.${extension}`;
-  used.add(filename.toLowerCase());
+  while (used.includes(filename.toLowerCase())) filename = `${base} ${suffix++}.${extension}`;
+  used.push(filename.toLowerCase());
   return filename;
 };
 
 const prepareTarget = (target, targetFile, zip) => {
   const serialized = JSON.parse(JSON.stringify(target));
-  const used = new Set();
+  const used = [];
   const assets = [];
   const targetFolder = path.posix.dirname(targetFile);
   const prepareList = list => (list || []).forEach((asset, index) => {
@@ -341,7 +347,7 @@ const prepareProjectMetadata = (project, zip) => {
   const metadata = JSON.parse(JSON.stringify(project));
   delete metadata.targets;
   const assets = [];
-  const used = new Set();
+  const used = [];
   (metadata.customFonts || []).forEach((font, index) => {
     if (font.system || !font.md5ext) return;
     const entry = zip.getEntry(font.md5ext);
@@ -452,7 +458,7 @@ const ensureGitAttributes = async repository => {
     `${PROJECT_FILE} text eol=lf`,
     `*/${TARGET_FILE} text eol=lf`,
     `*/${BLOCKS_FILE} text eol=lf`,
-    ...[...BINARY_ASSET_EXTENSIONS].map(extension => `*/${ASSET_DIRECTORY}/*${extension} binary`),
+    ...BINARY_ASSET_EXTENSIONS.map(extension => `*/${ASSET_DIRECTORY}/*${extension} binary`),
     `${ASSET_DIRECTORY}/* binary`
   ];
   const lines = contents ? contents.split(/\r?\n/) : [];
@@ -524,9 +530,8 @@ const syncProject = async (repoPath, archive, workspaceXML = []) => {
   const oldAssets = assetPathsForDefinition(oldDefinition);
   const oldTargetFiles = oldDefinition ? oldDefinition.targetFiles : [];
   const oldBlockFiles = oldDefinition ? oldDefinition.blockFiles : [];
-  const oldTargetPaths = new Map(oldTargetFiles.map(filePath => [filePath.toLowerCase(), filePath]));
   const targetFiles = targetFilePaths(project.targets || [])
-    .map(filePath => oldTargetPaths.get(filePath.toLowerCase()) || filePath);
+    .map(filePath => findPathIgnoreCase(oldTargetFiles, filePath) || filePath);
   const saveId = `${process.pid}-${Date.now()}`;
   const projectPath = path.join(repository, PROJECT_FILE);
   const temporaryPath = `${projectPath}.tmp-${saveId}`;
@@ -554,9 +559,8 @@ const syncProject = async (repoPath, archive, workspaceXML = []) => {
     };
   });
   const assetEntries = [...targetEntries.flatMap(entry => entry.assets), ...preparedProject.assets];
-  const oldAssetPaths = new Map(oldAssets.map(filePath => [filePath.toLowerCase(), filePath]));
   assetEntries.forEach((entry, index) => {
-    const oldPath = oldAssetPaths.get(entry.filePath.toLowerCase());
+    const oldPath = findPathIgnoreCase(oldAssets, entry.filePath);
     if (oldPath) {
       entry.filePath = oldPath;
       entry.reference.file = entry.relativeTo ? path.posix.relative(entry.relativeTo, oldPath) : oldPath;
@@ -569,7 +573,7 @@ const syncProject = async (repoPath, archive, workspaceXML = []) => {
     entry.blocksSource = documents.blocks;
     entry.source = documents.target;
   }
-  const managedPaths = new Set([
+  const managedPaths = uniqueStrings([
     PROJECT_FILE,
     '.gitattributes',
     ...targetFiles,
@@ -579,12 +583,12 @@ const syncProject = async (repoPath, archive, workspaceXML = []) => {
     ...oldBlockFiles,
     ...oldAssets
   ]);
-  await Promise.all([...managedPaths].map(filePath => assertManagedPath(repository, filePath)));
-  const oldAssetSet = new Set(oldAssets.map(filePath => filePath.toLowerCase()));
-  const oldTargetSet = new Set(oldTargetFiles.map(filePath => filePath.toLowerCase()));
+  await Promise.all(managedPaths.map(filePath => assertManagedPath(repository, filePath)));
+  const oldAssetPaths = oldAssets.map(filePath => filePath.toLowerCase());
+  const oldTargetPaths = oldTargetFiles.map(filePath => filePath.toLowerCase());
 
   for (const entry of targetEntries) {
-    if (oldTargetSet.has(entry.targetFile.toLowerCase())) continue;
+    if (oldTargetPaths.includes(entry.targetFile.toLowerCase())) continue;
     try {
       await fsPromises.access(entry.file);
       throw new Error(`Refusing to overwrite an unmanaged target file: ${entry.targetFile}`);
@@ -592,10 +596,10 @@ const syncProject = async (repoPath, archive, workspaceXML = []) => {
       if (error.code !== 'ENOENT') throw error;
     }
   }
-  const oldBlockSet = new Set(oldBlockFiles.map(filePath => filePath.toLowerCase()));
+  const oldBlockPaths = oldBlockFiles.map(filePath => filePath.toLowerCase());
   for (const entry of targetEntries) {
     const relative = path.relative(repository, entry.blocksFile).replace(/\\/g, '/');
-    if (oldBlockSet.has(relative.toLowerCase())) continue;
+    if (oldBlockPaths.includes(relative.toLowerCase())) continue;
     try {
       await fsPromises.access(entry.blocksFile);
       throw new Error(`Refusing to overwrite an unmanaged blocks file: ${relative}`);
@@ -604,7 +608,7 @@ const syncProject = async (repoPath, archive, workspaceXML = []) => {
     }
   }
   for (const entry of assetEntries) {
-    if (oldAssetSet.has(entry.filePath.toLowerCase())) continue;
+    if (oldAssetPaths.includes(entry.filePath.toLowerCase())) continue;
     const file = path.join(repository, ...entry.filePath.split('/'));
     try {
       await fsPromises.access(file);
@@ -636,12 +640,12 @@ const syncProject = async (repoPath, archive, workspaceXML = []) => {
     ]);
     const assets = assetEntries.map(entry => entry.filePath);
     const blockFiles = targetFiles.map(filePath => path.posix.join(path.posix.dirname(filePath), BLOCKS_FILE));
-    const assetSet = new Set(assets.map(filePath => filePath.toLowerCase()));
-    const targetSet = new Set(targetFiles.map(filePath => filePath.toLowerCase()));
-    const blockSet = new Set(blockFiles.map(filePath => filePath.toLowerCase()));
-    const staleAssets = oldAssets.filter(filePath => !assetSet.has(filePath.toLowerCase()));
-    const staleTargets = oldTargetFiles.filter(filePath => !targetSet.has(filePath.toLowerCase()));
-    const staleBlocks = oldBlockFiles.filter(filePath => !blockSet.has(filePath.toLowerCase()));
+    const assetPaths = assets.map(filePath => filePath.toLowerCase());
+    const targetPaths = targetFiles.map(filePath => filePath.toLowerCase());
+    const blockPaths = blockFiles.map(filePath => filePath.toLowerCase());
+    const staleAssets = oldAssets.filter(filePath => !assetPaths.includes(filePath.toLowerCase()));
+    const staleTargets = oldTargetFiles.filter(filePath => !targetPaths.includes(filePath.toLowerCase()));
+    const staleBlocks = oldBlockFiles.filter(filePath => !blockPaths.includes(filePath.toLowerCase()));
     for (const assetName of staleAssets) {
       // Stale files do not affect the new project. Cleanup is best-effort so a
       // temporary file lock cannot make a successful project save appear lost.
@@ -653,7 +657,8 @@ const syncProject = async (repoPath, archive, workspaceXML = []) => {
     for (const staleBlock of staleBlocks) {
       await fsPromises.rm(path.join(repository, ...staleBlock.split('/')), {force: true}).catch(() => {});
     }
-    const staleFolders = new Set([...staleTargets, ...staleBlocks].map(filePath => path.posix.dirname(filePath)));
+    const staleFolders = uniqueStrings([...staleTargets, ...staleBlocks]
+      .map(filePath => path.posix.dirname(filePath)));
     for (const staleFolder of staleFolders) {
       const folder = path.join(repository, ...staleFolder.split('/'));
       await fsPromises.rmdir(path.join(folder, ASSET_DIRECTORY)).catch(() => {});

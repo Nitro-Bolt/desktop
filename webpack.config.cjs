@@ -9,7 +9,7 @@ const scratchGuiNodeModules = path.join(scratchGuiPath, 'node_modules');
 // project. Discover the node_modules directories belonging to linked packages
 // so webpack can resolve the complete local dependency tree.
 const nodeModulePaths = [path.resolve(__dirname, 'node_modules')];
-const visitedNodeModules = new Set();
+const visitedNodeModules = [];
 const collectNodeModules = nodeModulesPath => {
     let realNodeModulesPath;
     try {
@@ -17,8 +17,8 @@ const collectNodeModules = nodeModulesPath => {
     } catch {
         return;
     }
-    if (visitedNodeModules.has(realNodeModulesPath)) return;
-    visitedNodeModules.add(realNodeModulesPath);
+    if (visitedNodeModules.includes(realNodeModulesPath)) return;
+    visitedNodeModules.push(realNodeModulesPath);
     nodeModulePaths.push(realNodeModulesPath);
 
     let entries;

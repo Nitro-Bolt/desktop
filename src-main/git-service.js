@@ -3,7 +3,7 @@ const fsPromises = require('fs/promises');
 const path = require('path');
 const gitProject = require('./git-project');
 
-const UNMERGED_STATUSES = new Set(['DD', 'AU', 'UD', 'UA', 'DU', 'AA', 'UU']);
+const UNMERGED_STATUSES = ['DD', 'AU', 'UD', 'UA', 'DU', 'AA', 'UU'];
 
 const displayStatus = gitStatus => {
   if (gitStatus === '?' || gitStatus === 'A') return 'U';
@@ -16,7 +16,7 @@ const projectDiffKind = filePath => {
   const extension = path.posix.extname(normalized);
   const filename = path.posix.basename(normalized);
   if (filename === gitProject.BLOCKS_FILE) return 'blocks';
-  if (gitProject.BINARY_ASSET_EXTENSIONS.has(extension)) return 'asset';
+  if (gitProject.BINARY_ASSET_EXTENSIONS.includes(extension)) return 'asset';
   return 'text';
 };
 
@@ -226,7 +226,7 @@ class GitService {
           // ? = untracked, ! = ignored
           if (stagedStatus === '?' && unstagedStatus === '?') {
             untracked.push(createChange('?'));
-          } else if (UNMERGED_STATUSES.has(statusCode)) {
+          } else if (UNMERGED_STATUSES.includes(statusCode)) {
             conflicted.push({
               ...createChange(statusCode),
               status: '!'
