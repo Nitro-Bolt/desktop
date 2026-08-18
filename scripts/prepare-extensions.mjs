@@ -16,9 +16,21 @@ fs.rmSync(outputDirectory, {
 
 const brotliCompress = promisify(zlib.brotliCompress);
 
+const namespaceAssetURLs = (contents, prefix, relativePath) => {
+  if (!prefix || !relativePath.toLowerCase().endsWith('.html') || typeof contents !== 'string') {
+    return contents;
+  }
+
+  // The gallery builders generate root-relative asset URLs. Once each gallery
+  // is mounted under its own directory, those URLs need the gallery prefix.
+  return contents
+    .replace(/((?:src|href)=["'])\/(?!\/)/g, `$1/${prefix}/`)
+    .replace(/(url\(\s*)\/(?!\/)/g, `$1/${prefix}/`);
+};
+
 const exportFile = async (prefix, relativePath, file) => {
   // This part is unfortunately still synchronous
-  const contents = await file.read();
+  const contents = namespaceAssetURLs(await file.read(), prefix, relativePath);
   const outputPath = pathUtil.join(prefix, relativePath.replace(/^[/\\]+/, ''));
   console.log(`Generated ${outputPath}`);
 
