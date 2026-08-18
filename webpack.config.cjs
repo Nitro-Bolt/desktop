@@ -51,7 +51,7 @@ process.env.NODE_PATH = [
 ].filter(Boolean).join(path.delimiter);
 Module._initPaths();
 
-const {DefinePlugin} = require('webpack');
+const {DefinePlugin, NormalModuleReplacementPlugin} = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const MonacoWebpackPlugin = require(require.resolve('monaco-editor-webpack-plugin', {
@@ -60,6 +60,18 @@ const MonacoWebpackPlugin = require(require.resolve('monaco-editor-webpack-plugi
 const scratchBlocksPath = path.dirname(require.resolve('scratch-blocks/package.json', {
     paths: [scratchGuiPath]
 }));
+const htmlparser2Path = path.dirname(require.resolve('htmlparser2/package.json', {
+    paths: [scratchGuiPath]
+}));
+
+const legacyHtmlparser2Plugin = () => new NormalModuleReplacementPlugin(
+    /^(domhandler|domutils|domelementtype|entities)$/,
+    resource => {
+        const context = String(resource.context || '').replace(/\\/g, '/');
+        if (!context.includes('/htmlparser2/lib')) return;
+        resource.request = path.join(htmlparser2Path, 'node_modules', resource.request);
+    }
+);
 
 const base = {
     mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
@@ -145,6 +157,7 @@ module.exports = [
         },
         entry: './src-renderer-webpack/editor/gui/index.jsx',
         plugins: [
+            legacyHtmlparser2Plugin(),
             new DefinePlugin({
                 'process.env.ROOT': '""'
             }),
@@ -188,6 +201,7 @@ module.exports = [
         },
         entry: './src-renderer-webpack/editor/addons/index.jsx',
         plugins: [
+            legacyHtmlparser2Plugin(),
             new CopyWebpackPlugin({
                 patterns: [
                     {
