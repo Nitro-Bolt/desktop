@@ -6,6 +6,7 @@ import {
   closeLoadingProject,
   openInvalidProjectModal
 } from 'scratch-gui/src/reducers/modals';
+import {closeFileMenu} from 'scratch-gui/src/reducers/menus';
 import {
   requestProjectUpload,
   setProjectId,
@@ -16,9 +17,15 @@ import {
 } from 'scratch-gui/src/reducers/project-state';
 import {
   setFileHandle,
+  setGitProjectPath,
   setUsername,
   setProjectError
 } from 'scratch-gui/src/reducers/tw';
+import {
+  markGitProjectLoaded,
+  pauseGitProjectSync,
+  resumeGitProjectSync
+} from 'scratch-gui/src/containers/nb-git-project-manager.jsx';
 import {WrappedFileHandle} from './filesystem-api.js';
 import {setStrings} from '../prompt/prompt.js';
 
@@ -84,6 +91,7 @@ const DesktopHOC = function (WrappedComponent) {
         title: ''
       };
       this.handleUpdateProjectTitle = this.handleUpdateProjectTitle.bind(this);
+      this.handleOpenGitProject = this.handleOpenGitProject.bind(this);
 
       // Changing locale always re-mounts this component
       const stateFromMain = EditorPreload.setLocale(this.props.locale);
@@ -125,7 +133,7 @@ const DesktopHOC = function (WrappedComponent) {
         }
 
         this.props.onHasInitialProject(true, this.props.loadingState);
-        const {name, type, data} = await EditorPreload.getFile(id);
+        const {name, type, data, projectPath} = await EditorPreload.getFile(id);
 
         await this.props.vm.loadProject(data);
         this.props.onLoadingCompleted();
@@ -138,8 +146,13 @@ const DesktopHOC = function (WrappedComponent) {
           });
         }
 
-        if (type === 'file' && name.endsWith('.sb3')) {
-          this.props.onSetFileHandle(new WrappedFileHandle(id, name));
+        this.props.onSetFileHandle(type === 'file' && name.endsWith('.sb3') ?
+          new WrappedFileHandle(id, name) : null);
+        if (type === 'git-project') {
+          this.props.onSetGitProjectPath(projectPath);
+          markGitProjectLoaded();
+        } else {
+          this.props.onSetGitProjectPath(null);
         }
       })().catch(error => {
         console.error(error);
@@ -150,6 +163,52 @@ const DesktopHOC = function (WrappedComponent) {
         this.props.onHasInitialProject(false, this.props.loadingState);
         this.props.onRequestNewProject();
       });
+    }
+    async handleOpenGitProject () {
+      const selected = await EditorPreload.showOpenDirectoryPicker();
+      if (selected === null) return;
+      this.props.onCloseFileMenu();
+
+      // eslint-disable-next-line no-alert
+      if (this.props.projectChanged && !window.confirm('Replace the current project with the selected Git project?')) {
+        return;
+      }
+
+      let paused = false;
+      let loadingStarted = false;
+      try {
+        await pauseGitProjectSync();
+        paused = true;
+        this.props.onLoadingStarted();
+        this.props.onHasInitialProject(true, this.props.loadingState);
+        loadingStarted = true;
+        const status = await window.Git.status(selected.path);
+        if (!status.success) throw new Error(status.error || 'Could not inspect the selected folder');
+        if (!status.data.isRepository) throw new Error(status.data.error || 'Not a Git repository');
+        const repositoryRoot = status.data.repositoryRoot;
+        const result = await window.Git.readProject(repositoryRoot);
+        if (!result.success) throw new Error(result.error || 'Could not open the Git project');
+        this.props.onSetFileHandle(null);
+        this.props.onSetGitProjectPath(null);
+        this.props.vm.quit();
+        await this.props.vm.loadProject(result.data);
+        this.props.onLoadingCompleted();
+        this.props.onLoadedProject(this.props.loadingState, true);
+        this.props.onSetGitProjectPath(repositoryRoot);
+        markGitProjectLoaded();
+
+        const repositoryName = repositoryRoot.replace(/[\\/]+$/, '').split(/[\\/]/).pop();
+        const title = getDefaultProjectTitle(repositoryName);
+        if (title) this.setState({title});
+      } catch (error) {
+        console.error(error);
+        if (loadingStarted) {
+          this.props.onLoadingCompleted();
+          this.props.onLoadedProject(this.props.loadingState, false);
+        }
+      } finally {
+        if (paused) resumeGitProjectSync();
+      }
     }
     componentDidUpdate (prevProps, prevState) {
       if (this.props.projectChanged !== prevProps.projectChanged) {
@@ -189,12 +248,14 @@ const DesktopHOC = function (WrappedComponent) {
         fileHandle,
         reduxUsername,
         onFetchedInitialProjectData,
+        onCloseFileMenu,
         onHasInitialProject,
         onLoadedProject,
         onLoadingCompleted,
         onLoadingStarted,
         onRequestNewProject,
         onSetFileHandle,
+        onSetGitProjectPath,
         onSetReduxUsername,
         onShowErrorModal,
         vm,
@@ -226,6 +287,7 @@ const DesktopHOC = function (WrappedComponent) {
             },
           ]}
           onClickDesktopSettings={handleClickDesktopSettings}
+          onStartSelectingGitProject={this.handleOpenGitProject}
           securityManager={securityManager}
           {...props}
         />
@@ -243,16 +305,19 @@ const DesktopHOC = function (WrappedComponent) {
     isFullScreen: PropTypes.bool.isRequired,
     reduxUsername: PropTypes.string.isRequired,
     onFetchedInitialProjectData: PropTypes.func.isRequired,
+    onCloseFileMenu: PropTypes.func.isRequired,
     onHasInitialProject: PropTypes.func.isRequired,
     onLoadedProject: PropTypes.func.isRequired,
     onLoadingCompleted: PropTypes.func.isRequired,
     onLoadingStarted: PropTypes.func.isRequired,
     onRequestNewProject: PropTypes.func.isRequired,
     onSetFileHandle: PropTypes.func.isRequired,
+    onSetGitProjectPath: PropTypes.func.isRequired,
     onSetReduxUsername: PropTypes.func.isRequired,
     onShowErrorModal: PropTypes.func.isRequired,
     vm: PropTypes.shape({
-      loadProject: PropTypes.func.isRequired
+      loadProject: PropTypes.func.isRequired,
+      quit: PropTypes.func.isRequired
     }).isRequired
   };
 
@@ -267,6 +332,7 @@ const DesktopHOC = function (WrappedComponent) {
   });
 
   const mapDispatchToProps = dispatch => ({
+    onCloseFileMenu: () => dispatch(closeFileMenu()),
     onLoadingStarted: () => dispatch(openLoadingProject()),
     onLoadingCompleted: () => dispatch(closeLoadingProject()),
     onHasInitialProject: (hasInitialProject, loadingState) => {
@@ -281,6 +347,7 @@ const DesktopHOC = function (WrappedComponent) {
     },
     onRequestNewProject: () => dispatch(requestNewProject(false)),
     onSetFileHandle: fileHandle => dispatch(setFileHandle(fileHandle)),
+    onSetGitProjectPath: projectPath => dispatch(setGitProjectPath(projectPath)),
     onSetReduxUsername: username => dispatch(setUsername(username)),
     onShowErrorModal: error => {
       dispatch(setProjectError(error));

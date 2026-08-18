@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      adm-zip:
+        specifier: ^0.5.16
+        version: 0.5.16
       semver:
         specifier: ^7.7.3
         version: 7.7.3
@@ -30,9 +33,6 @@ importers:
       '@turbowarp/extensions':
         specifier: github:TurboWarp/extensions#master
         version: https://codeload.github.com/TurboWarp/extensions/tar.gz/0b541428a1d98e10fd9e8226a1412d48eb1802b4(jiti@2.5.1)
-      adm-zip:
-        specifier: ^0.5.16
-        version: 0.5.16
       autoprefixer:
         specifier: ^9.8.8
         version: 9.8.8
@@ -63,6 +63,9 @@ importers:
       imports-loader:
         specifier: 0.8.0
         version: 0.8.0
+      monaco-editor-webpack-plugin:
+        specifier: ^4.2.0
+        version: 4.2.0(monaco-editor@0.28.1)(webpack@4.47.0)
       postcss:
         specifier: ^8.4.13
         version: 8.5.6
@@ -3455,6 +3458,12 @@ packages:
     resolution: {integrity: sha512-0RVnjg1HJsXY2YFDoTNzcc1NKhYuXKRrBAG2gDygmJJA136Cs2QlRliZG1mA0ap7cuaT30mw16luAeln+4RiNA==}
     engines: {node: '>= 4.0.0'}
     hasBin: true
+
+  monaco-editor-webpack-plugin@4.2.0:
+    resolution: {integrity: sha512-/P3sFiEgBl+Y50he4mbknMhbLJVop5gBUZiPS86SuHUDOOnQiQ5rL1jU5lwt1XKAwMEkhwZbUwqaHxTPkb1Utw==}
+    peerDependencies:
+      monaco-editor: 0.25.x || 0.26.x || 0.27.x || 0.28.x
+      webpack: ^4.5.0 || 5.x
 
   monaco-editor@0.28.1:
     resolution: {integrity: sha512-P1vPqxB4B1ZFzTeR1ScggSp9/5NoQrLCq88fnlNUsuRAP1usEBN4TIpI2lw0AYIZNVIanHk0qwjze2uJwGOHUw==}
@@ -9201,6 +9210,12 @@ snapshots:
       he: 1.1.1
       mkdirp: 0.5.1
       supports-color: 4.4.0
+
+  monaco-editor-webpack-plugin@4.2.0(monaco-editor@0.28.1)(webpack@4.47.0):
+    dependencies:
+      loader-utils: 2.0.4
+      monaco-editor: 0.28.1
+      webpack: 4.47.0(webpack-cli@4.10.0)
 
   monaco-editor@0.28.1: {}
 
