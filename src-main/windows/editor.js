@@ -648,6 +648,7 @@ class EditorWindow extends ProjectRunningWindow {
       commits => ({commits}));
     registerResultHandler(this.ipc, 'git-list-branches', repoPath => gitService.listBranches(repoPath),
       branches => ({branches}));
+    registerResultHandler(this.ipc, 'git-fetch', (repoPath, remote) => gitService.fetch(repoPath, remote));
     registerResultHandler(this.ipc, 'git-create-branch', (repoPath, branchName) =>
       gitService.createBranch(repoPath, branchName));
     registerResultHandler(this.ipc, 'git-switch-branch', (repoPath, branchName) =>

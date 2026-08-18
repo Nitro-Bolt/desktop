@@ -44,6 +44,7 @@ exposeInMainWorld('Git', {
   revertToCommit: (repoPath, commitHash) => ipcRenderer.invoke('git-revert-to-commit', repoPath, commitHash),
   log: (repoPath, maxCount = 10) => ipcRenderer.invoke('git-log', repoPath, maxCount),
   listBranches: (repoPath) => ipcRenderer.invoke('git-list-branches', repoPath),
+  fetch: (repoPath, remote = null) => ipcRenderer.invoke('git-fetch', repoPath, remote),
   createBranch: (repoPath, branchName) => ipcRenderer.invoke('git-create-branch', repoPath, branchName),
   renameBranch: (repoPath, branch, newName) => ipcRenderer.invoke('git-rename-branch', repoPath, branch, newName),
   deleteBranch: (repoPath, branch) => ipcRenderer.invoke('git-delete-branch', repoPath, branch),

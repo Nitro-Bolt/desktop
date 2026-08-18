@@ -384,6 +384,17 @@ class GitService {
   }
 
   /**
+   * Update remote-tracking branches
+   * @param {string} repoPath - Repository path
+   * @param {string|null} remote - Remote name, or all remotes when omitted
+   * @returns {Promise<void>}
+   */
+  async fetch(repoPath, remote = null) {
+    const args = remote ? ['fetch', '--prune', '--', remote] : ['fetch', '--all', '--prune'];
+    await this.execGit(args, repoPath);
+  }
+
+  /**
    * Create a new branch
    * @param {string} repoPath - Repository path
    * @param {string} branchName - Name of the new branch
