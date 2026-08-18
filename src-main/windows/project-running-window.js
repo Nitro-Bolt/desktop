@@ -4,8 +4,7 @@ const AbtractWindow = require('./abstract');
 const settings = require('../settings');
 const askForMediaAccess = require('../media-permissions');
 const SecurityPromptWindow = require('./security-prompt');
-
-// TODO: migrate turbowarp links to nitrobolt links
+const {getLocalExtensionURL} = require('../extension-host');
 
 const listLocalFiles = async () => {
   const files = await fsPromises.readdir(path.join(__dirname, '../../dist-library-files/'));
@@ -123,10 +122,11 @@ class ProjectRunningWindow extends AbtractWindow {
       }
     }
 
-    if (parsed.origin === 'https://extensions.turbowarp.org') {
+    const localExtensionURL = getLocalExtensionURL(parsed);
+    if (localExtensionURL) {
       return callback({
         // pathname always has a leading / already
-        redirectURL: `nb-extensions://.${parsed.pathname}`
+        redirectURL: localExtensionURL
       });
     }
 

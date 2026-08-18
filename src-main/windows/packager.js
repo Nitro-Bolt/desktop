@@ -3,8 +3,7 @@ const {PACKAGER_NAME} = require('../brand');
 const PackagerPreviewWindow = require('./packager-preview');
 const prompts = require('../prompts');
 const FileAccessWindow = require('./file-access-window');
-
-// possibly TODO: migrate turbowarp links to nitrobolt links..?
+const {getLocalExtensionURL} = require('../extension-host');
 
 class PackagerWindow extends AbstractWindow {
   constructor (editorWindow) {
@@ -93,9 +92,10 @@ class PackagerWindow extends AbstractWindow {
 
   onBeforeRequest (details, callback) {
     const parsed = new URL(details.url);
-    if (parsed.origin === 'https://extensions.turbowarp.org') {
+    const localExtensionURL = getLocalExtensionURL(parsed);
+    if (localExtensionURL) {
       return callback({
-        redirectURL: `tw-extensions://./${parsed.pathname}`
+        redirectURL: localExtensionURL
       });
     }
 

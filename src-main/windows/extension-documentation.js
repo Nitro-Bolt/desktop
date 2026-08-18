@@ -40,7 +40,7 @@ class ExtensionDocumentationWindow extends AbstractWindow {
   }
 
   /**
-   * @param {string} path Path part of an https://extensions.turbowarp.org URL, without leading /
+   * @param {string} path Local path for an extension gallery page, without leading /
    */
   static open(path) {
     const windows = AbstractWindow.getWindowsByClass(ExtensionDocumentationWindow);

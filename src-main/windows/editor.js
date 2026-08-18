@@ -20,6 +20,7 @@ const RichPresence = require('../rich-presence.js');
 const FileAccessWindow = require('./file-access-window.js');
 const ExtensionDocumentationWindow = require('./extension-documentation.js');
 const SecurityPromptWindow = require('./security-prompt.js');
+const {getExtensionHostPrefix, getLocalExtensionPath} = require('../extension-host');
 
 const TYPE_FILE = 'file';
 const TYPE_URL = 'url';
@@ -121,9 +122,10 @@ const parseOpenedFile = (file, workingDirectory) => {
 
       // Need to manually redirect extension samples to the copies we already have offline as the
       // fetching code will not go through web request handlers or custom protocols.
-      const sampleMatch = file.match(/^https?:\/\/extensions\.turbowarp\.org\/samples\/(.+\.sb3)$/);
+      const sampleMatch = file.match(/^https?:\/\/(extensions\.turbowarp\.org|extensions\.nitrobolt\.org)\/samples\/(.+\.sb3)$/);
       if (sampleMatch) {
-        return new OpenedFile(TYPE_SAMPLE, decodeURIComponent(sampleMatch[1]));
+        const prefix = sampleMatch[1] === 'extensions.nitrobolt.org' ? 'nitrobolt/' : 'turbowarp/';
+        return new OpenedFile(TYPE_SAMPLE, `${prefix}samples/${decodeURIComponent(sampleMatch[2])}`);
       }
 
       return new OpenedFile(TYPE_URL, file);
@@ -643,11 +645,11 @@ class EditorWindow extends ProjectRunningWindow {
     }
 
     // Open extension documentation in-app
-    const extensionsDocsMatch = details.url.match(
-      /^https:\/\/extensions\.turbowarp\.org\/([\w_\-.\/]+)$/
-    );
-    if (extensionsDocsMatch) {
-      ExtensionDocumentationWindow.open(extensionsDocsMatch[1]);
+    const extensionsDocsURL = new URL(details.url);
+    const extensionHostPrefix = getExtensionHostPrefix(extensionsDocsURL);
+    const extensionsDocsMatch = extensionsDocsURL.pathname.match(/^\/[\w_\-.\/]+$/);
+    if (extensionHostPrefix !== null && !extensionsDocsURL.search && extensionsDocsMatch) {
+      ExtensionDocumentationWindow.open(getLocalExtensionPath(extensionsDocsURL));
       return {
         action: 'deny'
       };
