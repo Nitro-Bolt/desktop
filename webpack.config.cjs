@@ -1,9 +1,59 @@
+const fs = require('fs');
 const path = require('path');
-const {DefinePlugin} = require('webpack');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+const Module = require('module');
 
 const scratchGuiPath = path.dirname(require.resolve('scratch-gui/package.json'));
 const scratchGuiNodeModules = path.join(scratchGuiPath, 'node_modules');
+
+// pnpm links packages without installing their dependencies in the consuming
+// project. Discover the node_modules directories belonging to linked packages
+// so webpack can resolve the complete local dependency tree.
+const nodeModulePaths = [path.resolve(__dirname, 'node_modules')];
+const visitedNodeModules = new Set();
+const collectNodeModules = nodeModulesPath => {
+    let realNodeModulesPath;
+    try {
+        realNodeModulesPath = fs.realpathSync(nodeModulesPath);
+    } catch {
+        return;
+    }
+    if (visitedNodeModules.has(realNodeModulesPath)) return;
+    visitedNodeModules.add(realNodeModulesPath);
+    nodeModulePaths.push(realNodeModulesPath);
+
+    let entries;
+    try {
+        entries = fs.readdirSync(realNodeModulesPath, {withFileTypes: true});
+    } catch {
+        return;
+    }
+    for (const entry of entries) {
+        if (entry.name.startsWith('.')) continue;
+        const packagePath = path.join(realNodeModulesPath, entry.name);
+        const packagePaths = entry.name.startsWith('@') && entry.isDirectory() ?
+            fs.readdirSync(packagePath)
+                .filter(packageName => !packageName.startsWith('.'))
+                .map(packageName => path.join(packagePath, packageName)) :
+            [packagePath];
+        for (const linkedPackagePath of packagePaths) {
+            collectNodeModules(path.join(linkedPackagePath, 'node_modules'));
+        }
+    }
+};
+
+collectNodeModules(scratchGuiNodeModules);
+
+// Loaders in linked packages may call require() themselves. NODE_PATH makes
+// the same dependency locations available to those loaders as well.
+process.env.NODE_PATH = [
+    ...nodeModulePaths,
+    process.env.NODE_PATH
+].filter(Boolean).join(path.delimiter);
+Module._initPaths();
+
+const {DefinePlugin} = require('webpack');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+
 const MonacoWebpackPlugin = require(require.resolve('monaco-editor-webpack-plugin', {
     paths: [__dirname, scratchGuiPath]
 }));
@@ -77,14 +127,10 @@ const base = {
         ]
     },
     resolve: {
-        // npm does not hoist dependencies from packages installed with `npm link`.
-        // Fall back to the GUI's dependencies so linking a local GUI works without
-        // separately linking React, Redux, scratch-blocks, and other dependencies.
-        modules: [
-            path.resolve(__dirname, 'node_modules'),
-            scratchGuiNodeModules,
-            'node_modules'
-        ]
+        modules: nodeModulePaths
+    },
+    resolveLoader: {
+        modules: nodeModulePaths
     }
 };
 
