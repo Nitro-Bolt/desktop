@@ -60,16 +60,24 @@ const MonacoWebpackPlugin = require(require.resolve('monaco-editor-webpack-plugi
 const scratchBlocksPath = path.dirname(require.resolve('scratch-blocks/package.json', {
     paths: [scratchGuiPath]
 }));
-const htmlparser2Path = path.dirname(require.resolve('htmlparser2/package.json', {
-    paths: [scratchGuiPath]
-}));
-
 const legacyHtmlparser2Plugin = () => new NormalModuleReplacementPlugin(
     /^(domhandler|domutils|domelementtype|entities)$/,
     resource => {
         const context = String(resource.context || '').replace(/\\/g, '/');
         if (!context.includes('/htmlparser2/lib')) return;
-        resource.request = path.join(htmlparser2Path, 'node_modules', resource.request);
+
+        // Resolve the legacy parser's dependencies from the parser that is
+        // actually importing them. With pnpm's non-linked install, the GUI's
+        // htmlparser2 (v10) is nested separately from desktop's legacy
+        // htmlparser2 (v3); using one global package root mixes those trees.
+        try {
+            resource.request = require.resolve(resource.request, {
+                paths: [resource.context]
+            });
+        } catch {
+            // Keep the failure in webpack's resolver so a missing dependency
+            // still produces its normal, actionable module-not-found error.
+        }
     }
 );
 
