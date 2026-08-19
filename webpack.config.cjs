@@ -1,85 +1,6 @@
-const fs = require('fs');
 const path = require('path');
-const Module = require('module');
-
-const scratchGuiPath = path.dirname(require.resolve('scratch-gui/package.json'));
-const scratchGuiNodeModules = path.join(scratchGuiPath, 'node_modules');
-
-// pnpm links packages without installing their dependencies in the consuming
-// project. Discover the node_modules directories belonging to linked packages
-// so webpack can resolve the complete local dependency tree.
-const nodeModulePaths = [path.resolve(__dirname, 'node_modules')];
-const visitedNodeModules = [];
-const collectNodeModules = nodeModulesPath => {
-    let realNodeModulesPath;
-    try {
-        realNodeModulesPath = fs.realpathSync(nodeModulesPath);
-    } catch {
-        return;
-    }
-    if (visitedNodeModules.includes(realNodeModulesPath)) return;
-    visitedNodeModules.push(realNodeModulesPath);
-    nodeModulePaths.push(realNodeModulesPath);
-
-    let entries;
-    try {
-        entries = fs.readdirSync(realNodeModulesPath, {withFileTypes: true});
-    } catch {
-        return;
-    }
-    for (const entry of entries) {
-        if (entry.name.startsWith('.')) continue;
-        const packagePath = path.join(realNodeModulesPath, entry.name);
-        const packagePaths = entry.name.startsWith('@') && entry.isDirectory() ?
-            fs.readdirSync(packagePath)
-                .filter(packageName => !packageName.startsWith('.'))
-                .map(packageName => path.join(packagePath, packageName)) :
-            [packagePath];
-        for (const linkedPackagePath of packagePaths) {
-            collectNodeModules(path.join(linkedPackagePath, 'node_modules'));
-        }
-    }
-};
-
-collectNodeModules(scratchGuiNodeModules);
-
-// Loaders in linked packages may call require() themselves. NODE_PATH makes
-// the same dependency locations available to those loaders as well.
-process.env.NODE_PATH = [
-    ...nodeModulePaths,
-    process.env.NODE_PATH
-].filter(Boolean).join(path.delimiter);
-Module._initPaths();
-
-const {DefinePlugin, NormalModuleReplacementPlugin} = require('webpack');
+const {DefinePlugin} = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-
-const MonacoWebpackPlugin = require(require.resolve('monaco-editor-webpack-plugin', {
-    paths: [__dirname, scratchGuiPath]
-}));
-const scratchBlocksPath = path.dirname(require.resolve('scratch-blocks/package.json', {
-    paths: [scratchGuiPath]
-}));
-const legacyHtmlparser2Plugin = () => new NormalModuleReplacementPlugin(
-    /^(domhandler|domutils|domelementtype|entities)$/,
-    resource => {
-        const context = String(resource.context || '').replace(/\\/g, '/');
-        if (!context.includes('/htmlparser2/lib')) return;
-
-        // Resolve the legacy parser's dependencies from the parser that is
-        // actually importing them. With pnpm's non-linked install, the GUI's
-        // htmlparser2 (v10) is nested separately from desktop's legacy
-        // htmlparser2 (v3); using one global package root mixes those trees.
-        try {
-            resource.request = require.resolve(resource.request, {
-                paths: [resource.context]
-            });
-        } catch {
-            // Keep the failure in webpack's resolver so a missing dependency
-            // still produces its normal, actionable module-not-found error.
-        }
-    }
-);
 
 const base = {
     mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
@@ -145,14 +66,8 @@ const base = {
                 ]
             }
         ]
-    },
-    resolve: {
-        modules: nodeModulePaths
-    },
-    resolveLoader: {
-        modules: nodeModulePaths
     }
-};
+}
 
 module.exports = [
     {
@@ -165,19 +80,17 @@ module.exports = [
         },
         entry: './src-renderer-webpack/editor/gui/index.jsx',
         plugins: [
-            legacyHtmlparser2Plugin(),
             new DefinePlugin({
                 'process.env.ROOT': '""'
             }),
-            new MonacoWebpackPlugin(),
             new CopyWebpackPlugin({
                 patterns: [
                     {
-                        from: path.join(scratchBlocksPath, 'media'),
+                        from: 'node_modules/scratch-blocks/media',
                         to: 'static/blocks-media/default'
                     },
                     {
-                        from: path.join(scratchBlocksPath, 'media'),
+                        from: 'node_modules/scratch-blocks/media',
                         to: 'static/blocks-media/high-contrast'
                     },
                     {
@@ -193,7 +106,6 @@ module.exports = [
             })
         ],
         resolve: {
-            ...base.resolve,
             alias: {
                 'scratch-gui$': path.resolve(__dirname, 'node_modules/scratch-gui/src/index.js'),
                 'scratch-render-fonts$': path.resolve(__dirname, 'node_modules/scratch-gui/src/lib/tw-scratch-render-fonts'),
@@ -209,7 +121,6 @@ module.exports = [
         },
         entry: './src-renderer-webpack/editor/addons/index.jsx',
         plugins: [
-            legacyHtmlparser2Plugin(),
             new CopyWebpackPlugin({
                 patterns: [
                     {
