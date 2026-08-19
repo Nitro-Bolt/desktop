@@ -45,7 +45,10 @@ jobs:
 
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
-          git add -- scripts/packager.json src-renderer/packager/standalone.html
+          # The bundled standalone file is intentionally ignored in local development,
+          # but it must be committed when this workflow updates the desktop app.
+          git add -- scripts/packager.json
+          git add -f -- src-renderer/packager/standalone.html
           git commit -m "chore: update standalone packager"
           git pull --rebase origin master
           git push origin master
