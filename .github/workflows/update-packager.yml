@@ -1,0 +1,51 @@
+name: Update standalone packager
+
+on:
+  repository_dispatch:
+    types: [packager-released]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Packager release version to download, for example 1.2.1
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          token: ${{ secrets.CASCADE_PAT }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Update packager metadata
+        env:
+          PACKAGER_RELEASE_TAG: ${{ github.event.client_payload.release_tag || inputs.version }}
+        run: node scripts/update-packager.mjs
+
+      - name: Download standalone packager
+        run: node scripts/download-packager.mjs
+
+      - name: Commit and push
+        run: |
+          if git diff --quiet -- scripts/packager.json src-renderer/packager/standalone.html; then
+            echo "Standalone packager is already up to date."
+            exit 0
+          fi
+
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add -- scripts/packager.json src-renderer/packager/standalone.html
+          git commit -m "chore: update standalone packager"
+          git pull --rebase origin master
+          git push origin master
