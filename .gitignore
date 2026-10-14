@@ -6,7 +6,7 @@ node_modules/
 
 # Built files
 dist
-dist-renderer-webpack
+dist-renderer-rspack
 dist-library-files
 dist-extensions
 src-renderer/packager/standalone.html

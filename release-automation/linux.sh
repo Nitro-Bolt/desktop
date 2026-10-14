@@ -43,8 +43,8 @@ prepare_source() {
 	echo "Preparing source"
 	cd "$src"
 	git submodule update
-	npm ci
-	npm run fetch
+	pnpm install --frozen-lockfile
+	pnpm run fetch
 }
 
 update_flatpak() {
@@ -90,7 +90,7 @@ update_snap() {
 	echo "Updating snap"
 	cd "$src"
 	rm dist/*.snap || true
-	npm run webpack:prod
+	pnpm run rspack:prod
 	npx electron-builder --linux snap --publish never --config.extraMetadata.tw_dist="release-snap-$(uname -m)"
 	snap install --dangerous dist/TurboWarp-*.snap
 	snap run turbowarp-desktop

@@ -164,10 +164,10 @@ Keychain Access.app > Menu bar > Certificate Assistant > Request a certificate f
 | Distribution > Mac App Store Connect | Use Distribution cert (not "Mac App ...") | build/distribution.provisionprofile |
 
 ```bash
-npm ci
+pnpm install --frozen-lockfile
 rm -rf dist* # might need to do this manually in finder ...
-npm run fetch
-npm run webpack:prod
+pnpm run fetch
+pnpm run rspack:prod
 npx electron-builder --mac mas --universal --config.extraMetadata.tw_dist=prod-mas
 ```
 

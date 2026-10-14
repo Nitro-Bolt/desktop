@@ -23,7 +23,7 @@ const packageJSON = require('../package.json');
 /** @type {Record<string, Metadata>} */
 const FILE_SCHEMES = {
   'nb-editor': {
-    root: path.resolve(__dirname, '../dist-renderer-webpack/editor'),
+    root: path.resolve(__dirname, '../dist-renderer-rspack/editor'),
     standard: true,
     supportFetch: true,
     secure: true,
