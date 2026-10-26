@@ -182,7 +182,7 @@ const DesktopHOC = function (WrappedComponent) {
         this.props.onLoadingStarted();
         this.props.onHasInitialProject(true, this.props.loadingState);
         loadingStarted = true;
-        const status = await window.Git.status(selected.path);
+        const status = await window.Git.status(selected.id);
         if (!status.success) throw new Error(status.error || 'Could not inspect the selected folder');
         if (!status.data.isRepository) throw new Error(status.data.error || 'Not a Git repository');
         const repositoryRoot = status.data.repositoryRoot;
@@ -197,7 +197,7 @@ const DesktopHOC = function (WrappedComponent) {
         this.props.onSetGitProjectPath(repositoryRoot);
         markGitProjectLoaded();
 
-        const repositoryName = repositoryRoot.replace(/[\\/]+$/, '').split(/[\\/]/).pop();
+        const repositoryName = status.data.repositoryName || selected.name;
         const title = getDefaultProjectTitle(repositoryName);
         if (title) this.setState({title});
       } catch (error) {

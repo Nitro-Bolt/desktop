@@ -1,9 +1,25 @@
 const {spawn} = require('child_process');
-const fsPromises = require('fs/promises');
+const fs = require('fs');
+const fsPromises = fs.promises;
+const os = require('os');
 const path = require('path');
 const gitProject = require('./git-project');
 
 const UNMERGED_STATUSES = ['DD', 'AU', 'UD', 'UA', 'DU', 'AA', 'UU'];
+const SAFE_GIT_CONFIG = [
+  ['core.hooksPath', os.devNull],
+  ['core.fsmonitor', 'false'],
+  ['core.pager', 'cat'],
+  ['commit.gpgSign', 'false'],
+  ['log.showSignature', 'false'],
+  ['credential.helper', ''],
+  ['protocol.allow', 'never'],
+  ['protocol.http.allow', 'always'],
+  ['protocol.https.allow', 'always'],
+  ['protocol.ext.allow', 'never'],
+  ['protocol.file.allow', 'never'],
+  ['submodule.recurse', 'false']
+];
 
 const displayStatus = gitStatus => {
   if (gitStatus === '?' || gitStatus === 'A') return 'U';
@@ -125,7 +141,24 @@ class GitService {
   execGit(args, cwd = null, outputOptions = {}) {
     const {trim = true} = outputOptions;
     return new Promise((resolve, reject) => {
-      const options = {};
+      const env = {...process.env};
+      env.GIT_TERMINAL_PROMPT = '0';
+      env.GIT_ASKPASS = '';
+      if (cwd) {
+        try {
+          if (fs.lstatSync(path.join(cwd, '.git')).isDirectory()) {
+            env.GIT_WORK_TREE = path.resolve(cwd);
+          }
+        } catch (error) {
+          if (error.code !== 'ENOENT') throw error;
+        }
+      }
+      env.GIT_CONFIG_COUNT = String(SAFE_GIT_CONFIG.length);
+      SAFE_GIT_CONFIG.forEach(([key, value], index) => {
+        env[`GIT_CONFIG_KEY_${index}`] = key;
+        env[`GIT_CONFIG_VALUE_${index}`] = value;
+      });
+      const options = {env};
       if (cwd) {
         options.cwd = cwd;
       }
@@ -158,8 +191,37 @@ class GitService {
 
   async resolveRepository(repoPath) {
     const selectedPath = await fsPromises.realpath(path.resolve(repoPath));
-    const topLevel = await this.execGit(['rev-parse', '--show-toplevel'], selectedPath);
-    return await fsPromises.realpath(topLevel);
+    let repository = selectedPath;
+    while (true) {
+      const gitPath = path.join(repository, '.git');
+      try {
+        const stat = await fsPromises.lstat(gitPath);
+        if (!stat.isDirectory()) {
+          throw new Error('Git worktrees and symbolic .git paths are not supported');
+        }
+        break;
+      } catch (error) {
+        if (error.code !== 'ENOENT') throw error;
+      }
+      const parent = path.dirname(repository);
+      if (parent === repository) throw new Error('Not a Git repository');
+      repository = parent;
+    }
+    await this.assertNoExecutableConfig(repository);
+    return repository;
+  }
+
+  async assertNoExecutableConfig(repository) {
+    const executableConfig = await this.execGit([
+      'config', '--local', '--includes', '--get-regexp',
+      '^(filter\\..*\\.(clean|smudge|process)|merge\\..*\\.driver)$'
+    ], repository).catch(error => {
+      if (/exited with code 1|failed with code 1/i.test(error.message)) return '';
+      throw error;
+    });
+    if (executableConfig) {
+      throw new Error('This repository contains executable Git filter or merge-driver configuration');
+    }
   }
 
   /**
@@ -287,6 +349,7 @@ class GitService {
    * @returns {Promise<void>}
    */
   async add(repoPath, files = []) {
+    await this.assertNoExecutableConfig(repoPath);
     const args = ['add'];
     if (files.length === 0) {
       args.push('.');
@@ -327,9 +390,10 @@ class GitService {
    * @returns {Promise<Array>}
    */
   async log(repoPath, maxCount = 10) {
+    const limit = Number.isSafeInteger(maxCount) ? Math.max(1, Math.min(maxCount, 1000)) : 10;
     const format = '%H%x00%h%x00%an%x00%ae%x00%ar%x00%s%x00%S';
     const output = await this.execGit(
-      ['log', '--all', '--source', '--pretty=format:' + format, `-n`, String(maxCount)],
+      ['log', '--all', '--source', '--pretty=format:' + format, `-n`, String(limit)],
       repoPath
     );
 
@@ -341,6 +405,10 @@ class GitService {
   }
 
   async revertToCommit(repoPath, commitHash) {
+    await this.assertNoExecutableConfig(repoPath);
+    if (typeof commitHash !== 'string' || !/^[0-9a-f]{4,64}$/i.test(commitHash)) {
+      throw new Error('Invalid commit');
+    }
     const targetCommit = await this.execGit(['rev-parse', '--verify', `${commitHash}^{commit}`], repoPath);
     await this.execGit(['merge-base', '--is-ancestor', targetCommit, 'HEAD'], repoPath);
     const head = await this.execGit(['rev-parse', 'HEAD'], repoPath);
@@ -390,8 +458,14 @@ class GitService {
    * @returns {Promise<void>}
    */
   async fetch(repoPath, remote = null) {
-    const args = remote ? ['fetch', '--prune', '--', remote] : ['fetch', '--all', '--prune'];
-    await this.execGit(args, repoPath);
+    if (remote) {
+      await this.execGit(['fetch', '--prune', '--', await this.validateRemote(repoPath, remote)], repoPath);
+      return;
+    }
+    const remotes = await this.execGit(['remote'], repoPath);
+    for (const name of remotes.split(/\r?\n/).filter(Boolean)) {
+      await this.execGit(['fetch', '--prune', '--', await this.validateRemote(repoPath, name)], repoPath);
+    }
   }
 
   /**
@@ -401,11 +475,14 @@ class GitService {
    * @returns {Promise<void>}
    */
   async createBranch(repoPath, branchName) {
-    await this.execGit(['checkout', '-b', branchName], repoPath);
+    await this.assertNoExecutableConfig(repoPath);
+    await this.execGit(['checkout', '-b', await this.validateBranch(repoPath, branchName)], repoPath);
   }
 
   async renameBranch(repoPath, branch, newName) {
     const currentName = branch.replace(/^refs\/heads\//, '');
+    await this.validateBranch(repoPath, currentName);
+    await this.validateBranch(repoPath, newName);
     await this.execGit(['branch', '-m', currentName, newName], repoPath);
   }
 
@@ -416,10 +493,14 @@ class GitService {
       if (separator < 1) throw new Error('Invalid remote branch');
       const remote = remoteBranch.slice(0, separator);
       const name = remoteBranch.slice(separator + 1);
+      await this.validateRemote(repoPath, remote);
+      await this.validateBranch(repoPath, name);
       await this.execGit(['push', remote, '--delete', name], repoPath);
       return;
     }
-    await this.execGit(['branch', '-d', branch.replace(/^refs\/heads\//, '')], repoPath);
+    const localBranch = branch.replace(/^refs\/heads\//, '');
+    await this.validateBranch(repoPath, localBranch);
+    await this.execGit(['branch', '-d', localBranch], repoPath);
   }
 
   /**
@@ -429,15 +510,21 @@ class GitService {
    * @returns {Promise<void>}
    */
   async switchBranch(repoPath, branchName) {
+    await this.assertNoExecutableConfig(repoPath);
     if (!branchName.startsWith('refs/remotes/')) {
-      await this.execGit(['checkout', branchName.replace(/^refs\/heads\//, '')], repoPath);
+      const localBranch = branchName.replace(/^refs\/heads\//, '');
+      await this.execGit(['checkout', await this.validateBranch(repoPath, localBranch)], repoPath);
       return;
     }
 
     const remoteBranch = branchName.replace(/^refs\/remotes\//, '');
     const separator = remoteBranch.indexOf('/');
     if (separator < 1 || separator === remoteBranch.length - 1) throw new Error('Invalid remote branch');
+    const remote = remoteBranch.substring(0, separator);
     const localName = remoteBranch.substring(separator + 1);
+    await this.validateRemote(repoPath, remote);
+    await this.validateBranch(repoPath, localName);
+    const safeRemoteBranch = `${remote}/${localName}`;
     const localExists = await this.execGit(
       ['show-ref', '--verify', '--quiet', `refs/heads/${localName}`],
       repoPath
@@ -446,7 +533,7 @@ class GitService {
       await this.execGit(['checkout', localName], repoPath);
       return;
     }
-    await this.execGit(['checkout', '--track', '-b', localName, remoteBranch], repoPath);
+    await this.execGit(['checkout', '--track', '-b', localName, safeRemoteBranch], repoPath);
   }
 
   async readRevisionFile(repoPath, revision, filePath) {
@@ -511,9 +598,9 @@ class GitService {
    * @returns {Promise<void>}
    */
   async push(repoPath, remote = 'origin', branch = null) {
-    const args = ['push', remote];
+    const args = ['push', '--', await this.validateRemote(repoPath, remote)];
     if (branch) {
-      args.push(branch);
+      args.push(await this.validateBranch(repoPath, branch));
     }
     await this.execGit(args, repoPath);
   }
@@ -526,9 +613,10 @@ class GitService {
    * @returns {Promise<void>}
    */
   async pull(repoPath, remote = 'origin', branch = null) {
-    const args = ['pull', remote];
+    await this.assertNoExecutableConfig(repoPath);
+    const args = ['pull', '--', await this.validateRemote(repoPath, remote)];
     if (branch) {
-      args.push(branch);
+      args.push(await this.validateBranch(repoPath, branch));
     }
     await this.execGit(args, repoPath);
   }
@@ -612,22 +700,71 @@ class GitService {
       }
     });
 
-    return Object.entries(remotes).map(([name, urls]) => ({name, ...urls}));
+    return Object.entries(remotes).map(([name, urls]) => ({
+      name,
+      fetch: urls.fetch ? this.redactRemoteUrl(urls.fetch) : undefined,
+      push: urls.push ? this.redactRemoteUrl(urls.push) : undefined
+    }));
+  }
+
+  redactRemoteUrl(remoteUrl) {
+    try {
+      const parsed = new URL(remoteUrl);
+      parsed.username = '';
+      parsed.password = '';
+      return parsed.toString();
+    } catch (error) {
+      return 'Unsupported remote URL';
+    }
+  }
+
+  async validateRemote(repoPath, remote) {
+    if (typeof remote !== 'string' || !remote || remote.startsWith('-')) throw new Error('Invalid remote');
+    const remotes = await this.execGit(['remote'], repoPath);
+    if (!remotes.split(/\r?\n/).includes(remote)) throw new Error('Unknown remote');
+    const remoteUrl = await this.execGit(['remote', 'get-url', '--', remote], repoPath);
+    this.validateRemoteUrl(remoteUrl);
+    return remote;
+  }
+
+  validateRemoteUrl(remoteUrl) {
+    let parsed;
+    try {
+      parsed = new URL(remoteUrl);
+    } catch (error) {
+      throw new Error('Git remotes must use an HTTP or HTTPS URL');
+    }
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      throw new Error('Git remotes must use an HTTP or HTTPS URL');
+    }
+  }
+
+  async validateBranch(repoPath, branch) {
+    if (typeof branch !== 'string' || !branch || branch.startsWith('-')) throw new Error('Invalid branch');
+    await this.execGit(['check-ref-format', '--branch', branch], repoPath);
+    return branch;
   }
 
   async addRemote(repoPath, name, url) {
-    await this.execGit(['remote', 'add', name, url], repoPath);
+    if (typeof name !== 'string' || !name || name.startsWith('-')) throw new Error('Invalid remote name');
+    await this.execGit(['check-ref-format', `refs/remotes/${name}/test`], repoPath);
+    if (typeof url !== 'string' || !url || url.startsWith('-')) throw new Error('Invalid remote URL');
+    this.validateRemoteUrl(url);
+    await this.execGit(['remote', 'add', '--', name, url], repoPath);
   }
 
   async removeRemote(repoPath, name) {
-    await this.execGit(['remote', 'remove', name], repoPath);
+    await this.execGit(['remote', 'remove', await this.validateRemote(repoPath, name)], repoPath);
   }
 
   async merge(repoPath, branch, targetBranch) {
+    await this.assertNoExecutableConfig(repoPath);
     const source = branch.replace(/^refs\/heads\//, '');
     const target = targetBranch.replace(/^refs\/heads\//, '');
     if (!source || !target) throw new Error('Choose both a source and destination branch');
     if (source === target) throw new Error('Source and destination branches must be different');
+    await this.validateBranch(repoPath, source);
+    await this.validateBranch(repoPath, target);
     const originalCommit = await this.execGit(['rev-parse', 'HEAD'], repoPath);
     let originalBranch = null;
     try {

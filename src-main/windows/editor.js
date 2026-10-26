@@ -187,8 +187,7 @@ const registerResultHandler = (ipc, channel, operation, formatResult = () => ({}
   });
 };
 
-const readGitProject = async selectedPath => {
-  const projectPath = await gitService.resolveRepository(selectedPath);
+const readGitProject = async projectPath => {
   return {
     name: path.basename(projectPath),
     data: await gitProject.readProject(projectPath),
@@ -287,6 +286,8 @@ class EditorWindow extends ProjectRunningWindow {
      * @type {Map<string, OpenedFile>}
      */
     this.openedFiles = new Map();
+    /** Repository capabilities keyed by unpredictable IDs that are safe to expose to the renderer. */
+    this.gitRepositories = new Map();
     this.activeFileId = null;
 
     if (initialFile !== null) {
@@ -306,6 +307,25 @@ class EditorWindow extends ProjectRunningWindow {
         throw new Error('Invalid file ID');
       }
       return this.openedFiles.get(id);
+    };
+
+    const authorizeGitRepository = async selectedPath => {
+      const realPath = await fsPromises.realpath(selectedPath);
+      const id = generateFileId();
+      this.gitRepositories.set(id, realPath);
+      return {id, name: path.basename(realPath)};
+    };
+
+    const getGitRepository = id => {
+      if (typeof id !== 'string' || !this.gitRepositories.has(id)) {
+        throw new Error('Invalid repository ID');
+      }
+      return this.gitRepositories.get(id);
+    };
+
+    const withRepository = operation => async (repositoryId, ...args) => {
+      const selectedPath = getGitRepository(repositoryId);
+      return operation(selectedPath, ...args);
     };
 
     let processingWillPreventUnload = false;
@@ -374,11 +394,16 @@ class EditorWindow extends ProjectRunningWindow {
     this.ipc.handle('get-file', async (event, id) => {
       const file = getFileById(id);
       const {name, data, projectPath} = await file.read();
+      let repositoryId = null;
+      if (projectPath) {
+        const repository = await authorizeGitRepository(projectPath);
+        repositoryId = repository.id;
+      }
       return {
         name,
         type: file.type,
         data,
-        projectPath
+        projectPath: repositoryId
       };
     });
 
@@ -460,10 +485,7 @@ class EditorWindow extends ProjectRunningWindow {
       settings.lastDirectory = directoryPath;
       await settings.save();
 
-      return {
-        name: path.basename(directoryPath),
-        path: directoryPath
-      };
+      return authorizeGitRepository(directoryPath);
     });
 
     this.ipc.handle('show-save-file-picker', async (event, suggestedName) => {
@@ -645,50 +667,59 @@ class EditorWindow extends ProjectRunningWindow {
     });
 
     this.ipc.handle('git-is-available', () => gitService.isGitAvailable());
-    registerResultHandler(this.ipc, 'git-status', repoPath => gitService.status(repoPath), data => ({data}));
-    registerResultHandler(this.ipc, 'git-init', (repoPath, branchName) => gitService.init(repoPath, branchName));
-    registerResultHandler(this.ipc, 'git-add', (repoPath, files) => gitService.add(repoPath, files));
-    registerResultHandler(this.ipc, 'git-reset', (repoPath, files) => gitService.reset(repoPath, files));
-    registerResultHandler(this.ipc, 'git-commit', (repoPath, message) => gitService.commit(repoPath, message));
-    registerResultHandler(this.ipc, 'git-log', (repoPath, maxCount) => gitService.log(repoPath, maxCount),
+    registerResultHandler(this.ipc, 'git-status', async repositoryId => {
+      const repoPath = getGitRepository(repositoryId);
+      const data = await gitService.status(repoPath);
+      if (data.isRepository) {
+        this.gitRepositories.set(repositoryId, data.repositoryRoot);
+        data.repositoryRoot = repositoryId;
+        data.repositoryName = path.basename(getGitRepository(repositoryId));
+      }
+      return data;
+    }, data => ({data}));
+    registerResultHandler(this.ipc, 'git-init', withRepository((repoPath, branchName) => gitService.init(repoPath, branchName)));
+    registerResultHandler(this.ipc, 'git-add', withRepository((repoPath, files) => gitService.add(repoPath, files)));
+    registerResultHandler(this.ipc, 'git-reset', withRepository((repoPath, files) => gitService.reset(repoPath, files)));
+    registerResultHandler(this.ipc, 'git-commit', withRepository((repoPath, message) => gitService.commit(repoPath, message)));
+    registerResultHandler(this.ipc, 'git-log', withRepository((repoPath, maxCount) => gitService.log(repoPath, maxCount)),
       commits => ({commits}));
-    registerResultHandler(this.ipc, 'git-list-branches', repoPath => gitService.listBranches(repoPath),
+    registerResultHandler(this.ipc, 'git-list-branches', withRepository(repoPath => gitService.listBranches(repoPath)),
       branches => ({branches}));
-    registerResultHandler(this.ipc, 'git-fetch', (repoPath, remote) => gitService.fetch(repoPath, remote));
-    registerResultHandler(this.ipc, 'git-create-branch', (repoPath, branchName) =>
-      gitService.createBranch(repoPath, branchName));
-    registerResultHandler(this.ipc, 'git-switch-branch', (repoPath, branchName) =>
-      gitService.switchBranch(repoPath, branchName));
-    registerResultHandler(this.ipc, 'git-push', (repoPath, remote, branch) =>
-      gitService.push(repoPath, remote, branch));
-    registerResultHandler(this.ipc, 'git-pull', (repoPath, remote, branch) =>
-      gitService.pull(repoPath, remote, branch));
-    registerResultHandler(this.ipc, 'git-discard', (repoPath, filePath, originalPath) =>
-      gitService.discard(repoPath, filePath, originalPath), result => result);
-    registerResultHandler(this.ipc, 'git-remotes', repoPath => gitService.remotes(repoPath),
+    registerResultHandler(this.ipc, 'git-fetch', withRepository((repoPath, remote) => gitService.fetch(repoPath, remote)));
+    registerResultHandler(this.ipc, 'git-create-branch', withRepository((repoPath, branchName) =>
+      gitService.createBranch(repoPath, branchName)));
+    registerResultHandler(this.ipc, 'git-switch-branch', withRepository((repoPath, branchName) =>
+      gitService.switchBranch(repoPath, branchName)));
+    registerResultHandler(this.ipc, 'git-push', withRepository((repoPath, remote, branch) =>
+      gitService.push(repoPath, remote, branch)));
+    registerResultHandler(this.ipc, 'git-pull', withRepository((repoPath, remote, branch) =>
+      gitService.pull(repoPath, remote, branch)));
+    registerResultHandler(this.ipc, 'git-discard', withRepository((repoPath, filePath, originalPath) =>
+      gitService.discard(repoPath, filePath, originalPath)), result => result);
+    registerResultHandler(this.ipc, 'git-remotes', withRepository(repoPath => gitService.remotes(repoPath)),
       remotes => ({remotes}));
-    registerResultHandler(this.ipc, 'git-rename-branch', (repoPath, branch, newName) =>
-      gitService.renameBranch(repoPath, branch, newName));
-    registerResultHandler(this.ipc, 'git-delete-branch', (repoPath, branch) =>
-      gitService.deleteBranch(repoPath, branch));
-    registerResultHandler(this.ipc, 'git-revert-to-commit', (repoPath, commitHash) =>
-      gitService.revertToCommit(repoPath, commitHash));
-    registerResultHandler(this.ipc, 'git-add-remote', (repoPath, name, url) =>
-      gitService.addRemote(repoPath, name, url));
-    registerResultHandler(this.ipc, 'git-remove-remote', (repoPath, name) =>
-      gitService.removeRemote(repoPath, name));
-    registerResultHandler(this.ipc, 'git-merge', (repoPath, branch, targetBranch) =>
-      gitService.merge(repoPath, branch, targetBranch));
-    registerResultHandler(this.ipc, 'git-read-readme', repoPath => gitService.readReadme(repoPath),
+    registerResultHandler(this.ipc, 'git-rename-branch', withRepository((repoPath, branch, newName) =>
+      gitService.renameBranch(repoPath, branch, newName)));
+    registerResultHandler(this.ipc, 'git-delete-branch', withRepository((repoPath, branch) =>
+      gitService.deleteBranch(repoPath, branch)));
+    registerResultHandler(this.ipc, 'git-revert-to-commit', withRepository((repoPath, commitHash) =>
+      gitService.revertToCommit(repoPath, commitHash)));
+    registerResultHandler(this.ipc, 'git-add-remote', withRepository((repoPath, name, url) =>
+      gitService.addRemote(repoPath, name, url)));
+    registerResultHandler(this.ipc, 'git-remove-remote', withRepository((repoPath, name) =>
+      gitService.removeRemote(repoPath, name)));
+    registerResultHandler(this.ipc, 'git-merge', withRepository((repoPath, branch, targetBranch) =>
+      gitService.merge(repoPath, branch, targetBranch)));
+    registerResultHandler(this.ipc, 'git-read-readme', withRepository(repoPath => gitService.readReadme(repoPath)),
       contents => ({contents}));
-    registerResultHandler(this.ipc, 'git-write-readme', (repoPath, contents) =>
-      gitService.writeReadme(repoPath, contents));
-    registerResultHandler(this.ipc, 'git-project-diff', (repoPath, filePath, staged, originalPath) =>
-      gitService.projectDiff(repoPath, filePath, staged, originalPath), data => ({data}));
-    registerResultHandler(this.ipc, 'git-sync-project', (repoPath, archive, workspaceXML) =>
-      gitProject.syncProject(repoPath, archive, workspaceXML));
-    registerResultHandler(this.ipc, 'git-read-project', readGitProject,
-      result => ({data: result.data, repositoryRoot: result.projectPath}));
+    registerResultHandler(this.ipc, 'git-write-readme', withRepository((repoPath, contents) =>
+      gitService.writeReadme(repoPath, contents)));
+    registerResultHandler(this.ipc, 'git-project-diff', withRepository((repoPath, filePath, staged, originalPath) =>
+      gitService.projectDiff(repoPath, filePath, staged, originalPath)), data => ({data}));
+    registerResultHandler(this.ipc, 'git-sync-project', withRepository((repoPath, archive, workspaceXML) =>
+      gitProject.syncProject(repoPath, archive, workspaceXML)));
+    registerResultHandler(this.ipc, 'git-read-project', withRepository(readGitProject),
+      result => ({data: result.data}));
 
     /**
      * Refers to the full screen button in the editor, not the OS-level fullscreen through
