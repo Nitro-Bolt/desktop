@@ -62,8 +62,7 @@ exposeInMainWorld('Git', {
   merge: (repoPath, branch, targetBranch) => ipcRenderer.invoke('git-merge', repoPath, branch, targetBranch),
   readReadme: (repoPath) => ipcRenderer.invoke('git-read-readme', repoPath),
   writeReadme: (repoPath, contents) => ipcRenderer.invoke('git-write-readme', repoPath, contents),
-  syncProject: (repoPath, archive, workspaceXML) =>
-    ipcRenderer.invoke('git-sync-project', repoPath, archive, workspaceXML),
+  syncProject: (repoPath, files) => ipcRenderer.invoke('git-sync-project', repoPath, files),
   readProject: (repoPath) => ipcRenderer.invoke('git-read-project', repoPath)
 });
 

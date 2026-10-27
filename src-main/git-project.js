@@ -6,57 +6,25 @@ const path = require('path');
 const PROJECT_FILE = 'project.json';
 const TARGET_FILE = 'target.json';
 const BLOCKS_FILE = 'blocks.json';
+const TARGET_DIRECTORY = 'targets';
 const ASSET_DIRECTORY = 'assets';
-const RESERVED_TARGET_FOLDERS = [
-  '.git',
-  '.gitattributes',
-  'assets',
-  'project.json',
-  'readme.md'
-];
-const BINARY_ASSET_EXTENSIONS = [
-  '.gif',
-  '.ico',
-  '.jpeg',
-  '.jpg',
-  '.m4a',
-  '.mp3',
-  '.mp4',
-  '.ogg',
-  '.otf',
-  '.pdf',
-  '.png',
-  '.sb3',
-  '.ttf',
-  '.wav',
-  '.webm',
-  '.webp',
-  '.woff',
-  '.woff2',
-  '.zip'
-];
+const FORMAT_VERSION = 2;
+const repositoryOperations = [];
 
-const defineOwn = (object, key, value) => {
-  Object.defineProperty(object, key, {
-    configurable: true,
-    enumerable: true,
-    value,
-    writable: true
-  });
-};
-
+const defineOwn = (object, key, value) => Object.defineProperty(object, key, {
+  configurable: true, enumerable: true, value, writable: true
+});
 const uniqueStrings = values => values.filter((value, index) => values.indexOf(value) === index);
-
-const findPathIgnoreCase = (paths, value) => paths.find(candidate =>
-  candidate.toLowerCase() === value.toLowerCase());
-
 const sortValue = value => {
   if (Array.isArray(value)) return value.map(sortValue);
   if (!value || typeof value !== 'object') return value;
   const result = {};
-  for (const key of Object.keys(value).sort()) defineOwn(result, key, sortValue(value[key]));
+  Object.keys(value).sort().forEach(key => defineOwn(result, key, sortValue(value[key])));
   return result;
 };
+const stringify = value => `${JSON.stringify(value, null, 2)}\n`;
+const contentId = data => crypto.createHash('sha256').update(data).digest('hex');
+const targetDirectory = id => `${TARGET_DIRECTORY}/${contentId(Buffer.from(id)).slice(0, 24)}`;
 
 const assertRepository = async repoPath => {
   const resolved = await fsPromises.realpath(path.resolve(repoPath));
@@ -89,12 +57,6 @@ const assertManagedPath = async (repository, relativePath) => {
   return fullPath;
 };
 
-const getProjectJSON = zip => {
-  const entry = zip.getEntry(PROJECT_FILE);
-  if (!entry) throw new Error(`Project archive does not contain ${PROJECT_FILE}`);
-  return JSON.parse(entry.getData().toString('utf8'));
-};
-
 const inputReferences = (value, blocks, references = []) => {
   if (!Array.isArray(value)) return references;
   for (let index = 1; index <= 2 && index < value.length; index++) {
@@ -102,13 +64,10 @@ const inputReferences = (value, blocks, references = []) => {
   }
   return references;
 };
-
 const isTopLevelBlock = block => Array.isArray(block) ?
   [12, 13, 14].includes(block[0]) && block.length >= 5 : Boolean(block && block.topLevel);
-
 const blockPosition = block => Array.isArray(block) ? {x: block[3] || 0, y: block[4] || 0} : {
-  x: block.x || 0,
-  y: block.y || 0
+  x: Number(block && block.x) || 0, y: Number(block && block.y) || 0
 };
 
 const orderedScripts = blocks => {
@@ -131,319 +90,242 @@ const orderedScripts = blocks => {
   });
   const scripts = [];
   roots.forEach(root => {
-    const ordered = [];
-    visit(root, ordered);
-    scripts.push({root, blocks: ordered});
+    const ids = [];
+    visit(root, ids);
+    scripts.push({root, ids});
   });
-  Object.keys(blocks).sort().forEach(id => {
-    if (visited.includes(id)) return;
-    const ordered = [];
-    visit(id, ordered);
-    scripts.push({root: id, blocks: ordered});
+  Object.keys(blocks).sort().forEach(root => {
+    if (visited.includes(root)) return;
+    const ids = [];
+    visit(root, ids);
+    scripts.push({root, ids});
   });
   return scripts;
 };
 
-const targetDocuments = (target, workspaceTarget = null) => {
-  const metadata = JSON.parse(JSON.stringify(target));
-  const blocks = metadata.blocks || {};
-  const comments = metadata.comments || {};
-  delete metadata.blocks;
-  delete metadata.comments;
-  const workspaceScripts = workspaceTarget && Array.isArray(workspaceTarget.scripts) ?
-    workspaceTarget.scripts : [];
-  const claimedComments = [];
+const bestPreviousScript = (script, previousScripts, claimedIds) => {
+  const available = previousScripts.filter(candidate => !claimedIds.includes(candidate.id));
+  const sameRoot = available.find(candidate => candidate.root === script.root);
+  if (sameRoot) return sameRoot;
+  let best = null;
+  let bestOverlap = 0;
+  for (const candidate of available) {
+    const candidateIds = Object.keys(candidate.blocks || {});
+    const overlap = script.ids.filter(id => candidateIds.includes(id)).length;
+    if (overlap > bestOverlap) {
+      best = candidate;
+      bestOverlap = overlap;
+    }
+  }
+  return bestOverlap ? best : null;
+};
+
+const createBlocksDocument = (target, previousDocument = null) => {
+  const blocks = target.blocks || {};
+  const comments = target.comments || {};
+  const previousScripts = previousDocument && Array.isArray(previousDocument.scripts) ? previousDocument.scripts : [];
+  const claimedScriptIds = [];
+  const claimedCommentIds = [];
   const scripts = orderedScripts(blocks).map(script => {
+    const previous = bestPreviousScript(script, previousScripts, claimedScriptIds);
+    const scriptId = previous ? previous.id : crypto.randomUUID();
+    claimedScriptIds.push(scriptId);
     const scriptBlocks = {};
-    script.blocks.forEach(id => defineOwn(scriptBlocks, id, blocks[id]));
     const scriptComments = {};
+    script.ids.forEach(id => defineOwn(scriptBlocks, id, blocks[id]));
     Object.keys(comments).sort().forEach(id => {
-      if (!script.blocks.includes(comments[id].blockId)) return;
+      if (!script.ids.includes(comments[id].blockId)) return;
       defineOwn(scriptComments, id, comments[id]);
-      claimedComments.push(id);
+      claimedCommentIds.push(id);
     });
-    const root = blockPosition(blocks[script.root]);
     return {
-      id: script.root,
-      position: root,
-      xml: (workspaceScripts.find(item => item.id === script.root) || {}).xml || null,
+      id: scriptId,
+      root: script.root,
       blocks: sortValue(scriptBlocks),
       comments: sortValue(scriptComments)
     };
   });
   const workspaceComments = {};
-  Object.keys(comments).sort().filter(id => !claimedComments.includes(id))
+  Object.keys(comments).sort().filter(id => !claimedCommentIds.includes(id))
     .forEach(id => defineOwn(workspaceComments, id, comments[id]));
   return {
-    target: {
-      format: 'nitrobolt-target',
-      version: 1,
-      target: sortValue(metadata)
-    },
-    blocks: {
-      format: 'nitrobolt-blocks',
-      version: 1,
-      scripts,
-      workspaceComments: sortValue(workspaceComments)
-    }
+    format: 'nitrobolt-blocks', version: FORMAT_VERSION, scripts,
+    workspaceComments: sortValue(workspaceComments)
   };
 };
 
-const stringifyTargetDocuments = (target, workspaceTarget) => {
-  const documents = targetDocuments(target, workspaceTarget);
-  return {
-    blocks: `${JSON.stringify(documents.blocks, null, 2)}\n`,
-    target: `${JSON.stringify(documents.target, null, 2)}\n`
-  };
+const parseBlocksDocument = source => {
+  const document = typeof source === 'string' ? JSON.parse(source) : source;
+  if (!document || document.format !== 'nitrobolt-blocks' || document.version !== FORMAT_VERSION ||
+    !Array.isArray(document.scripts) || !document.workspaceComments ||
+    typeof document.workspaceComments !== 'object' || Array.isArray(document.workspaceComments)) {
+    throw new Error('Unsupported blocks file. Convert this repository to NitroBolt Git format 2.');
+  }
+  const scriptIds = [];
+  document.scripts.forEach(script => {
+    if (!script || typeof script.id !== 'string' || !script.id || scriptIds.includes(script.id) ||
+      typeof script.root !== 'string' || !script.blocks || typeof script.blocks !== 'object' ||
+      Array.isArray(script.blocks) || !script.blocks[script.root] || !script.comments ||
+      typeof script.comments !== 'object' || Array.isArray(script.comments)) throw new Error('Invalid blocks file');
+    scriptIds.push(script.id);
+  });
+  return document;
 };
 
 const applyBlocksDocument = (target, document) => {
-  if (document.format !== 'nitrobolt-blocks' || document.version !== 1 ||
-    !Array.isArray(document.scripts) || !document.workspaceComments ||
-    typeof document.workspaceComments !== 'object' || Array.isArray(document.workspaceComments)) {
-    throw new Error('Unsupported block JSON');
-  }
+  const parsed = parseBlocksDocument(document);
   target.blocks = {};
-  target.comments = {...document.workspaceComments};
-  for (const script of document.scripts) {
-    if (!script || typeof script !== 'object' || !script.blocks || typeof script.blocks !== 'object' ||
-      Array.isArray(script.blocks) || !script.comments || typeof script.comments !== 'object' ||
-      Array.isArray(script.comments)) throw new Error('Invalid script in block JSON');
-    Object.keys(script.blocks).forEach(id => defineOwn(target.blocks, id, script.blocks[id]));
-    Object.keys(script.comments).forEach(id => defineOwn(target.comments, id, script.comments[id]));
-  }
-  target._nitroboltScripts = document.scripts.map(script => ({
-    id: script.id,
-    position: script.position || {x: 0, y: 0},
-    xml: script.xml || null
+  target.comments = {...parsed.workspaceComments};
+  parsed.scripts.forEach(script => {
+    Object.keys(script.blocks).forEach(id => {
+      if (target.blocks[id]) throw new Error(`Duplicate block ID: ${id}`);
+      defineOwn(target.blocks, id, script.blocks[id]);
+    });
+    Object.keys(script.comments).forEach(id => {
+      if (target.comments[id]) throw new Error(`Duplicate comment ID: ${id}`);
+      defineOwn(target.comments, id, script.comments[id]);
+    });
+  });
+  target._nitroboltScripts = parsed.scripts.map(script => ({
+    id: script.id, root: script.root
   }));
   return target;
 };
+const parseBlocks = source => applyBlocksDocument({}, source);
 
-const parseTarget = (source, blocksSource = null) => {
-  const document = JSON.parse(source);
-  if (document.format !== 'nitrobolt-target' || document.version !== 1 || !document.target ||
-    typeof document.target !== 'object' || Array.isArray(document.target)) {
-    throw new Error('Unsupported target JSON');
+const parseTargetDocument = source => {
+  const document = typeof source === 'string' ? JSON.parse(source) : source;
+  if (!document || document.format !== 'nitrobolt-target' || document.version !== FORMAT_VERSION ||
+    !document.target || typeof document.target !== 'object' || Array.isArray(document.target)) {
+    throw new Error('Unsupported target file. Convert this repository to NitroBolt Git format 2.');
   }
-  const target = document.target;
-  if (blocksSource === null) throw new Error(`Target JSON requires a sibling ${BLOCKS_FILE}`);
-  return applyBlocksDocument(target, JSON.parse(blocksSource));
-};
-
-const parseBlocks = source => applyBlocksDocument({}, JSON.parse(source));
-
-const isTargetFilePath = filePath => {
-  if (typeof filePath !== 'string' || filePath.includes('\\')) return false;
-  const normalized = path.posix.normalize(filePath);
-  const parts = normalized.split('/');
-  return normalized === filePath && parts.length === 2 && parts[0] !== '.' && parts[0] !== '..' &&
-    !RESERVED_TARGET_FOLDERS.includes(parts[0].toLowerCase()) && parts[1] === TARGET_FILE;
-};
-
-const stringifyManifest = (project, targetFiles) => {
-  const metadata = {...project};
-  delete metadata.targets;
-  return `${JSON.stringify({
-    format: 'nitrobolt-project',
-    version: 1,
-    metadata: sortValue(metadata),
-    targets: targetFiles
-  }, null, 2)}\n`;
+  return document.target;
 };
 
 const parseManifest = source => {
   const document = JSON.parse(source);
-  if (document.format !== 'nitrobolt-project' || document.version !== 1 || !document.metadata ||
-    typeof document.metadata !== 'object' || Array.isArray(document.metadata) ||
-    !Array.isArray(document.targets)) throw new Error('Unsupported project JSON');
-  document.targets.forEach(filePath => {
-    if (!isTargetFilePath(filePath)) throw new Error(`Invalid target path in manifest: ${filePath}`);
-  });
-  if (document.targets.some((filePath, index) => document.targets.findIndex(candidate =>
-    candidate.toLowerCase() === filePath.toLowerCase()) !== index)) {
-    throw new Error('Manifest contains duplicate target paths');
+  if (document.format !== 'nitrobolt-project' || document.version !== FORMAT_VERSION || !document.metadata ||
+    typeof document.metadata !== 'object' || Array.isArray(document.metadata) || !Array.isArray(document.targets)) {
+    throw new Error('Unsupported project file. Convert this repository to NitroBolt Git format 2.');
   }
-  return {metadata: document.metadata, targetFiles: document.targets};
-};
-
-const targetFolderBase = (target, index) => {
-  const fallback = target.isStage ? 'Stage' : `Sprite ${index}`;
-  let name = String(target.name || fallback)
-    .normalize('NFC')
-    .replace(/[<>:"/\\|?*\u0000-\u001f]/g, '-')
-    .replace(/\s+/g, ' ')
-    .replace(/[. ]+$/g, '')
-    .trim();
-  if (!name) name = fallback;
-  if (/^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(name)) name = `_${name}`;
-  if (RESERVED_TARGET_FOLDERS.includes(name.toLowerCase())) name = `_${name}`;
-  return name.substring(0, 80).replace(/[. ]+$/g, '') || fallback;
-};
-
-const targetFilePaths = targets => {
-  const used = [];
-  return targets.map((target, index) => {
-    const base = targetFolderBase(target, index);
-    let folder = base;
-    let suffix = 2;
-    while (used.includes(folder.toLowerCase())) folder = `${base} ${suffix++}`;
-    used.push(folder.toLowerCase());
-    return `${folder}/${TARGET_FILE}`;
+  const ids = [];
+  const files = [];
+  document.targets.forEach(entry => {
+    if (!entry || typeof entry.id !== 'string' || !entry.id || ids.includes(entry.id) ||
+      typeof entry.file !== 'string' || files.includes(entry.file.toLowerCase()) ||
+      entry.file !== `${targetDirectory(entry.id)}/${TARGET_FILE}`) throw new Error('Invalid project target entry');
+    ids.push(entry.id);
+    files.push(entry.file.toLowerCase());
   });
-};
-
-const safeAssetFilename = (asset, index, used) => {
-  const extension = String(asset.dataFormat || path.extname(asset.md5ext || '').substring(1) || 'bin')
-    .replace(/[^a-zA-Z0-9]/g, '') || 'bin';
-  const fallback = `Asset ${index + 1}`;
-  let base = String(asset.name || fallback)
-    .normalize('NFC')
-    .replace(/[<>:"/\\|?*\u0000-\u001f]/g, '-')
-    .replace(new RegExp(`\\.${extension}$`, 'i'), '')
-    .replace(/\s+/g, ' ')
-    .replace(/[. ]+$/g, '')
-    .trim() || fallback;
-  if (/^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(base)) base = `_${base}`;
-  base = base.substring(0, 100).replace(/[. ]+$/g, '') || fallback;
-  let filename = `${base}.${extension}`;
-  let suffix = 2;
-  while (used.includes(filename.toLowerCase())) filename = `${base} ${suffix++}.${extension}`;
-  used.push(filename.toLowerCase());
-  return filename;
-};
-
-const prepareTarget = (target, targetFile, zip) => {
-  const serialized = JSON.parse(JSON.stringify(target));
-  const used = [];
-  const assets = [];
-  const targetFolder = path.posix.dirname(targetFile);
-  const prepareList = list => (list || []).forEach((asset, index) => {
-    const archiveName = asset.md5ext || (asset.assetId && asset.dataFormat ?
-      `${asset.assetId}.${asset.dataFormat}` : null);
-    if (!archiveName || archiveName.includes('/') || archiveName.includes('\\')) {
-      throw new Error(`Target asset does not have a valid serialized name: ${asset.name || index}`);
-    }
-    const entry = zip.getEntry(archiveName);
-    if (!entry || entry.isDirectory) throw new Error(`Project archive does not contain asset ${archiveName}`);
-    const filename = safeAssetFilename(asset, index, used);
-    asset.file = `${ASSET_DIRECTORY}/${filename}`;
-    delete asset.assetId;
-    delete asset.md5ext;
-    assets.push({
-      data: entry.getData(),
-      filePath: `${targetFolder}/${ASSET_DIRECTORY}/${filename}`,
-      reference: asset,
-      relativeTo: targetFolder
-    });
-  });
-  prepareList(serialized.costumes);
-  prepareList(serialized.sounds);
-  prepareList(serialized.assets);
-  return {assets, target: serialized};
-};
-
-const prepareProjectMetadata = (project, zip) => {
-  const metadata = JSON.parse(JSON.stringify(project));
-  delete metadata.targets;
-  const assets = [];
-  const used = [];
-  (metadata.customFonts || []).forEach((font, index) => {
-    if (font.system || !font.md5ext) return;
-    const entry = zip.getEntry(font.md5ext);
-    if (!entry || entry.isDirectory) throw new Error(`Project archive does not contain font ${font.md5ext}`);
-    const extension = path.extname(font.md5ext).substring(1) || 'bin';
-    const filename = safeAssetFilename({
-      dataFormat: extension,
-      name: font.family || `Font ${index + 1}`
-    }, index, used);
-    font.file = `${ASSET_DIRECTORY}/${filename}`;
-    delete font.md5ext;
-    assets.push({data: entry.getData(), filePath: font.file, reference: font, relativeTo: ''});
-  });
-  return {assets, metadata};
-};
-
-const assetPathsForDefinition = definition => {
-  if (!definition) return [];
-  const result = [];
-  definition.project.targets.forEach((target, index) => {
-    const folder = path.posix.dirname(definition.targetFiles[index]);
-    [...(target.costumes || []), ...(target.sounds || []), ...(target.assets || [])].forEach(asset => {
-      if (typeof asset.file === 'string' && /^assets\/[^/\\]+$/.test(asset.file)) {
-        result.push(`${folder}/${asset.file}`);
-      }
-    });
-  });
-  (definition.project.customFonts || []).forEach(font => {
-    if (typeof font.file === 'string' && /^assets\/[^/\\]+$/.test(font.file)) result.push(font.file);
-  });
-  return result;
-};
-
-const hydrateTargetAssets = async (repository, target, targetFile, zip) => {
-  const hydrated = JSON.parse(JSON.stringify(target));
-  delete hydrated._nitroboltScripts;
-  const folder = path.posix.dirname(targetFile);
-  const hydrateList = async list => {
-    for (const asset of list || []) {
-      if (!asset.file) continue;
-      if (!/^assets\/[^/\\]+$/.test(asset.file)) throw new Error(`Invalid target asset path: ${asset.file}`);
-      const assetPath = path.posix.join(folder, asset.file);
-      const data = await fsPromises.readFile(await assertManagedPath(repository, assetPath));
-      const extension = String(asset.dataFormat || path.posix.extname(asset.file).substring(1) || 'bin');
-      const assetId = crypto.createHash('md5').update(data).digest('hex');
-      asset.assetId = assetId;
-      asset.md5ext = `${assetId}.${extension}`;
-      delete asset.file;
-      if (!zip.getEntry(asset.md5ext)) zip.addFile(asset.md5ext, data);
-    }
-  };
-  await hydrateList(hydrated.costumes);
-  await hydrateList(hydrated.sounds);
-  await hydrateList(hydrated.assets);
-  return hydrated;
-};
-
-const hydrateProjectMetadata = async (repository, project, zip) => {
-  const hydrated = JSON.parse(JSON.stringify(project));
-  delete hydrated.targets;
-  for (const font of hydrated.customFonts || []) {
-    if (font.system || !font.file) continue;
-    if (!/^assets\/[^/\\]+$/.test(font.file)) throw new Error(`Invalid font asset path: ${font.file}`);
-    const data = await fsPromises.readFile(await assertManagedPath(repository, font.file));
-    const extension = path.extname(font.file).substring(1) || 'bin';
-    const assetId = crypto.createHash('md5').update(data).digest('hex');
-    font.md5ext = `${assetId}.${extension}`;
-    delete font.file;
-    if (!zip.getEntry(font.md5ext)) zip.addFile(font.md5ext, data);
-  }
-  return hydrated;
+  return document;
 };
 
 const readProjectDefinition = async repository => {
+  const manifestPath = await assertManagedPath(repository, PROJECT_FILE);
+  let source;
   try {
-    const manifestPath = await assertManagedPath(repository, PROJECT_FILE);
-    const manifestSource = await fsPromises.readFile(manifestPath, 'utf8');
-    const manifest = parseManifest(manifestSource);
-    const targets = [];
-    const blockFiles = [];
-    for (const targetFile of manifest.targetFiles) {
-      const targetSource = await fsPromises.readFile(await assertManagedPath(repository, targetFile), 'utf8');
-      const blockFile = path.posix.join(path.posix.dirname(targetFile), BLOCKS_FILE);
-      const blocksSource = await fsPromises.readFile(await assertManagedPath(repository, blockFile), 'utf8');
-      blockFiles.push(blockFile);
-      targets.push(parseTarget(targetSource, blocksSource));
-    }
-    return {
-      project: {...manifest.metadata, targets},
-      blockFiles,
-      targetFiles: manifest.targetFiles
-    };
+    source = await fsPromises.readFile(manifestPath, 'utf8');
   } catch (error) {
-    if (error.code === 'ENOENT' && error.path === path.join(repository, PROJECT_FILE)) return null;
+    if (error.code === 'ENOENT') return null;
     throw error;
   }
+  const manifest = parseManifest(source);
+  const targets = [];
+  const blocks = [];
+  for (const entry of manifest.targets) {
+    const targetSource = await fsPromises.readFile(await assertManagedPath(repository, entry.file), 'utf8');
+    const blocksFile = path.posix.join(path.posix.dirname(entry.file), BLOCKS_FILE);
+    const blocksSource = await fsPromises.readFile(await assertManagedPath(repository, blocksFile), 'utf8');
+    const target = parseTargetDocument(targetSource);
+    if (target.id !== entry.id) throw new Error(`Target ID does not match manifest: ${entry.id}`);
+    const blocksDocument = parseBlocksDocument(blocksSource);
+    targets.push(applyBlocksDocument(target, blocksDocument));
+    blocks.push(blocksDocument);
+  }
+  return {manifest, project: {...manifest.metadata, targets}, blocks};
+};
+
+const assetExtension = asset => String(asset.dataFormat || path.extname(asset.md5ext || asset.file || '').slice(1) || 'bin')
+  .replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || 'bin';
+const snapshotAsset = (files, archiveName) => {
+  if (!archiveName || archiveName.includes('/') || archiveName.includes('\\') || !files[archiveName]) {
+    throw new Error(`Project snapshot does not contain asset ${archiveName || ''}`);
+  }
+  return Buffer.from(files[archiveName]);
+};
+const prepareAsset = (asset, files) => {
+  const archiveName = asset.md5ext || (asset.assetId && asset.dataFormat ? `${asset.assetId}.${asset.dataFormat}` : null);
+  const data = snapshotAsset(files, archiveName);
+  const filePath = `${ASSET_DIRECTORY}/${contentId(data)}.${assetExtension(asset)}`;
+  asset.file = filePath;
+  delete asset.assetId;
+  delete asset.md5ext;
+  return {data, filePath};
+};
+
+const prepareProject = (project, files, previousDefinition) => {
+  if (!Array.isArray(project.targets)) throw new Error('Project snapshot does not contain a target list');
+  const metadata = JSON.parse(JSON.stringify(project));
+  delete metadata.targets;
+  const assetEntries = [];
+  const addAsset = entry => {
+    if (!assetEntries.some(candidate => candidate.filePath === entry.filePath)) assetEntries.push(entry);
+  };
+  (metadata.customFonts || []).forEach(font => {
+    if (!font.system && font.md5ext) addAsset(prepareAsset(font, files));
+  });
+  const targetIds = [];
+  const targets = project.targets.map(targetSource => {
+    const target = JSON.parse(JSON.stringify(targetSource));
+    if (typeof target.id !== 'string' || !target.id || targetIds.includes(target.id)) {
+      throw new Error('Git snapshots require unique, stable target IDs');
+    }
+    targetIds.push(target.id);
+    const previousIndex = previousDefinition ?
+      previousDefinition.manifest.targets.findIndex(entry => entry.id === target.id) : -1;
+    const previousBlocks = previousIndex >= 0 ? previousDefinition.blocks[previousIndex] : null;
+    const blocks = createBlocksDocument(target, previousBlocks);
+    delete target.blocks;
+    delete target.comments;
+    [...(target.costumes || []), ...(target.sounds || []), ...(target.assets || [])]
+      .forEach(asset => addAsset(prepareAsset(asset, files)));
+    return {blocks, target: sortValue(target)};
+  });
+  return {assetEntries, metadata: sortValue(metadata), targets};
+};
+
+const hydrateAssets = async (repository, value, zip) => {
+  for (const asset of value || []) {
+    if (asset.system) continue;
+    if (!asset.file || !/^assets\/[0-9a-f]{64}\.[a-z0-9]+$/.test(asset.file)) {
+      throw new Error(`Invalid asset path: ${asset.file || ''}`);
+    }
+    const data = await fsPromises.readFile(await assertManagedPath(repository, asset.file));
+    const extension = assetExtension(asset);
+    const assetId = crypto.createHash('md5').update(data).digest('hex');
+    asset.assetId = assetId;
+    asset.md5ext = `${assetId}.${extension}`;
+    delete asset.file;
+    if (!zip.getEntry(asset.md5ext)) zip.addFile(asset.md5ext, data);
+  }
+};
+
+const managedFiles = definition => {
+  if (!definition) return [];
+  const result = [PROJECT_FILE];
+  definition.manifest.targets.forEach(entry => {
+    result.push(entry.file, path.posix.join(path.posix.dirname(entry.file), BLOCKS_FILE));
+  });
+  const collect = value => (value || []).forEach(asset => {
+    if (typeof asset.file === 'string') result.push(asset.file);
+  });
+  definition.project.targets.forEach(target => {
+    collect(target.costumes);
+    collect(target.sounds);
+    collect(target.assets);
+  });
+  collect(definition.project.customFonts);
+  return uniqueStrings(result);
 };
 
 const ensureGitAttributes = async repository => {
@@ -455,252 +337,145 @@ const ensureGitAttributes = async repository => {
     if (error.code !== 'ENOENT') throw error;
   }
   const required = [
-    `${PROJECT_FILE} text eol=lf`,
-    `*/${TARGET_FILE} text eol=lf`,
-    `*/${BLOCKS_FILE} text eol=lf`,
-    ...BINARY_ASSET_EXTENSIONS.map(extension => `*/${ASSET_DIRECTORY}/*${extension} binary`),
-    `${ASSET_DIRECTORY}/* binary`
+    `${PROJECT_FILE} text eol=lf`, `${TARGET_DIRECTORY}/**/${TARGET_FILE} text eol=lf`,
+    `${TARGET_DIRECTORY}/**/${BLOCKS_FILE} text eol=lf`, `${ASSET_DIRECTORY}/** binary`
   ];
   const lines = contents ? contents.split(/\r?\n/) : [];
   required.forEach(line => {
     if (!lines.includes(line)) lines.push(line);
   });
   while (lines.length && !lines[lines.length - 1]) lines.pop();
-  const nextContents = `${lines.join('\n')}\n`;
-  if (nextContents !== contents) await fsPromises.writeFile(attributesPath, nextContents);
+  const next = `${lines.join('\n')}\n`;
+  if (next !== contents) await fsPromises.writeFile(attributesPath, next);
 };
 
 const replaceFiles = async entries => {
-  const timestamp = Date.now();
+  const transaction = `${process.pid}-${Date.now()}`;
   const replacements = [];
   try {
     for (let index = 0; index < entries.length; index++) {
-      const {temporaryPath, destinationPath} = entries[index];
+      const entry = entries[index];
       const replacement = {
-        backupPath: `${destinationPath}.backup-${process.pid}-${timestamp}-${index}`,
-        destinationPath,
-        hadExistingFile: false,
-        installedNewFile: false
+        ...entry, backupPath: `${entry.destinationPath}.backup-${transaction}-${index}`,
+        existed: false, installed: false
       };
       replacements.push(replacement);
       try {
-        await fsPromises.rename(destinationPath, replacement.backupPath);
-        replacement.hadExistingFile = true;
+        await fsPromises.rename(entry.destinationPath, replacement.backupPath);
+        replacement.existed = true;
       } catch (error) {
         if (error.code !== 'ENOENT') throw error;
       }
-      await fsPromises.rename(temporaryPath, destinationPath);
-      replacement.installedNewFile = true;
+      await fsPromises.rename(entry.temporaryPath, entry.destinationPath);
+      replacement.installed = true;
     }
   } catch (error) {
+    const rollbackErrors = [];
     for (const replacement of replacements.reverse()) {
-      if (replacement.installedNewFile) {
-        await fsPromises.rm(replacement.destinationPath, {force: true}).catch(restoreError => {
-          error.message += ` (also failed to remove a partial project file: ${restoreError.message})`;
-        });
-      }
-      if (!replacement.hadExistingFile) continue;
-      try {
-        await fsPromises.rename(replacement.backupPath, replacement.destinationPath);
-      } catch (restoreError) {
-        error.message += ` (also failed to restore a previous project file: ${restoreError.message})`;
-      }
+      if (replacement.installed) await fsPromises.rm(replacement.destinationPath, {force: true})
+        .catch(rollbackError => rollbackErrors.push(rollbackError.message));
+      if (replacement.existed) await fsPromises.rename(replacement.backupPath, replacement.destinationPath)
+        .catch(rollbackError => rollbackErrors.push(rollbackError.message));
     }
+    if (rollbackErrors.length) error.message += ` Rollback also failed: ${rollbackErrors.join('; ')}`;
     throw error;
   }
-  for (const replacement of replacements) {
-    if (replacement.hadExistingFile) {
-      // Installation has succeeded. A leftover backup is safer than rolling
-      // the new project back just because cleanup was interrupted.
-      await fsPromises.rm(replacement.backupPath, {force: true}).catch(() => {});
-    }
-  }
+  await Promise.all(replacements.filter(entry => entry.existed)
+    .map(entry => fsPromises.rm(entry.backupPath, {force: true}).catch(() => {})));
 };
 
-const syncProject = async (repoPath, archive, workspaceXML = []) => {
-  const repository = await assertRepository(repoPath);
-  const zip = new AdmZip(Buffer.from(archive));
-  const project = getProjectJSON(zip);
-  let oldDefinition;
-  try {
-    oldDefinition = await readProjectDefinition(repository);
-  } catch (error) {
-    throw new Error(`Existing project cannot be read safely: ${error.message}`);
-  }
-  const oldAssets = assetPathsForDefinition(oldDefinition);
-  const oldTargetFiles = oldDefinition ? oldDefinition.targetFiles : [];
-  const oldBlockFiles = oldDefinition ? oldDefinition.blockFiles : [];
-  const targetFiles = targetFilePaths(project.targets || [])
-    .map(filePath => findPathIgnoreCase(oldTargetFiles, filePath) || filePath);
+const writeProject = async (repository, files) => {
+  if (!files || typeof files !== 'object' || !files[PROJECT_FILE]) throw new Error('Invalid project snapshot');
+  const project = JSON.parse(Buffer.from(files[PROJECT_FILE]).toString('utf8'));
+  const previous = await readProjectDefinition(repository);
+  const prepared = prepareProject(project, files, previous);
+  const targets = project.targets.map(target => ({
+    id: target.id, file: `${targetDirectory(target.id)}/${TARGET_FILE}`
+  }));
+  const manifest = {
+    format: 'nitrobolt-project', version: FORMAT_VERSION, metadata: prepared.metadata, targets
+  };
   const saveId = `${process.pid}-${Date.now()}`;
-  const projectPath = path.join(repository, PROJECT_FILE);
-  const temporaryPath = `${projectPath}.tmp-${saveId}`;
-  const preparedProject = prepareProjectMetadata(project, zip);
-  const targetEntries = targetFiles.map((targetFile, index) => {
-    const file = path.join(repository, ...targetFile.split('/'));
-    const blocksFile = path.join(path.dirname(file), BLOCKS_FILE);
-    const prepared = prepareTarget(project.targets[index], targetFile, zip);
-    const serializedTarget = project.targets[index];
-    const workspaceTarget = serializedTarget.id ?
-      workspaceXML.find(target => target.id === serializedTarget.id) : workspaceXML[index];
-    if (!workspaceTarget || Boolean(workspaceTarget.isStage) !== Boolean(serializedTarget.isStage) ||
-      workspaceTarget.name !== serializedTarget.name) {
-      throw new Error(`Could not match workspace XML to target ${serializedTarget.name || index}`);
+  const writes = [];
+  const previousFiles = managedFiles(previous).map(filePath => filePath.toLowerCase());
+  const addWrite = async (filePath, data) => {
+    const destinationPath = await assertManagedPath(repository, filePath);
+    if (!previousFiles.includes(filePath.toLowerCase())) {
+      try {
+        await fsPromises.access(destinationPath);
+        throw new Error(`Refusing to overwrite an unmanaged project file: ${filePath}`);
+      } catch (error) {
+        if (error.code !== 'ENOENT') throw error;
+      }
     }
-    return {
-      assets: prepared.assets,
-      blocksFile,
-      blocksTemporaryFile: `${blocksFile}.tmp-${saveId}-${index}`,
-      file,
-      preparedTarget: prepared.target,
-      targetFile,
-      temporaryFile: `${file}.tmp-${saveId}-${index}`,
-      workspaceTarget
-    };
-  });
-  const assetEntries = [...targetEntries.flatMap(entry => entry.assets), ...preparedProject.assets];
-  assetEntries.forEach((entry, index) => {
-    const oldPath = findPathIgnoreCase(oldAssets, entry.filePath);
-    if (oldPath) {
-      entry.filePath = oldPath;
-      entry.reference.file = entry.relativeTo ? path.posix.relative(entry.relativeTo, oldPath) : oldPath;
-    }
-    entry.file = path.join(repository, ...entry.filePath.split('/'));
-    entry.temporaryFile = `${entry.file}.tmp-${saveId}-${index}`;
-  });
-  for (const entry of targetEntries) {
-    const documents = stringifyTargetDocuments(entry.preparedTarget, entry.workspaceTarget);
-    entry.blocksSource = documents.blocks;
-    entry.source = documents.target;
-  }
-  const managedPaths = uniqueStrings([
-    PROJECT_FILE,
-    '.gitattributes',
-    ...targetFiles,
-    ...targetFiles.map(filePath => path.posix.join(path.posix.dirname(filePath), BLOCKS_FILE)),
-    ...assetEntries.map(entry => entry.filePath),
-    ...oldTargetFiles,
-    ...oldBlockFiles,
-    ...oldAssets
-  ]);
-  await Promise.all(managedPaths.map(filePath => assertManagedPath(repository, filePath)));
-  const oldAssetPaths = oldAssets.map(filePath => filePath.toLowerCase());
-  const oldTargetPaths = oldTargetFiles.map(filePath => filePath.toLowerCase());
-
-  for (const entry of targetEntries) {
-    if (oldTargetPaths.includes(entry.targetFile.toLowerCase())) continue;
-    try {
-      await fsPromises.access(entry.file);
-      throw new Error(`Refusing to overwrite an unmanaged target file: ${entry.targetFile}`);
-    } catch (error) {
-      if (error.code !== 'ENOENT') throw error;
-    }
-  }
-  const oldBlockPaths = oldBlockFiles.map(filePath => filePath.toLowerCase());
-  for (const entry of targetEntries) {
-    const relative = path.relative(repository, entry.blocksFile).replace(/\\/g, '/');
-    if (oldBlockPaths.includes(relative.toLowerCase())) continue;
-    try {
-      await fsPromises.access(entry.blocksFile);
-      throw new Error(`Refusing to overwrite an unmanaged blocks file: ${relative}`);
-    } catch (error) {
-      if (error.code !== 'ENOENT') throw error;
-    }
-  }
-  for (const entry of assetEntries) {
-    if (oldAssetPaths.includes(entry.filePath.toLowerCase())) continue;
-    const file = path.join(repository, ...entry.filePath.split('/'));
-    try {
-      await fsPromises.access(file);
-      throw new Error(`Refusing to overwrite an unmanaged target asset: ${entry.filePath}`);
-    } catch (error) {
-      if (error.code !== 'ENOENT') throw error;
-    }
-  }
-
+    const temporaryPath = `${destinationPath}.tmp-${saveId}-${writes.length}`;
+    await fsPromises.mkdir(path.dirname(destinationPath), {recursive: true});
+    await fsPromises.writeFile(temporaryPath, data);
+    writes.push({destinationPath, temporaryPath});
+  };
   try {
-    for (const entry of targetEntries) {
-      await fsPromises.mkdir(path.dirname(entry.file), {recursive: true});
-      await fsPromises.writeFile(entry.temporaryFile, entry.source);
-      await fsPromises.writeFile(entry.blocksTemporaryFile, entry.blocksSource);
+    for (let index = 0; index < targets.length; index++) {
+      const targetPath = targets[index].file;
+      const folder = path.posix.dirname(targetPath);
+      await addWrite(targetPath, stringify({
+        format: 'nitrobolt-target', version: FORMAT_VERSION, target: prepared.targets[index].target
+      }));
+      await addWrite(`${folder}/${BLOCKS_FILE}`, stringify(prepared.targets[index].blocks));
     }
-    await fsPromises.writeFile(temporaryPath, stringifyManifest(preparedProject.metadata, targetFiles));
-    for (const entry of assetEntries) {
-      await fsPromises.mkdir(path.dirname(entry.file), {recursive: true});
-      await fsPromises.writeFile(entry.temporaryFile, entry.data);
-    }
+    for (const asset of prepared.assetEntries) await addWrite(asset.filePath, asset.data);
+    await addWrite(PROJECT_FILE, stringify(manifest));
     await ensureGitAttributes(repository);
-    await replaceFiles([
-      ...targetEntries.flatMap(entry => [
-        {temporaryPath: entry.temporaryFile, destinationPath: entry.file},
-        {temporaryPath: entry.blocksTemporaryFile, destinationPath: entry.blocksFile}
-      ]),
-      ...assetEntries.map(entry => ({temporaryPath: entry.temporaryFile, destinationPath: entry.file})),
-      {temporaryPath, destinationPath: projectPath}
-    ]);
-    const assets = assetEntries.map(entry => entry.filePath);
-    const blockFiles = targetFiles.map(filePath => path.posix.join(path.posix.dirname(filePath), BLOCKS_FILE));
-    const assetPaths = assets.map(filePath => filePath.toLowerCase());
-    const targetPaths = targetFiles.map(filePath => filePath.toLowerCase());
-    const blockPaths = blockFiles.map(filePath => filePath.toLowerCase());
-    const staleAssets = oldAssets.filter(filePath => !assetPaths.includes(filePath.toLowerCase()));
-    const staleTargets = oldTargetFiles.filter(filePath => !targetPaths.includes(filePath.toLowerCase()));
-    const staleBlocks = oldBlockFiles.filter(filePath => !blockPaths.includes(filePath.toLowerCase()));
-    for (const assetName of staleAssets) {
-      // Stale files do not affect the new project. Cleanup is best-effort so a
-      // temporary file lock cannot make a successful project save appear lost.
-      await fsPromises.rm(path.join(repository, ...assetName.split('/')), {force: true}).catch(() => {});
-    }
-    for (const staleTarget of staleTargets) {
-      await fsPromises.rm(path.join(repository, ...staleTarget.split('/')), {force: true}).catch(() => {});
-    }
-    for (const staleBlock of staleBlocks) {
-      await fsPromises.rm(path.join(repository, ...staleBlock.split('/')), {force: true}).catch(() => {});
-    }
-    const staleFolders = uniqueStrings([...staleTargets, ...staleBlocks]
-      .map(filePath => path.posix.dirname(filePath)));
-    for (const staleFolder of staleFolders) {
-      const folder = path.join(repository, ...staleFolder.split('/'));
-      await fsPromises.rmdir(path.join(folder, ASSET_DIRECTORY)).catch(() => {});
-      await fsPromises.rmdir(folder).catch(() => {});
-    }
+    await replaceFiles(writes);
   } catch (error) {
-    await fsPromises.rm(temporaryPath, {force: true});
-    for (const entry of targetEntries) {
-      await fsPromises.rm(entry.temporaryFile, {force: true}).catch(() => {});
-      await fsPromises.rm(entry.blocksTemporaryFile, {force: true}).catch(() => {});
-    }
-    for (const entry of assetEntries) {
-      await fsPromises.rm(entry.temporaryFile, {force: true}).catch(() => {});
-    }
+    await Promise.all(writes.map(entry => fsPromises.rm(entry.temporaryPath, {force: true}).catch(() => {})));
     throw error;
+  }
+  const nextFiles = [PROJECT_FILE, ...targets.flatMap(entry => [
+    entry.file, `${path.posix.dirname(entry.file)}/${BLOCKS_FILE}`
+  ]), ...prepared.assetEntries.map(entry => entry.filePath)];
+  const staleFiles = managedFiles(previous).filter(filePath => !nextFiles.includes(filePath));
+  for (const filePath of staleFiles) {
+    await fsPromises.rm(await assertManagedPath(repository, filePath), {force: true}).catch(() => {});
   }
 };
 
-const readProject = async repoPath => {
-  const repository = await assertRepository(repoPath);
+const loadProject = async repository => {
   const definition = await readProjectDefinition(repository);
   if (!definition) throw new Error(`Folder does not contain ${PROJECT_FILE}`);
   const zip = new AdmZip();
-  const metadata = await hydrateProjectMetadata(repository, definition.project, zip);
+  const metadata = JSON.parse(JSON.stringify(definition.manifest.metadata));
+  await hydrateAssets(repository, metadata.customFonts, zip);
   const targets = [];
-  for (let index = 0; index < definition.project.targets.length; index++) {
-    targets.push(await hydrateTargetAssets(
-      repository,
-      definition.project.targets[index],
-      definition.targetFiles[index],
-      zip
-    ));
+  for (const targetSource of definition.project.targets) {
+    const target = JSON.parse(JSON.stringify(targetSource));
+    delete target._nitroboltScripts;
+    await hydrateAssets(repository, target.costumes, zip);
+    await hydrateAssets(repository, target.sounds, zip);
+    await hydrateAssets(repository, target.assets, zip);
+    targets.push(target);
   }
-  const project = {...metadata, targets};
-  zip.addFile(PROJECT_FILE, Buffer.from(JSON.stringify(project)));
+  zip.addFile(PROJECT_FILE, Buffer.from(JSON.stringify({...metadata, targets})));
   return zip.toBuffer();
 };
 
-module.exports = {
-  BINARY_ASSET_EXTENSIONS,
-  BLOCKS_FILE,
-  parseBlocks,
-  readProject,
-  syncProject
+const withRepositoryOperation = async (repoPath, operation) => {
+  const repository = await assertRepository(repoPath);
+  let queue = repositoryOperations.find(entry => entry.repository === repository);
+  if (!queue) {
+    queue = {repository, promise: Promise.resolve()};
+    repositoryOperations.push(queue);
+  }
+  const promise = queue.promise.catch(() => {}).then(() => operation(repository));
+  queue.promise = promise;
+  try {
+    return await promise;
+  } finally {
+    if (queue.promise === promise) repositoryOperations.splice(repositoryOperations.indexOf(queue), 1);
+  }
 };
+
+const syncProject = (repoPath, files) => withRepositoryOperation(repoPath, repository =>
+  writeProject(repository, files));
+const readProject = repoPath => withRepositoryOperation(repoPath, loadProject);
+
+module.exports = {BLOCKS_FILE, parseBlocks, readProject, syncProject};

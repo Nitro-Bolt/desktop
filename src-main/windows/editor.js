@@ -719,8 +719,8 @@ class EditorWindow extends ProjectRunningWindow {
       gitService.writeReadme(repoPath, contents)));
     registerResultHandler(this.ipc, 'git-project-diff', withRepository((repoPath, filePath, staged, originalPath) =>
       gitService.projectDiff(repoPath, filePath, staged, originalPath)), data => ({data}));
-    registerResultHandler(this.ipc, 'git-sync-project', withRepository((repoPath, archive, workspaceXML) =>
-      gitProject.syncProject(repoPath, archive, workspaceXML)));
+    registerResultHandler(this.ipc, 'git-sync-project', withRepository((repoPath, files) =>
+      gitProject.syncProject(repoPath, files)));
     registerResultHandler(this.ipc, 'git-read-project', withRepository(readGitProject),
       result => ({data: result.data}));
 

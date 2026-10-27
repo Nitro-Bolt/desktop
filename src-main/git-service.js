@@ -29,10 +29,9 @@ const displayStatus = gitStatus => {
 
 const projectDiffKind = filePath => {
   const normalized = filePath.replace(/\\/g, '/').toLowerCase();
-  const extension = path.posix.extname(normalized);
   const filename = path.posix.basename(normalized);
   if (filename === gitProject.BLOCKS_FILE) return 'blocks';
-  if (gitProject.BINARY_ASSET_EXTENSIONS.includes(extension)) return 'asset';
+  if (normalized.startsWith('assets/')) return 'asset';
   return 'text';
 };
 
