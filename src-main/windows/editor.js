@@ -680,7 +680,10 @@ class EditorWindow extends ProjectRunningWindow {
     registerResultHandler(this.ipc, 'git-init', withRepository((repoPath, branchName) => gitService.init(repoPath, branchName)));
     registerResultHandler(this.ipc, 'git-add', withRepository((repoPath, files) => gitService.add(repoPath, files)));
     registerResultHandler(this.ipc, 'git-reset', withRepository((repoPath, files) => gitService.reset(repoPath, files)));
-    registerResultHandler(this.ipc, 'git-commit', withRepository((repoPath, message) => gitService.commit(repoPath, message)));
+    registerResultHandler(this.ipc, 'git-commit', withRepository((repoPath, message, amend) =>
+      gitService.commit(repoPath, message, amend)));
+    registerResultHandler(this.ipc, 'git-commit-message', withRepository(repoPath => gitService.commitMessage(repoPath)),
+      message => ({message}));
     registerResultHandler(this.ipc, 'git-log', withRepository((repoPath, maxCount) => gitService.log(repoPath, maxCount)),
       commits => ({commits}));
     registerResultHandler(this.ipc, 'git-list-branches', withRepository(repoPath => gitService.listBranches(repoPath)),

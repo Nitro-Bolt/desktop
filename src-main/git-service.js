@@ -377,10 +377,18 @@ class GitService {
    * Commit staged changes
    * @param {string} repoPath - Repository path
    * @param {string} message - Commit message
+   * @param {boolean} amend - Whether to amend the previous commit
    * @returns {Promise<void>}
    */
-  async commit(repoPath, message) {
-    await this.execGit(['commit', '-m', message], repoPath);
+  async commit(repoPath, message, amend = false) {
+    const args = ['commit'];
+    if (amend) args.push('--amend');
+    args.push('-m', message);
+    await this.execGit(args, repoPath);
+  }
+
+  async commitMessage(repoPath) {
+    return this.execGit(['log', '-1', '--pretty=%B'], repoPath);
   }
 
   /**
