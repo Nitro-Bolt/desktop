@@ -59,7 +59,8 @@
     "onlyBuiltDependencies": [
       "core-js",
       "electron-winstaller",
-      "scratch-gui"
+      "scratch-gui",
+      "scratch-l10n"
     ]
   },
   "homepage": "https://desktop.turbowarp.org/",
