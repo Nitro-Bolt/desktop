@@ -34,11 +34,9 @@
     "copy-webpack-plugin": "^6.4.1",
     "cross-env": "^10.1.0",
     "css-loader": "^1.0.1",
-    "electron": "^43.8.0",
-    "electron-builder": "^26.15.3",
-    "exports-loader": "0.7.0",
+    "electron": "^43.8.3",
+    "electron-builder": "^26.18.0",
     "file-loader": "^6.2.0",
-    "imports-loader": "0.8.0",
     "postcss": "^8.4.13",
     "postcss-import": "^14.0.0",
     "postcss-loader": "^4.2.0",
@@ -185,8 +183,11 @@
     },
     "snap": {
       "summary": "A mod of TurboWarp with tons of new features, and a haven for developers who don't want to be restricted by \"compatibility\".",
-      "allowNativeWayland": true,
+      "allowNativeWayland": false,
       "artifactName": "${productName}-Linux-Snap-${version}-${arch}.${ext}",
+      "executableArgs": [
+        "--ozone-platform=x11"
+      ],
       "plugs": [
         "default",
         "camera",

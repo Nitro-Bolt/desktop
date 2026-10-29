@@ -408,7 +408,7 @@ class EditorWindow extends ProjectRunningWindow {
     });
 
     this.ipc.on('set-locale', async (event, locale) => {
-      if (settings.locale !== locale) {
+      if (typeof locale === 'string' && settings.locale !== locale) {
         settings.locale = locale;
         updateLocale(locale);
 
@@ -441,6 +441,10 @@ class EditorWindow extends ProjectRunningWindow {
     this.ipc.handle('closed-file', () => {
       this.activeFileId = null;
       this.window.setRepresentedFilename('');
+    });
+
+    this.ipc.handle('drop-permissions', () => {
+      SecurityPromptWindow.dropPermissions(this.window);
     });
 
     this.ipc.handle('show-open-file-picker', async () => {
