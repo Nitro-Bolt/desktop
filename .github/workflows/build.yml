@@ -3,6 +3,15 @@ name: Build (Manual)
 on:
   workflow_dispatch:
   workflow_call:
+    inputs:
+      ref:
+        description: Git ref to build
+        type: string
+        default: ""
+      production:
+        description: Enable production behavior, including update checks
+        type: boolean
+        default: false
 
 jobs:
   build-linux:
@@ -11,6 +20,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.ref }}
           submodules: recursive
           persist-credentials: false
       - name: Install strip-nondeterminism
@@ -28,8 +38,14 @@ jobs:
       - name: Compile
         run: pnpm run webpack:prod
       - name: Package
+        env:
+          PRODUCTION: ${{ inputs.production }}
         run: |
-          node release-automation/build.mjs --debian --tarball --appimage --x64 --armv7l --arm64
+          PRODUCTION_ARGUMENT=()
+          if [[ "$PRODUCTION" == "true" ]]; then
+            PRODUCTION_ARGUMENT+=(--production)
+          fi
+          node release-automation/build.mjs --debian --tarball --appimage --x64 --armv7l --arm64 "${PRODUCTION_ARGUMENT[@]}"
       - name: Print file tree
         run: node scripts/print-file-tree.mjs dist
       - name: Upload artifacts to GitHub Actions
@@ -48,6 +64,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.ref }}
           submodules: recursive
           persist-credentials: false
       - name: Install pnpm
@@ -65,12 +82,18 @@ jobs:
       - name: Compile
         run: pnpm run webpack:prod
       - name: Package
+        env:
+          PRODUCTION: ${{ inputs.production }}
         run: |
+          PRODUCTION_ARGUMENT=()
+          if [[ "$PRODUCTION" == "true" ]]; then
+            PRODUCTION_ARGUMENT+=(--production)
+          fi
           # Need to run the universal builds as separate commands or it breaks when @electron/universal
           # diffs the ASARs and finds spurious differences. Not clear why.
-          node release-automation/build.mjs --mac --universal --production
-          node release-automation/build.mjs --mac-legacy-11 --universal --production
-          node release-automation/build.mjs --mac-legacy-10.13-10.14 --mac-legacy-10.15 --x64
+          node release-automation/build.mjs --mac --universal "${PRODUCTION_ARGUMENT[@]}"
+          node release-automation/build.mjs --mac-legacy-11 --universal "${PRODUCTION_ARGUMENT[@]}"
+          node release-automation/build.mjs --mac-legacy-10.13-10.14 --mac-legacy-10.15 --x64 "${PRODUCTION_ARGUMENT[@]}"
       - name: Print file tree
         run: node scripts/print-file-tree.mjs dist
       - name: Upload artifacts to GitHub Actions
@@ -93,6 +116,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.ref }}
           submodules: recursive
           persist-credentials: false
           path: repo
@@ -126,10 +150,13 @@ jobs:
         run: pnpm run webpack:prod
       - name: Package
         working-directory: D:\repo
+        env:
+          PRODUCTION: ${{ inputs.production }}
         run: |
-          node release-automation/build.mjs --windows --microsoft-store --x64 --ia32 --arm64
-          node release-automation/build.mjs --windows-portable --x64
-          node release-automation/build.mjs --windows-legacy --ia32 --x64
+          $productionArgument = if ($env:PRODUCTION -eq 'true') { '--production' } else { $null }
+          node release-automation/build.mjs --windows --microsoft-store --x64 --ia32 --arm64 $productionArgument
+          node release-automation/build.mjs --windows-portable --x64 $productionArgument
+          node release-automation/build.mjs --windows-legacy --ia32 --x64 $productionArgument
       - name: Print file tree
         working-directory: D:\repo
         run: node scripts/print-file-tree.mjs dist
@@ -143,7 +170,7 @@ jobs:
           if-no-files-found: ignore
 
   create-release:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && !inputs.production
     needs: [build-linux, build-mac, build-windows]
     runs-on: ubuntu-latest
     permissions:

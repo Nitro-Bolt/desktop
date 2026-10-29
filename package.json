@@ -114,13 +114,13 @@
       "oneClick": false,
       "deleteAppDataOnUninstall": false,
       "allowToChangeInstallationDirectory": true,
-      "artifactName": "${productName}-Win-Installer-${version}-${arch}.${ext}"
+      "artifactName": "${productName}-Setup-${version}-${arch}.${ext}"
     },
     "portable": {
-      "artifactName": "${productName}-Win-Portable-${version}-${arch}.${ext}"
+      "artifactName": "${productName}.Portable.${version}.${arch}.${ext}"
     },
     "mac": {
-      "artifactName": "${productName}-Mac-${version}.${ext}",
+      "artifactName": "${productName}-Setup-${version}.${ext}",
       "icon": "build/icon.icns",
       "category": "public.app-category.education",
       "darkModeSupport": true,
@@ -153,7 +153,7 @@
     },
     "linux": {
       "executableName": "nitrobolt-desktop",
-      "artifactName": "${productName}-Linux-${version}-${arch}.${ext}",
+      "artifactName": "${productName}-${os}-${arch}-${version}.${ext}",
       "maintainer": "Cubester <contact@nitrobolt.org>",
       "icon": "./build/",
       "synopsis": "Mod of Scratch with a compiler and more features.",
@@ -196,11 +196,7 @@
       ]
     },
     "appImage": {
-      "license": null,
-      "artifactName": "${productName}-Linux-Portable-${version}-${arch}.${ext}"
-    },
-    "deb": {
-      "artifactName": "${productName}-Linux-Installer-${version}-${arch}.${ext}"
+      "license": null
     },
     "rpm": {
       "artifactName": "${productName}-Linux-Installer-${version}-${arch}.${ext}"

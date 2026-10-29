@@ -1,39 +1,100 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: Update increments 1.x.0; bugfix increments 1.x.y
+        required: true
+        type: choice
+        options:
+          - update
+          - bugfix
+      release_notes:
+        description: Changelog entries, one per line
+        required: true
+        type: string
 
 permissions:
   contents: write
 
-jobs:
-  call-build:
-    uses: ./.github/workflows/build.yml
+concurrency:
+  group: desktop-release
+  cancel-in-progress: false
 
-  create-release:
-    needs: [call-build]
+jobs:
+  prepare:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      tag: ${{ steps.release.outputs.tag }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout master
+        uses: actions/checkout@v4
         with:
-          persist-credentials: false
+          ref: master
+          token: ${{ secrets.AUTOMATION }}
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - id: release
+        name: Prepare release files
+        env:
+          RELEASE_NOTES: ${{ inputs.release_notes }}
+        run: |
+          VERSION=$(node scripts/prepare-release.mjs "${{ inputs.release_type }}")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Commit and tag release
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add package.json changelog.md docs/index.html docs/version.json docs/changelog.json linux-files/org.nitrobolt.NitroBolt.metainfo.xml
+          git commit -m "chore: release $VERSION"
+          git tag -a "$TAG" -m "NitroBolt Desktop $VERSION"
+          git push origin HEAD:master "$TAG"
+
+  build:
+    needs: prepare
+    uses: ./.github/workflows/build.yml
+    with:
+      ref: ${{ needs.prepare.outputs.tag }}
+      production: true
+
+  publish:
+    needs: [prepare, build]
+    runs-on: ubuntu-latest
+    steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
-      - name: Create GitHub Release
+
+      - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.prepare.outputs.tag }}
         run: |
           shopt -s nullglob
           FILES=(linux/*.deb linux/*.tar.gz linux/*.AppImage mac/*.dmg windows/*.exe windows/*.appx)
-          if [ ${#FILES[@]} -gt 0 ]; then
-            gh release create "${{ github.ref_name }}" "${FILES[@]}" \
-              --title "${{ github.ref_name }}" \
-              --generate-notes
-          else
+          if [ ${#FILES[@]} -eq 0 ]; then
             echo "No files found to upload"
             exit 1
           fi
+          gh release create "$TAG" "${FILES[@]}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "NitroBolt Desktop $TAG" \
+            --generate-notes

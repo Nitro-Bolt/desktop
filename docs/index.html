@@ -549,7 +549,7 @@
     <script type="generated-locale-names">{"en":"English","ca":"Català","de":"Deutsch","es":"Español (España)","fi":"Suomi","it":"Italiano","ja":"日本語","ko":"한국어","nb":"Norsk Bokmål","nl":"Nederlands","pt-br":"Português Brasileiro","ru":"Русский","sl":"Slovenščina","sv":"Svenska","tr":"Türkçe","uk":"Українська","zh-cn":"简体中文"}</script>
 
     <script>
-      const VERSION = '1.16.0';
+      const VERSION = '1.0.0';
 
       // OS-specific styles
       const getOS = () => {
@@ -751,34 +751,16 @@
       </noscript>
 
       <div data-if-os="windows-modern">
-        <a class="store-badge microsoft-store" href="https://apps.microsoft.com/store/detail/turbowarp/9P4DPZGV5ZKL">
-          <div class="store-icon microsoft-icon"></div>
-          <div class="store-badge-text">
-            <div l10n="getit" l10n-description="Used in the context 'Get it from Microsoft'. Microsoft is on a separate line (above in Japanese, below in others)">Get it from</div>
-            <div>Microsoft</div>
-          </div>
-        </a>
-        <p class="download-separator" l10n="or" l10n-description="Appears between two different download buttons">or</p>
-        <a class="download-button" href="https://github.com/TurboWarp/desktop/releases" data-asset="TurboWarp-Setup-{version}-x64.exe" l10n="win-modern-download">Download installer for Windows 10+ (64-bit)</a>
-        <p lang="en">Free code signing provided by <a href="https://about.signpath.io/">SignPath.io</a>, certificate by <a href="https://signpath.org/">SignPath Foundation</a>.</p>
+        <a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Setup-{version}-x64.exe" l10n="win-modern-download">Download installer for Windows 10+ (64-bit)</a>
       </div>
 
       <div data-if-os="windows-legacy">
-        <a class="download-button" href="https://github.com/TurboWarp/desktop/releases" data-asset="TurboWarp-Legacy-Setup-{version}-x64.exe" l10n="win-legacy-download">Download installer for Windows 7, 8, 8.1 (64-bit)</a>
+        <a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Legacy-Setup-{version}-x64.exe" l10n="win-legacy-download">Download installer for Windows 7, 8, 8.1 (64-bit)</a>
         <p l10n="smartscreen">If a Windows SmartScreen alert appears, click "More info" then "Run anyways".</p>
       </div>
 
       <div data-if-os="mac">
-        <a class="store-badge mac-app-store" href="https://apps.apple.com/us/app/turbowarp/id6444661463">
-          <div class="store-icon apple-icon"></div>
-          <div class="store-badge-text">
-            <div l10n="downloadon" l10n-description="Used in the context 'Download on the Mac App Store'. Mac App Store is on a separate line (above in Japanese, below in others)">Download on the</div>
-            <div>Mac App Store</div>
-          </div>
-        </a>
-        <p class="download-separator" l10n="or" l10n-description="Appears between two different download buttons">or</p>
-        <a class="download-button" href="https://github.com/TurboWarp/desktop/releases" data-asset="TurboWarp-Setup-{version}.dmg" l10n="mac-modern-download">Download for macOS 12 and later</a>
-        <p class="download-separator" l10n="or" l10n-description="Appears between two different download buttons">or</p>
+        <a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Setup-{version}.dmg" l10n="mac-modern-download">Download for macOS 12 and later</a>
         <p>
           <a l10n="mac-legacy-link" href="#mac-legacy">
             See downloads for macOS 10.13 - 11 below
@@ -810,7 +792,7 @@
       <!-- when there is no beta update, leave this hidden instead of removing so we don't lose the l10n string -->
       <div hidden>
         <b class="beta-badge" l10n="beta" l10n-description="Followed by a version number eg. v1.7.2-beta.1 that is a link to learn more about the current beta release.">Beta version available:</b>
-        <a href="https://github.com/TurboWarp/desktop/releases/tag/v1.14.0">v1.14.0</a>
+        <a href="https://github.com/Nitro-Bolt/desktop/releases">View releases</a>
       </div>
     </div>
 
@@ -929,46 +911,27 @@
 
     <div class="manual-installation section" id="windows">
       <h2 l10n="win-modern">Install on Windows 10 and later</h2>
-      <p l10n="ms">Get it from the Microsoft Store to enable automatic updates.</p>
-      <a class="store-badge microsoft-store" href="https://apps.microsoft.com/store/detail/turbowarp/9P4DPZGV5ZKL">
-        <div class="store-icon microsoft-icon"></div>
-        <div class="store-badge-text">
-          <div l10n="getit" l10n-description="Used in the context 'Get it from Microsoft'. Microsoft is on a separate line (above in Japanese, below in others)">Get it from</div>
-          <div>Microsoft</div>
-        </div>
-      </a>
-
-      <p l10n="win-modern2">Or download an installer.</p>
+      <p>Download an installer from GitHub.</p>
       <ul class="download-list">
-        <li><a class="download-button" href="https://github.com/TurboWarp/desktop/releases" data-asset="TurboWarp-Setup-{version}-x64.exe" l10n="w642">Download installer (64-bit, recommended)</a></li>
-        <li><a class="download-button" href="https://github.com/TurboWarp/desktop/releases" data-asset="TurboWarp-Setup-{version}-ia32.exe" l10n="w323" l10n-description="Alternative download button">32-bit</a></li>
-        <li><a class="download-button" href="https://github.com/TurboWarp/desktop/releases" data-asset="TurboWarp-Setup-{version}-arm64.exe">ARM</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Setup-{version}-x64.exe" l10n="w642">Download installer (64-bit, recommended)</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Setup-{version}-ia32.exe" l10n="w323" l10n-description="Alternative download button">32-bit</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Setup-{version}-arm64.exe">ARM</a></li>
       </ul>
-
-      <p lang="en">TurboWarp Desktop uses a free code signing provided by <a href="https://about.signpath.io/">SignPath.io</a>, certificate by <a href="https://signpath.org/">SignPath Foundation</a>.</p>
     </div>
 
     <div class="manual-installation section" id="windows-legacy">
       <h2 l10n="win-legacy">Install on Windows 7, 8, and 8.1</h2>
       <p l10n="win-legacy2">These versions of the app have the same features but are slower and less secure. Support will be removed at an unknown time in the future. If a Windows SmartScreen alert appears, click "More info" then "Run anyways".</p>
       <ul class="download-list">
-        <li><a class="download-button" href="https://github.com/TurboWarp/desktop/releases" data-asset="TurboWarp-Legacy-Setup-{version}-x64.exe" l10n="win-legacy-64">Download legacy installer (64-bit, recommended)</a></li>
-        <li><a class="download-button" href="https://github.com/TurboWarp/desktop/releases" data-asset="TurboWarp-Legacy-Setup-{version}-ia32.exe" l10n="w323" l10n-description="Alternative download button">32-bit</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Legacy-Setup-{version}-x64.exe" l10n="win-legacy-64">Download legacy installer (64-bit, recommended)</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Legacy-Setup-{version}-ia32.exe" l10n="w323" l10n-description="Alternative download button">32-bit</a></li>
       </ul>
     </div>
 
     <div class="manual-installation section" id="mac">
       <h2 l10n="mac">Install on macOS 12 and later</h2>
-      <p l10n="macupd">Install from the Mac App Store for automatic updates.</p>
-      <a class="store-badge mac-app-store" href="https://apps.apple.com/us/app/turbowarp/id6444661463">
-        <div class="store-icon apple-icon"></div>
-        <div class="store-badge-text">
-          <div l10n="downloadon" l10n-description="Used in the context 'Download on the Mac App Store'. Mac App Store is on a separate line (above in Japanese, below in others)">Download on the</div>
-          <div>Mac App Store</div>
-        </div>
-      </a>
       <p l10n="macmanual">Or download the app manually. Open the .DMG, then drag TurboWarp into Applications. If it tells you that TurboWarp already exists, choose "Replace".</p>
-      <a class="download-button" href="https://github.com/TurboWarp/desktop/releases" data-asset="TurboWarp-Setup-{version}.dmg" l10n="mac-modern-download">Download for macOS 12 and later</a>
+      <a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Setup-{version}.dmg" l10n="mac-modern-download">Download for macOS 12 and later</a>
     </div>
 
     <div class="manual-installation section" id="mac-legacy">
@@ -976,10 +939,10 @@
       <p l10n="mac-legacy-body">These versions of the app have the same features but are slower and less secure. Support will be removed at an unknown time in the future. Open the .DMG, then drag TurboWarp into Applications. If it tells you that TurboWarp already exists, choose "Replace".</p>
 
       <ul class="download-list">
-        <li><a class="download-button" href="https://github.com/TurboWarp/desktop/releases" data-asset="TurboWarp-Legacy-11-Setup-{version}.dmg">macOS 11</a></li>
-        <li><a class="download-button" href="https://github.com/TurboWarp/desktop/releases" data-asset="TurboWarp-Legacy-10.15-Setup-{version}.dmg">macOS 10.15</a></li>
-        <li><a class="download-button" href="https://github.com/TurboWarp/desktop/releases" data-asset="TurboWarp-Legacy-10.13-10.14-Setup-{version}.dmg">macOS 10.14</a></li>
-        <li><a class="download-button" href="https://github.com/TurboWarp/desktop/releases" data-asset="TurboWarp-Legacy-10.13-10.14-Setup-{version}.dmg">macOS 10.13</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Legacy-11-Setup-{version}.dmg">macOS 11</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Legacy-10.15-Setup-{version}.dmg">macOS 10.15</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Legacy-10.13-10.14-Setup-{version}.dmg">macOS 10.14</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Legacy-10.13-10.14-Setup-{version}.dmg">macOS 10.13</a></li>
       </ul>
     </div>
 
@@ -997,9 +960,9 @@
       </code>
       <p l10n="deb2" l10n-description="apt refers to a Linux command line tool">Or manually install the .deb (won't add apt repository):</p>
       <ul class="download-list">
-        <li><a class="download-button" href="https://github.com/TurboWarp/desktop/releases" data-asset="TurboWarp-linux-amd64-{version}.deb">x86 64-bit</a></li>
-        <li><a class="download-button" href="https://github.com/TurboWarp/desktop/releases" data-asset="TurboWarp-linux-arm64-{version}.deb">ARM 64-bit</a></li>
-        <li><a class="download-button" href="https://github.com/TurboWarp/desktop/releases" data-asset="TurboWarp-linux-armv7l-{version}.deb">ARMv7l</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-linux-amd64-{version}.deb">x86 64-bit</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-linux-arm64-{version}.deb">ARM 64-bit</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-linux-armv7l-{version}.deb">ARMv7l</a></li>
       </ul>
 
       <h3>Arch User Repository</h3>
@@ -1029,16 +992,16 @@
 
       <h3>AppImage</h3>
       <ul class="download-list">
-        <li><a class="download-button" href="https://github.com/TurboWarp/desktop/releases" data-asset="TurboWarp-linux-x86_64-{version}.AppImage">x86 64-bit</a></li>
-        <li><a class="download-button" href="https://github.com/TurboWarp/desktop/releases" data-asset="TurboWarp-linux-arm64-{version}.AppImage">ARM 64-bit</a></li>
-        <li><a class="download-button" href="https://github.com/TurboWarp/desktop/releases" data-asset="TurboWarp-linux-armv7l-{version}.AppImage">ARMv7l</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-linux-x86_64-{version}.AppImage">x86 64-bit</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-linux-arm64-{version}.AppImage">ARM 64-bit</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-linux-armv7l-{version}.AppImage">ARMv7l</a></li>
       </ul>
 
       <h3>tar.gz</h3>
       <ul class="download-list">
-        <li><a class="download-button" href="https://github.com/TurboWarp/desktop/releases" data-asset="TurboWarp-linux-x64-{version}.tar.gz">x86 64-bit</a></li>
-        <li><a class="download-button" href="https://github.com/TurboWarp/desktop/releases" data-asset="TurboWarp-linux-arm64-{version}.tar.gz">ARM 64-bit</a></li>
-        <li><a class="download-button" href="https://github.com/TurboWarp/desktop/releases" data-asset="TurboWarp-linux-armv7l-{version}.tar.gz">ARMv7l</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-linux-x64-{version}.tar.gz">x86 64-bit</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-linux-arm64-{version}.tar.gz">ARM 64-bit</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-linux-armv7l-{version}.tar.gz">ARMv7l</a></li>
       </ul>
     </div>
 

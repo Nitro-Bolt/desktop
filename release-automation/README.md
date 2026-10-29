@@ -2,6 +2,17 @@
 
 These are the bespoke scripts that we use to automate various aspects of releasing new versions of the app.  We publish these scripts because it's easier for us to just put them in the repository. They may be useful as a starting place for other mods. Expect to make changes.
 
+## Creating a release
+
+Run the `Release` workflow from the Actions tab. Choose one of these release types:
+
+ * `update` increments the middle number and resets the bugfix number, such as `1.3.2` to `1.4.0`.
+ * `bugfix` increments the last number, such as `1.3.2` to `1.3.3`.
+
+Enter one changelog item per line. The workflow updates the app version, website version and update manifest, generates changelog files, commits and tags the release, builds every platform in production mode, and publishes a GitHub release. Only one release workflow runs at a time.
+
+The workflow uses the `AUTOMATION` repository secret to push the release commit and tag. Windows artifacts are not code signed.
+
 ## Build script
 
 This is what creates most of the downloads that are up on our website and on GitHub.
