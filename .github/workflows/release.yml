@@ -4,10 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       release_type:
-        description: Update increments 1.x.0; bugfix increments 1.x.y
+        description: Publish current version or increment update/bugfix
         required: true
         type: choice
         options:
+          - current
           - update
           - bugfix
       release_notes:

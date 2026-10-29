@@ -5,8 +5,8 @@ const root = pathUtil.join(import.meta.dirname, '..');
 const releaseType = process.argv[2];
 const notes = process.env.RELEASE_NOTES || '';
 
-if (releaseType !== 'update' && releaseType !== 'bugfix') {
-  throw new Error('Release type must be either update or bugfix.');
+if (releaseType !== 'current' && releaseType !== 'update' && releaseType !== 'bugfix') {
+  throw new Error('Release type must be current, update, or bugfix.');
 }
 
 const packagePath = pathUtil.join(root, 'package.json');
@@ -20,7 +20,7 @@ if (versionParts.length !== 3 || versionParts.some(part => !Number.isInteger(par
 if (releaseType === 'update') {
   versionParts[1] += 1;
   versionParts[2] = 0;
-} else {
+} else if (releaseType === 'bugfix') {
   versionParts[2] += 1;
 }
 

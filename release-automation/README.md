@@ -6,6 +6,7 @@ These are the bespoke scripts that we use to automate various aspects of releasi
 
 Run the `Release` workflow from the Actions tab. Choose one of these release types:
 
+ * `current` publishes the version already in `package.json` without incrementing it. Use this for the initial `1.0.0` release.
  * `update` increments the middle number and resets the bugfix number, such as `1.3.2` to `1.4.0`.
  * `bugfix` increments the last number, such as `1.3.2` to `1.3.3`.
 
