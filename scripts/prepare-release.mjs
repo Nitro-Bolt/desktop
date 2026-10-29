@@ -36,13 +36,11 @@ fs.writeFileSync(versionManifestPath, `${JSON.stringify(versionManifest, null, 2
 
 const homepagePath = pathUtil.join(root, 'docs/index.html');
 const homepage = fs.readFileSync(homepagePath, 'utf8');
-const updatedHomepage = homepage.replace(
-  /const VERSION *= *["'][\d\w.-]+["']/,
-  `const VERSION = '${version}'`
-);
-if (updatedHomepage === homepage) {
+const homepageVersionPattern = /const VERSION *= *["'][\d\w.-]+["']/;
+if (!homepageVersionPattern.test(homepage)) {
   throw new Error('Could not find the website version.');
 }
+const updatedHomepage = homepage.replace(homepageVersionPattern, `const VERSION = '${version}'`);
 fs.writeFileSync(homepagePath, updatedHomepage);
 
 const formattedNotes = notes
