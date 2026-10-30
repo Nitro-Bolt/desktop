@@ -62,11 +62,11 @@ jobs:
               echo "Use the same release notes to retry this release, or remove the tag before changing it."
               exit 1
             fi
-            if [ "$(git rev-parse "$TAG^{}")" != "$(git rev-parse HEAD)" ]; then
-              echo "Tag $TAG exists on a different commit."
+            if ! git diff --quiet "$TAG^{}" -- package.json changelog.md docs/index.html docs/version.json docs/changelog.json linux-files/org.nitrobolt.NitroBolt.metainfo.xml; then
+              echo "Tag $TAG has different release files."
               exit 1
             fi
-            echo "Tag $TAG already points to this commit. Continuing the failed release."
+            echo "Tag $TAG has the same release files. Continuing the failed release."
           fi
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "GitHub release $TAG already exists."
