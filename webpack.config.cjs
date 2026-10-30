@@ -1,6 +1,7 @@
 const path = require('path');
 const {DefinePlugin} = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 const base = {
     mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
@@ -83,6 +84,7 @@ module.exports = [
             new DefinePlugin({
                 'process.env.ROOT': '""'
             }),
+            new MonacoWebpackPlugin(),
             new CopyWebpackPlugin({
                 patterns: [
                     {
