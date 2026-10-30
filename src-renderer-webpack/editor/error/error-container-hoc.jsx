@@ -36,9 +36,9 @@ const ErrorContainerHOC = function (WrappedComponent) {
             <h1>{'Desktop React Error'}</h1>
             <p>
               {'If you can see this page, please '}
-              <a href="https://github.com/TurboWarp/desktop/issues" target="_blank" rel="noreferrer">{'open a GitHub issue'}</a>
+              <a href="https://github.com/Nitro-Bolt/desktop/issues" target="_blank" rel="noreferrer">{'open a GitHub issue'}</a>
               {' or '}
-              <a href="mailto:contact@turbowarp.org" target="_blank" rel="noreferrer">{'email us'}</a>
+              <a href="mailto:contact@nitrobolt.org" target="_blank" rel="noreferrer">{'email us'}</a>
               {' with all the information below.'}
             </p>
             <pre>{debugInformation}</pre>

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
   <!--
-    This file is from https://desktop.turbowarp.org/snap-mime.xml
-    It should be saved to /usr/share/mime/packages/turbowarp-desktop-snap.xml
+    This file is from https://desktop.nitrobolt.org/snap-mime.xml
+    It should be saved to /usr/share/mime/packages/nitrobolt-desktop-snap.xml
     Run sudo update-mime-database /usr/share/mime after creating or deleting this file.
 
     Canonical, in their infinite wisdom, do not let apps installed from snap install additional MIME

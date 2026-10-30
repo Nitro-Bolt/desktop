@@ -61,14 +61,14 @@
       "scratch-l10n"
     ]
   },
-  "homepage": "https://desktop.turbowarp.org/",
+  "homepage": "https://desktop.nitrobolt.org/",
   "repository": {
     "type": "git",
     "url": "https://github.com/Nitro-Bolt/desktop.git"
   },
   "bugs": {
     "url": "https://github.com/Nitro-Bolt/desktop/issues",
-    "email": "contact@turbowarp.org"
+    "email": "contact@nitrobolt.org"
   },
   "main": "./src-main/entrypoint.js",
   "desktopName": "org.nitrobolt.desktop",

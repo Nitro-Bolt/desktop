@@ -83,8 +83,6 @@
       <h2>macOS</h2>
       <p>If you installed it from our website, open Finder > Go to Applications > Drag NitroBolt into the trash icon on your dock.</p>
       <p>To delete user data, open Finder, press Shift+Command+G, type in <code>~/Library/Application Support/</code>, then delete the <code>nitrobolt-desktop</code> folder if it exists.</p>
-      <p>If you installed it from the Mac App Store, open Launchpad, long click on NitroBolt, then click the X.</p>
-      <p>To delete user data, open Finder, press Shift+Command+G, type in <code>~/Library/Containers/</code>, then delete the <code>NitroBolt</code> and <code>org.nitrobolt.desktop</code> folders if they exist.</p>
 
       <h2>Linux</h2>
       <p>Typically you can open up your distributions software manager, search for "NitroBolt", and just uninstall it from there.</p>
@@ -92,31 +90,10 @@
       <p>If you installed it manually or from the command line or want to delete user data, you may need to run some commands.</p>
       <p class="warning">Please be careful running these. Small typos could break your system.</p>
 
-      <p>If you installed it from the Snap Store:</p>
-      <code class="terminal">
-        <div class="command">snap remove nitrobolt-desktop</div>
-        <div class="comment">Remove file association helper file workaround, if it exists</div>
-        <div class="command">sudo rm /usr/share/mime/packages/nitrobolt-desktop-snap.xml</div>
-      </code>
-
-      <p>If you installed it using Flatpak from Flathub:</p>
-      <code class="terminal">
-        <div class="comment">To uninstall without removing user data:</div>
-        <div class="command">flatpak uninstall org.nitrobolt.desktop</div>
-        <div class="comment">To uninstall and remove user data:</div>
-        <div class="command">flatpak uninstall org.nitrobolt.desktop --delete-data</div>
-      </code>
-
-      <p>If you installed it using the Debian/Ubuntu repository or .deb packages:</p>
+      <p>If you installed it using a .deb package:</p>
       <code class="terminal">
         <div class="comment">Remove app files</div>
         <div class="command">sudo apt remove nitrobolt-desktop</div>
-        <div class="comment">Remove our repository from your computer</div>
-        <div class="command">sudo rm /etc/apt/sources.list.d/nitrobolt.list</div>
-        <div class="comment">Remove our repository signing key</div>
-        <div class="command">sudo rm /usr/share/keyrings/nitrobolt.gpg</div>
-        <div class="comment">Refresh apt to finish removing our repository</div>
-        <div class="command">sudo apt update</div>
       </code>
 
       <p>If you installed it from the Arch User Repository:</p>

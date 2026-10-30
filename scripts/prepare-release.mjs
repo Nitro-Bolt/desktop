@@ -60,13 +60,14 @@ if (firstRelease === -1) {
 }
 
 const escapedVersion = version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const existingReleasePattern = new RegExp(`^# ${escapedVersion} \\([^\\r\\n]+\\)[\\s\\S]*?(?=^# |$)`, 'm');
-const existingRelease = existingReleasePattern.test(changelog);
+const existingReleasePattern = new RegExp(`^# ${escapedVersion} \\([^\\r\\n]+\\)[\\s\\S]*?(?=^# |(?![\\s\\S]))`, 'm');
+const existingRelease = changelog.match(existingReleasePattern);
 if (releaseType !== 'current' && existingRelease) {
   throw new Error(`Changelog already contains version ${version}.`);
 }
 
-const releaseSection = `# ${version} (${date})\n\n${formattedNotes}\n\n`;
+const existingReleaseDate = existingRelease?.[0].match(/^# [^\r\n]+ \(([^\r\n]+)\)/)?.[1];
+const releaseSection = `# ${version} (${existingReleaseDate || date})\n\n${formattedNotes}\n\n`;
 const updatedChangelog = existingRelease ?
   changelog.replace(existingReleasePattern, releaseSection) :
   `${changelog.slice(0, firstRelease + 1)}${releaseSection}${changelog.slice(firstRelease + 1)}`;

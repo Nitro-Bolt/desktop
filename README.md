@@ -78,7 +78,7 @@ We've found that development can work pretty well if you open two terminals side
 
 ## Linux sandbox helper error
 
-On some Linux distributions, Electron will crash with the message `The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now. You need to make sure that /home/.../turbowarp-desktop/node_modules/electron/dist/chrome-sandbox is owned by root and has mode 4755.`. Notably we have seen this happen on Debian 10 and earlier and Ubuntu 24.04 and later.
+On some Linux distributions, Electron will crash with the message `The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now. You need to make sure that /home/.../desktop/node_modules/electron/dist/chrome-sandbox is owned by root and has mode 4755.`. Notably we have seen this happen on Debian 10 and earlier and Ubuntu 24.04 and later.
 
 For development, run `electron_build_fix_until_reboot.sh`, or you can run these commands to enable unprivileged user namespaces until you reboot:
 
@@ -93,7 +93,7 @@ sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
 There are ways to make this permanent, but we don't think you should be making permanent kernel configuration changes just to develop this app. 
 
-This error won't happen in the final deb package, rpm package, Flathub, or Snap releases. **It will in the in the AppImage.**
+This error won't happen in the final deb or rpm packages. **It will happen in the AppImage.**
 
 <!-- The flatpak wiki has more on this. https://github.com/flatpak/flatpak/wiki/User-namespace-requirements -->
 
@@ -126,30 +126,18 @@ pnpm dlx electron-builder -w nsis portable -l deb rpm appimage
 
 You can *usually* package cross-platform (i.e. Linux can build for Windows), but it isn't guaranteed possible
 
-## Code signing policy (IGNORE)
-
-TurboWarp Desktop uses a free code signing provided by [SignPath.io](https://about.signpath.io/), certificate by [SignPath Foundation](https://signpath.org/).
-
- * Approvers:
-   * [GarboMuffin](https://github.com/GarboMuffin)
- * Privacy policy: https://desktop.turbowarp.org/privacy.html
-
 ## Advanced customizations
 
 NitroBolt Desktop lets you configure custom JS and CSS without rebuilding the app.
 
 Find NitroBolt Desktop's data path by using the list below or by clicking "?" in the top right corner, then "Desktop Settings", then "Open User Data", then opening the highlighted folder, or refer to this list:
 
- - Windows (except Microsoft Store): `%APPDATA%/nitrobolt-desktop`
- - Microsoft Store: Open `%LOCALAPPDATA%/Packages`, find the folder with the word `NitroBoltDesktop` in it, then open `LocalCache/Roaming/nitrobolt-desktop`
- - macOS (except Mac App Store): `~/Library/Application Support/nitrobolt-desktop`
- - Mac App Store: `~/Library/Containers/org.nitrobolt.desktop/Data/Library/Application Support/nitrobolt-desktop` (note that the `org.nitrobolt.desktop` part may appear as `NitroBolt` in Finder)
- - Linux (except Flatpak and Snap): `~/.config/nitrobolt-desktop`
- - Linux (Flatpak): `~/.var/app/org.nitrobolt.NitroBolt/config/nitrobolt-desktop`
- - Linux (Snap): `~/snap/nitrobolt-desktop/current/.config/nitrobolt-desktop`
+ - Windows: `%APPDATA%/nitrobolt-desktop`
+ - macOS: `~/Library/Application Support/nitrobolt-desktop`
+ - Linux: `~/.config/nitrobolt-desktop`
 
 Create the file `userscript.js` in this folder to configure custom JS. Create the file `userstyle.css` in this folder to configure custom CSS. Completely restart NitroBolt Desktop (including all windows) to apply.
 
 ## Uninstall
 
-See https://desktop.turbowarp.org/uninstall
+See https://desktop.nitrobolt.org/uninstall

@@ -90,7 +90,7 @@ def download_releases(package_name, username, repository, component, repository_
         if not name.endswith('.deb'):
             # Not a debian package
             continue
-        
+
         arch = get_dpkg_arch(name)
         new_name = f'{package_name}_{version}_{package_version}_{arch}.deb'
         all_names.append(new_name)
@@ -109,8 +109,8 @@ if __name__ == '__main__':
     repository_root = os.path.join(self_directory, 'deb')
 
     download_releases(
-        package_name='turbowarp-desktop',
-        username='TurboWarp',
+        package_name='nitrobolt-desktop',
+        username='Nitro-Bolt',
         repository='desktop',
         component='main',
         repository_root=repository_root

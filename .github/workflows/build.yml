@@ -48,6 +48,18 @@ jobs:
           node release-automation/build.mjs --debian --tarball --appimage --x64 --armv7l --arm64 "${PRODUCTION_ARGUMENT[@]}"
       - name: Print file tree
         run: node scripts/print-file-tree.mjs dist
+      - name: Verify artifacts
+        shell: bash
+        run: |
+          shopt -s nullglob
+          debs=(dist/*.deb)
+          tarballs=(dist/*.tar.gz)
+          appimages=(dist/*.AppImage)
+          if [ ${#debs[@]} -ne 3 ] || [ ${#tarballs[@]} -ne 3 ] || [ ${#appimages[@]} -ne 3 ]; then
+            echo "Expected 3 Debian packages, 3 tarballs, and 3 AppImages."
+            echo "Found ${#debs[@]} Debian packages, ${#tarballs[@]} tarballs, and ${#appimages[@]} AppImages."
+            exit 1
+          fi
       - name: Upload artifacts to GitHub Actions
         uses: actions/upload-artifact@v4
         with:
@@ -56,7 +68,7 @@ jobs:
             dist/*.deb
             dist/*.tar.gz
             dist/*.AppImage
-          if-no-files-found: ignore
+          if-no-files-found: error
 
   build-mac:
     runs-on: macos-latest
@@ -69,8 +81,6 @@ jobs:
           persist-credentials: false
       - name: Install pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
@@ -96,11 +106,21 @@ jobs:
           node release-automation/build.mjs --mac-legacy-10.13-10.14 --mac-legacy-10.15 --x64 "${PRODUCTION_ARGUMENT[@]}"
       - name: Print file tree
         run: node scripts/print-file-tree.mjs dist
+      - name: Verify artifacts
+        shell: bash
+        run: |
+          shopt -s nullglob
+          files=(dist/*.dmg)
+          if [ ${#files[@]} -ne 4 ]; then
+            echo "Expected 4 macOS disk images, but found ${#files[@]}."
+            exit 1
+          fi
       - name: Upload artifacts to GitHub Actions
         uses: actions/upload-artifact@v4
         with:
           name: mac
           path: dist/*.dmg
+          if-no-files-found: error
 
   build-windows:
     # GitHub's Windows runners have a C: drive and a D: drive.
@@ -126,8 +146,6 @@ jobs:
           Remove-Item -Path repo -Recurse -Force
       - name: Install pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
@@ -154,20 +172,37 @@ jobs:
           PRODUCTION: ${{ inputs.production }}
         run: |
           $productionArgument = if ($env:PRODUCTION -eq 'true') { '--production' } else { $null }
-          node release-automation/build.mjs --windows --microsoft-store --x64 --ia32 --arm64 $productionArgument
+          node release-automation/build.mjs --windows --x64 --ia32 --arm64 $productionArgument
           node release-automation/build.mjs --windows-portable --x64 $productionArgument
           node release-automation/build.mjs --windows-legacy --ia32 --x64 $productionArgument
       - name: Print file tree
         working-directory: D:\repo
         run: node scripts/print-file-tree.mjs dist
+      - name: Verify artifacts
+        working-directory: D:\repo
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json | ConvertFrom-Json).version
+          $expected = @(
+            "dist\NitroBolt-Setup-$version-x64.exe"
+            "dist\NitroBolt-Setup-$version-ia32.exe"
+            "dist\NitroBolt-Setup-$version-arm64.exe"
+            "dist\NitroBolt.Portable.$version.x64.exe"
+            "dist\NitroBolt-Legacy-Setup-$version-x64.exe"
+            "dist\NitroBolt-Legacy-Setup-$version-ia32.exe"
+          )
+          $missing = @($expected | Where-Object { -not (Test-Path -LiteralPath $_ -PathType Leaf) })
+          if ($missing.Count -gt 0) {
+            Write-Error "Missing expected Windows artifacts:`n$($missing -join "`n")"
+            exit 1
+          }
       - name: Upload artifacts to GitHub Actions
         uses: actions/upload-artifact@v4
         with:
           name: windows
           path: |
             D:\repo\dist\*.exe
-            D:\repo\dist\*.appx
-          if-no-files-found: ignore
+          if-no-files-found: error
 
   create-release:
     if: github.event_name == 'workflow_dispatch' && !inputs.production
@@ -188,7 +223,7 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           TAG="v$VERSION-build-$(date +%s)"
           shopt -s nullglob
-          FILES=(linux/*.deb linux/*.tar.gz linux/*.AppImage mac/*.dmg windows/*.exe windows/*.appx)
+          FILES=(linux/*.deb linux/*.tar.gz linux/*.AppImage mac/*.dmg windows/*.exe)
           if [ ${#FILES[@]} -gt 0 ]; then
             gh release create "$TAG" "${FILES[@]}" \
               --title "Manual Build v$VERSION" \

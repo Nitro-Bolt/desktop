@@ -51,14 +51,22 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Check that release does not already exist
+      - name: Check release state
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.release.outputs.tag }}
         run: |
-          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
-            echo "Tag $TAG already exists."
-            exit 1
+          if git rev-parse --verify "$TAG^{}" >/dev/null 2>&1; then
+            if ! git diff --quiet; then
+              echo "Tag $TAG already exists, but the generated release files differ from it."
+              echo "Use the same release notes to retry this release, or remove the tag before changing it."
+              exit 1
+            fi
+            if [ "$(git rev-parse "$TAG^{}")" != "$(git rev-parse HEAD)" ]; then
+              echo "Tag $TAG exists on a different commit."
+              exit 1
+            fi
+            echo "Tag $TAG already points to this commit. Continuing the failed release."
           fi
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "GitHub release $TAG already exists."
@@ -78,7 +86,11 @@ jobs:
           else
             git commit -m "chore: release $VERSION"
           fi
-          git tag -a "$TAG" -m "NitroBolt Desktop $VERSION"
+          if git rev-parse --verify "$TAG^{}" >/dev/null 2>&1; then
+            echo "Reusing existing tag $TAG."
+          else
+            git tag -a "$TAG" -m "NitroBolt Desktop $VERSION"
+          fi
           git push origin HEAD:master "$TAG"
 
   build:
@@ -101,7 +113,7 @@ jobs:
           TAG: ${{ needs.prepare.outputs.tag }}
         run: |
           shopt -s nullglob
-          FILES=(linux/*.deb linux/*.tar.gz linux/*.AppImage mac/*.dmg windows/*.exe windows/*.appx)
+          FILES=(linux/*.deb linux/*.tar.gz linux/*.AppImage mac/*.dmg windows/*.exe)
           if [ ${#FILES[@]} -eq 0 ]; then
             echo "No files found to upload"
             exit 1
