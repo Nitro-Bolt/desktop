@@ -22,7 +22,7 @@ jobs:
           node-version: '21'
 
       - name: Update dependencies
-        run: pnpm update scratch-gui
+        run: pnpm update scratch-gui @nitro-bolt/extensions @turbowarp/extensions
 
       - name: Check for changes
         id: changes
