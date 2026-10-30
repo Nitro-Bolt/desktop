@@ -22,7 +22,7 @@
       <li>Backpack</li>
       <li>and more</li>
     </ul>
-    <p>You can also use NitroBolt in your browser at https://turbowarp.org/editor</p>
+    <p>You can also use NitroBolt in your browser at https://nitrobolt.org/editor</p>
     <p>Project shown in screenshots is https://scratch.mit.edu/projects/425020125/</p>
   </description>
   <screenshots>
@@ -37,7 +37,7 @@
   </screenshots>
   <url type="homepage">https://desktop.nitrobolt.org/</url>
   <url type="bugtracker">https://github.com/Nitro-Bolt/desktop/issues</url>
-  <url type="translate">https://docs.turbowarp.org/translate</url>
+  <url type="translate">https://github.com/Nitro-Bolt/desktop</url>
   <url type="vcs-browser">https://github.com/Nitro-Bolt/desktop</url>
   <categories>
     <category>Development</category>

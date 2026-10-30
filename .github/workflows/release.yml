@@ -37,17 +37,10 @@ jobs:
           token: ${{ secrets.AUTOMATION }}
           fetch-depth: 0
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - id: release
         name: Prepare release files
@@ -58,6 +51,20 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
 
+      - name: Check that release does not already exist
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists."
+            exit 1
+          fi
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "GitHub release $TAG already exists."
+            exit 1
+          fi
+
       - name: Commit and tag release
         env:
           VERSION: ${{ steps.release.outputs.version }}
@@ -66,7 +73,11 @@ jobs:
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
           git add package.json changelog.md docs/index.html docs/version.json docs/changelog.json linux-files/org.nitrobolt.NitroBolt.metainfo.xml
-          git commit -m "chore: release $VERSION"
+          if git diff --cached --quiet; then
+            echo "Release files are already prepared for $VERSION."
+          else
+            git commit -m "chore: release $VERSION"
+          fi
           git tag -a "$TAG" -m "NitroBolt Desktop $VERSION"
           git push origin HEAD:master "$TAG"
 

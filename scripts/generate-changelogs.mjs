@@ -1,6 +1,5 @@
 import * as fs from 'node:fs';
 import * as pathUtil from 'node:path';
-import lte from 'semver/functions/lte.js';
 
 /**
  * @typedef Release
@@ -24,6 +23,24 @@ const MONTHS = [
   'December'
 ];
 
+const isLessThanOrEqual = (a, b) => {
+  const [aCore, aPrerelease] = a.split('-', 2);
+  const [bCore, bPrerelease] = b.split('-', 2);
+  const aParts = aCore.split('.');
+  const bParts = bCore.split('.');
+  for (let index = 0; index < 3; index++) {
+    const aPart = Number(aParts[index]);
+    const bPart = Number(bParts[index]);
+    if (aPart !== bPart) {
+      return aPart < bPart;
+    }
+  }
+  if (aPrerelease === bPrerelease) return true;
+  if (!aPrerelease) return false;
+  if (!bPrerelease) return true;
+  return aPrerelease <= bPrerelease;
+};
+
 const escapeXmlText = (xml) => xml.replace(/[<>&]/g, c => {
   // We don't need to escape quotes because we only use this for text, not attributes
   switch (c) {
@@ -43,8 +60,18 @@ const parse = () => {
   sections.shift();
 
   for (const section of sections) {
-    const version = section.match(/\d+\.\d+\.\d+(?:-[\w.-]+)?/)[0];
-    const date = new Date(section.match(/\((\d+-\d+-\d+)\)/)[1]);
+    const versionMatch = section.match(/\d+\.\d+\.\d+(?:-[\w.-]+)?/);
+    const dateMatch = section.match(/\((\d+-\d+-\d+)\)/);
+    if (!versionMatch || !dateMatch) {
+      throw new Error('Invalid changelog release heading.');
+    }
+    const version = versionMatch[0];
+    const [year, month, day] = dateMatch[1].split('-').map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    if (Number.isNaN(date.getTime()) || date.getUTCFullYear() !== year ||
+      date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) {
+      throw new Error(`Invalid changelog date for ${version}.`);
+    }
 
     /** @type {Release} */
     const data = {
@@ -68,11 +95,15 @@ const parse = () => {
 const generateHomepage = (releases) => {
   const path = pathUtil.join(import.meta.dirname, '../docs/index.html');
   let source = fs.readFileSync(path, 'utf-8');
-  const releasedVersion = source.match(/const VERSION *= *["']([\d\w\.\-]+)["']/i)[1];
+  const releasedVersionMatch = source.match(/const VERSION *= *["']([\d\w.\-]+)["']/i);
+  if (!releasedVersionMatch) {
+    throw new Error('Could not find the website version.');
+  }
+  const releasedVersion = releasedVersionMatch[1];
 
   let html = '';
   for (const {version, date, notes} of releases) {
-    if (lte(version, releasedVersion)) {
+    if (isLessThanOrEqual(version, releasedVersion)) {
       html += `        <div data-version="${version}">\n`;
       html += `          <h3>v${version} (${MONTHS[date.getUTCMonth()]} ${date.getUTCDate()} ${date.getUTCFullYear()})</h3>\n`;
       html += '          <ul>\n';
@@ -84,10 +115,11 @@ const generateHomepage = (releases) => {
     }
   }
 
-  source = source.replace(
-    /<!-- CHANGELOG_START -->[\s\S]*<!-- CHANGELOG_END -->/m,
-    `<!-- CHANGELOG_START -->\n${html}        <!-- CHANGELOG_END -->`
-  );
+  const changelogPattern = /<!-- CHANGELOG_START -->[\s\S]*<!-- CHANGELOG_END -->/m;
+  if (!changelogPattern.test(source)) {
+    throw new Error('Could not find the website changelog markers.');
+  }
+  source = source.replace(changelogPattern, `<!-- CHANGELOG_START -->\n${html}        <!-- CHANGELOG_END -->`);
   fs.writeFileSync(path, source);
 };
 
@@ -116,10 +148,11 @@ const generateMetainfo = (releases) => {
 
   const path = pathUtil.join(import.meta.dirname, '../linux-files/org.nitrobolt.NitroBolt.metainfo.xml');
   let source = fs.readFileSync(path, 'utf-8');
-  source = source.replace(
-    /<releases>[\s\S]*<\/releases>/m,
-    `<releases>\n${xml}  </releases>`
-  );
+  const releasesPattern = /<releases>[\s\S]*<\/releases>/m;
+  if (!releasesPattern.test(source)) {
+    throw new Error('Could not find the Linux metadata releases section.');
+  }
+  source = source.replace(releasesPattern, `<releases>\n${xml}  </releases>`);
   fs.writeFileSync(path, source);
 };
 

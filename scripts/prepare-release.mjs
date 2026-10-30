@@ -9,6 +9,16 @@ if (releaseType !== 'current' && releaseType !== 'update' && releaseType !== 'bu
   throw new Error('Release type must be current, update, or bugfix.');
 }
 
+const formattedNotes = notes
+  .split(/\r?\n/)
+  .map(note => note.trim().replace(/^[-*]\s*/, ''))
+  .filter(Boolean)
+  .map(note => ` - ${note}`)
+  .join('\n');
+if (!formattedNotes) {
+  throw new Error('At least one release note is required.');
+}
+
 const packagePath = pathUtil.join(root, 'package.json');
 const packageJSON = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
 const versionParts = packageJSON.version.split('.').map(Number);
@@ -25,14 +35,12 @@ if (releaseType === 'update') {
 }
 
 const version = versionParts.join('.');
-packageJSON.version = version;
-fs.writeFileSync(packagePath, `${JSON.stringify(packageJSON, null, 2)}\n`);
 
 const versionManifestPath = pathUtil.join(root, 'docs/version.json');
 const versionManifest = JSON.parse(fs.readFileSync(versionManifestPath, 'utf8'));
-versionManifest.latest = version;
-versionManifest.latest_unstable = version;
-fs.writeFileSync(versionManifestPath, `${JSON.stringify(versionManifest, null, 2)}\n`);
+if (typeof versionManifest.oldest_safe !== 'string') {
+  throw new Error('The website version manifest is missing oldest_safe.');
+}
 
 const homepagePath = pathUtil.join(root, 'docs/index.html');
 const homepage = fs.readFileSync(homepagePath, 'utf8');
@@ -41,17 +49,6 @@ if (!homepageVersionPattern.test(homepage)) {
   throw new Error('Could not find the website version.');
 }
 const updatedHomepage = homepage.replace(homepageVersionPattern, `const VERSION = '${version}'`);
-fs.writeFileSync(homepagePath, updatedHomepage);
-
-const formattedNotes = notes
-  .split(/\r?\n/)
-  .map(note => note.trim().replace(/^[-*]\s*/, ''))
-  .filter(Boolean)
-  .map(note => ` - ${note}`)
-  .join('\n');
-if (!formattedNotes) {
-  throw new Error('At least one release note is required.');
-}
 
 const now = new Date();
 const date = `${now.getUTCFullYear()}-${now.getUTCMonth() + 1}-${now.getUTCDate()}`;
@@ -61,8 +58,27 @@ const firstRelease = changelog.indexOf('\n# ');
 if (firstRelease === -1) {
   throw new Error('Could not find the first changelog release.');
 }
-const newRelease = `\n# ${version} (${date})\n\n${formattedNotes}\n`;
-fs.writeFileSync(changelogPath, `${changelog.slice(0, firstRelease)}${newRelease}${changelog.slice(firstRelease)}`);
+
+const escapedVersion = version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const existingReleasePattern = new RegExp(`^# ${escapedVersion} \\([^\\r\\n]+\\)[\\s\\S]*?(?=^# |$)`, 'm');
+const existingRelease = existingReleasePattern.test(changelog);
+if (releaseType !== 'current' && existingRelease) {
+  throw new Error(`Changelog already contains version ${version}.`);
+}
+
+const releaseSection = `# ${version} (${date})\n\n${formattedNotes}\n\n`;
+const updatedChangelog = existingRelease ?
+  changelog.replace(existingReleasePattern, releaseSection) :
+  `${changelog.slice(0, firstRelease + 1)}${releaseSection}${changelog.slice(firstRelease + 1)}`;
+
+// All validation above must finish before any files are changed.
+packageJSON.version = version;
+versionManifest.latest = version;
+versionManifest.latest_unstable = version;
+fs.writeFileSync(packagePath, `${JSON.stringify(packageJSON, null, 2)}\n`);
+fs.writeFileSync(versionManifestPath, `${JSON.stringify(versionManifest, null, 2)}\n`);
+fs.writeFileSync(homepagePath, updatedHomepage);
+fs.writeFileSync(changelogPath, updatedChangelog);
 
 await import('./generate-changelogs.mjs');
 
