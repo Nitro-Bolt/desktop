@@ -111,6 +111,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ needs.prepare.outputs.tag }}
+          RELEASE_NOTES: ${{ inputs.release_notes }}
         run: |
           shopt -s nullglob
           FILES=(linux/*.deb linux/*.tar.gz linux/*.AppImage mac/*.dmg windows/*.exe)
@@ -118,7 +119,12 @@ jobs:
             echo "No files found to upload"
             exit 1
           fi
+          awk '{
+            gsub(/^[ \t]+|[ \t]+$/, "")
+            sub(/^[-*][ \t]*/, "")
+            if (length) print "- " $0
+          }' <<< "$RELEASE_NOTES" > release-notes.md
           gh release create "$TAG" "${FILES[@]}" \
             --repo "$GITHUB_REPOSITORY" \
             --title "NitroBolt Desktop $TAG" \
-            --generate-notes
+            --notes-file release-notes.md

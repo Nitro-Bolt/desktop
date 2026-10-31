@@ -73,7 +73,7 @@
   <body>
     <main>
       <h1>How to completely uninstall NitroBolt Desktop</h1>
-      <p>This page describes how to <i>completely</i> uninstall NitroBolt, including deleting all of your user data where your settings and backpack and stored. Uninstalling the app does not affect projects you have saved on your computer.</p>
+      <p>This page explains how to completely uninstall NitroBolt, including its settings and backpack data. Uninstalling the app does not delete projects saved elsewhere on your computer.</p>
 
       <h2>Windows</h2>
       <p>Uninstall NitroBolt like you would any other app.</p>
@@ -81,11 +81,11 @@
       <p>To delete user data, open file explorer, type <code>%APPDATA%</code> into the location bar, then delete the <code>nitrobolt-desktop</code> folder. Repeat for each user that used the app.</p>
 
       <h2>macOS</h2>
-      <p>If you installed it from our website, open Finder > Go to Applications > Drag NitroBolt into the trash icon on your dock.</p>
+      <p>Open Finder, go to Applications, then drag NitroBolt to the Trash.</p>
       <p>To delete user data, open Finder, press Shift+Command+G, type in <code>~/Library/Application Support/</code>, then delete the <code>nitrobolt-desktop</code> folder if it exists.</p>
 
       <h2>Linux</h2>
-      <p>Typically you can open up your distributions software manager, search for "NitroBolt", and just uninstall it from there.</p>
+      <p>If you installed a package, use your distribution's software manager to remove NitroBolt.</p>
 
       <p>If you installed it manually or from the command line or want to delete user data, you may need to run some commands.</p>
       <p class="warning">Please be careful running these. Small typos could break your system.</p>
@@ -96,12 +96,7 @@
         <div class="command">sudo apt remove nitrobolt-desktop</div>
       </code>
 
-      <p>If you installed it from the Arch User Repository:</p>
-      <code class="terminal">
-        <div class="command">sudo pacman -R nitrobolt-desktop-bin</div>
-      </code>
-
-      <p>If you installed it manually or using the legacy install script:</p>
+      <p>If you installed it manually using the legacy install script:</p>
       <code class="terminal">
         <div class="comment">Remove app files</div>
         <div class="command">sudo rm /opt/NitroBolt -rf</div>

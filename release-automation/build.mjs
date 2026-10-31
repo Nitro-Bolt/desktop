@@ -249,7 +249,7 @@ const buildWindowsLegacy = () => build({
   legacy: true,
   extraConfig: {
     nsis: {
-      artifactName: '${productName}-Legacy-Setup-${version}-${arch}.${ext}'
+      artifactName: '${productName}-${version}-Windows-${arch}-Legacy-Installer.${ext}'
     },
     electronVersion: ELECTRON_22_FINAL
   }
@@ -286,7 +286,7 @@ const buildMacLegacy10131014 = () => build({
   legacy: true,
   extraConfig: {
     mac: {
-      artifactName: '${productName}-Legacy-10.13-10.14-Setup-${version}.${ext}'
+      artifactName: '${productName}-${version}-macOS-${arch}-Legacy-10.13-10.14.${ext}'
     },
     electronVersion: ELECTRON_26_FINAL
   }
@@ -299,7 +299,7 @@ const buildMacLegacy1015 = () => build({
   legacy: true,
   extraConfig: {
     mac: {
-      artifactName: '${productName}-Legacy-10.15-Setup-${version}.${ext}'
+      artifactName: '${productName}-${version}-macOS-${arch}-Legacy-10.15.${ext}'
     },
     electronVersion: ELECTRON_32_FINAL
   }
@@ -312,7 +312,7 @@ const buildMacLegacy11 = () => build({
   legacy: true,
   extraConfig: {
     mac: {
-      artifactName: '${productName}-Legacy-11-Setup-${version}.${ext}'
+      artifactName: '${productName}-${version}-macOS-${arch}-Legacy-11.${ext}'
     },
     electronVersion: ELECTRON_37_FINAL
   }
