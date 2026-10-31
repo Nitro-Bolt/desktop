@@ -24,6 +24,7 @@ import {
 import {
   markGitProjectLoaded,
   pauseGitProjectSync,
+  requestGitProjectSync,
   resumeGitProjectSync
 } from 'scratch-gui/src/containers/nb-git-project-manager.jsx';
 import {WrappedFileHandle} from './filesystem-api.js';
@@ -91,6 +92,7 @@ const DesktopHOC = function (WrappedComponent) {
         title: ''
       };
       this.handleUpdateProjectTitle = this.handleUpdateProjectTitle.bind(this);
+      this.handleInitializeGitProject = this.handleInitializeGitProject.bind(this);
       this.handleOpenGitProject = this.handleOpenGitProject.bind(this);
       this.handleRuntimeDisposed = this.handleRuntimeDisposed.bind(this);
 
@@ -173,7 +175,7 @@ const DesktopHOC = function (WrappedComponent) {
       this.props.onCloseFileMenu();
 
       // eslint-disable-next-line no-alert
-      if (this.props.projectChanged && !window.confirm('Replace the current project with the selected Git project?')) {
+      if (this.props.projectChanged && !window.confirm(this.messages['git.replace-project-confirm'])) {
         return;
       }
 
@@ -186,11 +188,11 @@ const DesktopHOC = function (WrappedComponent) {
         this.props.onHasInitialProject(true, this.props.loadingState);
         loadingStarted = true;
         const status = await window.Git.status(selected.id);
-        if (!status.success) throw new Error(status.error || 'Could not inspect the selected folder');
-        if (!status.data.isRepository) throw new Error(status.data.error || 'Not a Git repository');
+        if (!status.success) throw new Error(status.error || this.messages['git.inspect-folder-error']);
+        if (!status.data.isRepository) throw new Error(status.data.error || this.messages['git.not-repository']);
         const repositoryRoot = status.data.repositoryRoot;
         const result = await window.Git.readProject(repositoryRoot);
-        if (!result.success) throw new Error(result.error || 'Could not open the Git project');
+        if (!result.success) throw new Error(result.error || this.messages['git.open-project-error']);
         this.props.onSetFileHandle(null);
         this.props.onSetGitProjectPath(null);
         this.props.vm.quit();
@@ -205,12 +207,43 @@ const DesktopHOC = function (WrappedComponent) {
         if (title) this.setState({title});
       } catch (error) {
         console.error(error);
+        this.props.onShowErrorModal(error);
         if (loadingStarted) {
           this.props.onLoadingCompleted();
           this.props.onLoadedProject(this.props.loadingState, false);
         }
       } finally {
         if (paused) resumeGitProjectSync();
+      }
+    }
+    async handleInitializeGitProject () {
+      const selected = await EditorPreload.showOpenDirectoryPicker();
+      if (selected === null) return;
+
+      try {
+        const status = await window.Git.status(selected.id);
+        if (!status.success) throw new Error(status.error || this.messages['git.inspect-folder-error']);
+        if (status.data.isRepository) {
+          throw new Error(this.messages['git.already-repository']);
+        }
+
+        const repositoryPath = selected.id;
+        const result = await window.Git.init(
+          repositoryPath,
+          this.props.preferences['git-default-branch'] || 'master'
+        );
+        if (!result.success) throw new Error(result.error || this.messages['git.initialize-error']);
+
+        this.props.onSetGitProjectPath(repositoryPath);
+        await requestGitProjectSync(repositoryPath);
+
+        const addResult = await window.Git.add(repositoryPath, []);
+        if (!addResult.success) throw new Error(addResult.error || this.messages['git.stage-initial-error']);
+        const commitResult = await window.Git.commit(repositoryPath, this.messages['git.initial-commit-message']);
+        if (!commitResult.success) throw new Error(commitResult.error || this.messages['git.initial-commit-error']);
+      } catch (error) {
+        console.error(error);
+        this.props.onShowErrorModal(error);
       }
     }
     componentDidUpdate (prevProps, prevState) {
@@ -296,6 +329,7 @@ const DesktopHOC = function (WrappedComponent) {
             },
           ]}
           onClickDesktopSettings={handleClickDesktopSettings}
+          onInitializeGitProject={this.handleInitializeGitProject}
           onStartSelectingGitProject={this.handleOpenGitProject}
           securityManager={securityManager}
           {...props}
@@ -308,6 +342,7 @@ const DesktopHOC = function (WrappedComponent) {
     locale: PropTypes.string.isRequired,
     loadingState: PropTypes.string.isRequired,
     projectChanged: PropTypes.bool.isRequired,
+    preferences: PropTypes.object.isRequired,
     fileHandle: PropTypes.shape({
       id: PropTypes.string.isRequired
     }),
@@ -339,6 +374,7 @@ const DesktopHOC = function (WrappedComponent) {
     loadingState: state.scratchGui.projectState.loadingState,
     isFullScreen: state.scratchGui.mode.isFullScreen,
     projectChanged: state.scratchGui.projectChanged,
+    preferences: state.scratchGui.preferences,
     fileHandle: state.scratchGui.tw.fileHandle,
     reduxUsername: state.scratchGui.tw.username,
     vm: state.scratchGui.vm

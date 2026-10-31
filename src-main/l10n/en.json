@@ -518,5 +518,41 @@
   "node-integration.prefix": {
     "string": "Unrestricted System Access",
     "developer_comment": "Appears in titles of desktop app windows that have been given full access to the user's sytem"
+  },
+  "git.replace-project-confirm": {
+    "string": "Replace the current project with the selected Git project?",
+    "developer_comment": "Confirmation shown before replacing the current editor project with a Git project."
+  },
+  "git.inspect-folder-error": {
+    "string": "Could not inspect the selected folder",
+    "developer_comment": "Fallback error shown when Git cannot inspect a selected project folder."
+  },
+  "git.not-repository": {
+    "string": "Not a Git repository",
+    "developer_comment": "Error shown when someone tries to open a folder that is not a Git repository."
+  },
+  "git.open-project-error": {
+    "string": "Could not open the Git project",
+    "developer_comment": "Fallback error shown when a selected Git project cannot be opened."
+  },
+  "git.already-repository": {
+    "string": "The selected folder is already a Git repository. Open it from the File menu instead.",
+    "developer_comment": "Error shown when someone tries to initialize the current project inside an existing Git repository."
+  },
+  "git.initialize-error": {
+    "string": "Could not initialize the Git repository",
+    "developer_comment": "Fallback error shown when a Git repository cannot be initialized."
+  },
+  "git.stage-initial-error": {
+    "string": "Could not stage the initial project",
+    "developer_comment": "Fallback error shown when the files for a newly initialized Git project cannot be staged."
+  },
+  "git.initial-commit-error": {
+    "string": "Could not create the initial commit",
+    "developer_comment": "Fallback error shown when the first commit for a newly initialized Git project cannot be created."
+  },
+  "git.initial-commit-message": {
+    "string": "Initial commit",
+    "developer_comment": "Commit message used for the first commit when initializing a Git project."
   }
 }
