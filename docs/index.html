@@ -751,16 +751,16 @@
       </noscript>
 
       <div data-if-os="windows-modern">
-        <a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-{version}-Windows-x64-Installer.exe" l10n="win-modern-download">Download installer for Windows 10+ (64-bit)</a>
+        <a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Windows-Installer-x86_64-{version}.exe" l10n="win-modern-download">Download installer for Windows 10+ (64-bit)</a>
       </div>
 
       <div data-if-os="windows-legacy">
-        <a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-{version}-Windows-x64-Legacy-Installer.exe" l10n="win-legacy-download">Download installer for Windows 7, 8, 8.1 (64-bit)</a>
+        <a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-WindowsLegacy-Installer-x86_64-{version}.exe" l10n="win-legacy-download">Download installer for Windows 7, 8, 8.1 (64-bit)</a>
         <p l10n="smartscreen">If a Windows SmartScreen alert appears, click "More info," verify that the file came from the official NitroBolt GitHub release, then click "Run anyway."</p>
       </div>
 
       <div data-if-os="mac">
-        <a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-{version}-macOS-universal.dmg" l10n="mac-modern-download">Download for macOS 12 and later</a>
+        <a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-MacOS-universal-{version}.dmg" l10n="mac-modern-download">Download for macOS 12 and later</a>
         <p>
           <a l10n="mac-legacy-link" href="#mac-legacy">
             See downloads for macOS 10.13 - 11 below
@@ -914,10 +914,10 @@
       <p>Choose the installer that matches your computer. Most Windows computers use the 64-bit installer.</p>
       <p>Because NitroBolt is not code signed, Windows SmartScreen may show a warning. Click "More info," verify that the file came from the official NitroBolt GitHub release, then click "Run anyway."</p>
       <ul class="download-list">
-        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-{version}-Windows-x64-Installer.exe" l10n="w642">Download installer (64-bit, recommended)</a></li>
-        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-{version}-Windows-ia32-Installer.exe" l10n="w323" l10n-description="Alternative download button">32-bit</a></li>
-        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-{version}-Windows-arm64-Installer.exe">ARM64</a></li>
-        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-{version}-Windows-x64-Portable.exe">Portable (64-bit)</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Windows-Installer-x86_64-{version}.exe" l10n="w642">Download installer (64-bit, recommended)</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Windows-Installer-x86_32-{version}.exe" l10n="w323" l10n-description="Alternative download button">32-bit</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Windows-Installer-arm64-{version}.exe">ARM64</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Windows-Portable-x86_64-{version}.exe">Portable (64-bit)</a></li>
       </ul>
     </div>
 
@@ -925,8 +925,8 @@
       <h2 l10n="win-legacy">Install on Windows 7, 8, and 8.1</h2>
       <p>These builds support older versions of Windows by using an older version of Electron. They are slower and receive fewer security improvements than the standard builds.</p>
       <ul class="download-list">
-        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-{version}-Windows-x64-Legacy-Installer.exe" l10n="win-legacy-64">Download legacy installer (64-bit, recommended)</a></li>
-        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-{version}-Windows-ia32-Legacy-Installer.exe" l10n="w323" l10n-description="Alternative download button">32-bit</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-WindowsLegacy-Installer-x86_64-{version}.exe" l10n="win-legacy-64">Download legacy installer (64-bit, recommended)</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-WindowsLegacy-Installer-x86_32-{version}.exe" l10n="w323" l10n-description="Alternative download button">32-bit</a></li>
       </ul>
     </div>
 
@@ -934,7 +934,7 @@
       <h2 l10n="mac">Install on macOS 12 and later</h2>
       <p>Download the disk image, open it, and drag NitroBolt into Applications. If Finder says NitroBolt already exists, choose "Replace."</p>
       <p>NitroBolt is not currently signed or notarized. If macOS blocks the first launch, Control-click NitroBolt in Applications, choose "Open," then confirm that you want to open it.</p>
-      <a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-{version}-macOS-universal.dmg" l10n="mac-modern-download">Download for macOS 12 and later</a>
+      <a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-MacOS-universal-{version}.dmg" l10n="mac-modern-download">Download for macOS 12 and later</a>
     </div>
 
     <div class="manual-installation section" id="mac-legacy">
@@ -943,10 +943,10 @@
       <p>If macOS blocks the first launch, Control-click NitroBolt in Applications, choose "Open," then confirm that you want to open it.</p>
 
       <ul class="download-list">
-        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-{version}-macOS-universal-Legacy-11.dmg">macOS 11</a></li>
-        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-{version}-macOS-x64-Legacy-10.15.dmg">macOS 10.15</a></li>
-        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-{version}-macOS-x64-Legacy-10.13-10.14.dmg">macOS 10.14</a></li>
-        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-{version}-macOS-x64-Legacy-10.13-10.14.dmg">macOS 10.13</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-MacOS-Legacy-11-universal-{version}.dmg">macOS 11</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-MacOS-Legacy-10.15-x86_64-{version}.dmg">macOS 10.15</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-MacOS-Legacy-10.13-10.14-x86_64-{version}.dmg">macOS 10.14</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-MacOS-Legacy-10.13-10.14-x86_64-{version}.dmg">macOS 10.13</a></li>
       </ul>
     </div>
 
@@ -957,23 +957,30 @@
       <h3>Debian, Ubuntu, Raspberry Pi OS, Linux Mint</h3>
       <p>Download and install the appropriate .deb package:</p>
       <ul class="download-list">
-        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-{version}-Linux-amd64.deb">x86 64-bit</a></li>
-        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-{version}-Linux-arm64.deb">ARM 64-bit</a></li>
-        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-{version}-Linux-armv7l.deb">ARMv7l</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Linux-Installer-x86_64-{version}.deb">x86 64-bit</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Linux-Installer-arm64-{version}.deb">ARM 64-bit</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Linux-Installer-armv7l-{version}.deb">ARMv7l</a></li>
+      </ul>
+
+      <h3>RPM</h3>
+      <ul class="download-list">
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Linux-Installer-x86_64-{version}.rpm">x86 64-bit</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Linux-Installer-arm64-{version}.rpm">ARM 64-bit</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Linux-Installer-armv7l-{version}.rpm">ARMv7l</a></li>
       </ul>
 
       <h3>AppImage (portable)</h3>
       <ul class="download-list">
-        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-{version}-Linux-x86_64.AppImage">x86 64-bit</a></li>
-        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-{version}-Linux-arm64.AppImage">ARM 64-bit</a></li>
-        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-{version}-Linux-armv7l.AppImage">ARMv7l</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Linux-Portable-x86_64-{version}.AppImage">x86 64-bit</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Linux-Portable-arm64-{version}.AppImage">ARM 64-bit</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Linux-Portable-armv7l-{version}.AppImage">ARMv7l</a></li>
       </ul>
 
       <h3>tar.gz archive</h3>
       <ul class="download-list">
-        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-{version}-Linux-x64.tar.gz">x86 64-bit</a></li>
-        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-{version}-Linux-arm64.tar.gz">ARM 64-bit</a></li>
-        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-{version}-Linux-armv7l.tar.gz">ARMv7l</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Linux-Portable-x86_64-{version}.tar.gz">x86 64-bit</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Linux-Portable-arm64-{version}.tar.gz">ARM 64-bit</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Linux-Portable-armv7l-{version}.tar.gz">ARMv7l</a></li>
       </ul>
     </div>
 

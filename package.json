@@ -96,7 +96,7 @@
       }
     ],
     "win": {
-      "artifactName": "${productName}-${version}-Windows-${arch}.${ext}",
+      "artifactName": "${productName}-Windows-${arch}-${version}.${ext}",
       "icon": "build/icon.ico",
       "target": [
         {
@@ -113,13 +113,13 @@
       "oneClick": false,
       "deleteAppDataOnUninstall": false,
       "allowToChangeInstallationDirectory": true,
-      "artifactName": "${productName}-${version}-Windows-${arch}-Installer.${ext}"
+      "artifactName": "${productName}-Windows-Installer-${arch}-${version}.${ext}"
     },
     "portable": {
-      "artifactName": "${productName}-${version}-Windows-${arch}-Portable.${ext}"
+      "artifactName": "${productName}-Windows-Portable-${arch}-${version}.${ext}"
     },
     "mac": {
-      "artifactName": "${productName}-${version}-macOS-${arch}.${ext}",
+      "artifactName": "${productName}-MacOS-${arch}-${version}.${ext}",
       "icon": "build/icon.icns",
       "category": "public.app-category.education",
       "darkModeSupport": true,
@@ -152,7 +152,7 @@
     },
     "linux": {
       "executableName": "nitrobolt-desktop",
-      "artifactName": "${productName}-${version}-Linux-${arch}.${ext}",
+      "artifactName": "${productName}-Linux-Installer-${arch}-${version}.${ext}",
       "maintainer": "Cubester <contact@nitrobolt.org>",
       "icon": "./build/",
       "synopsis": "Mod of Scratch with a compiler and more features.",
@@ -185,7 +185,7 @@
     "snap": {
       "summary": "A mod of TurboWarp with tons of new features, and a haven for developers who don't want to be restricted by \"compatibility\".",
       "allowNativeWayland": false,
-      "artifactName": "${productName}-${version}-Linux-${arch}-Snap.${ext}",
+      "artifactName": "${productName}-Linux-Snap-${arch}-${version}.${ext}",
       "executableArgs": [
         "--ozone-platform=x11"
       ],
@@ -201,10 +201,10 @@
       "license": null
     },
     "rpm": {
-      "artifactName": "${productName}-${version}-Linux-${arch}-RPM.${ext}"
+      "artifactName": "${productName}-Linux-Installer-${arch}-${version}.${ext}"
     },
     "flatpak": {
-      "artifactName": "${productName}-${version}-Linux-${arch}-Flatpak.${ext}"
+      "artifactName": "${productName}-Linux-Flatpak-${arch}-${version}.${ext}"
     },
     "fileAssociations": [
       {

@@ -96,6 +96,21 @@ const getArchesToBuild = (platformName) => {
   return arches;
 };
 
+const getArtifactArch = (archName) => {
+  if (archName === 'x64') return 'x86_64';
+  if (archName === 'ia32') return 'x86_32';
+  return archName;
+};
+
+const getArtifactName = (platform, type, archName) => {
+  const parts = ['${productName}', platform];
+  if (type) {
+    parts.push(type);
+  }
+  parts.push(getArtifactArch(archName), '${version}.${ext}');
+  return parts.join('-');
+};
+
 const flipFuses = async (context) => {
   const electronMajorVersion = +context.packager.info.framework.version.split('.')[0];
 
@@ -211,6 +226,7 @@ const build = async ({
     console.log(`Building distribution: ${distributionName}`);
 
     // electron-builder will automatically merge this with the settings in package.json
+    const resolvedExtraConfig = typeof extraConfig === 'function' ? extraConfig(archName) : extraConfig;
     const config = {
       extraMetadata: {
         tw_dist: distributionName,
@@ -219,7 +235,7 @@ const build = async ({
       },
       afterPack: arch === Arch.universal ? afterPackForUniversalMac : afterPack,
       afterSign,
-      ...extraConfig
+      ...resolvedExtraConfig
     };
 
     return builder.build({
@@ -239,7 +255,12 @@ const build = async ({
 const buildWindows = () => build({
   platformName: 'WINDOWS',
   platformType: 'nsis',
-  manageUpdates: true
+  manageUpdates: true,
+  extraConfig: (archName) => ({
+    nsis: {
+      artifactName: getArtifactName('Windows', 'Installer', archName)
+    }
+  })
 });
 
 const buildWindowsLegacy = () => build({
@@ -247,18 +268,23 @@ const buildWindowsLegacy = () => build({
   platformType: 'nsis',
   manageUpdates: true,
   legacy: true,
-  extraConfig: {
+  extraConfig: (archName) => ({
     nsis: {
-      artifactName: '${productName}-${version}-Windows-${arch}-Legacy-Installer.${ext}'
+      artifactName: getArtifactName('WindowsLegacy', 'Installer', archName)
     },
     electronVersion: ELECTRON_22_FINAL
-  }
+  })
 });
 
 const buildWindowsPortable = () => build({
   platformName: 'WINDOWS',
   platformType: 'portable',
-  manageUpdates: true
+  manageUpdates: true,
+  extraConfig: (archName) => ({
+    portable: {
+      artifactName: getArtifactName('Windows', 'Portable', archName)
+    }
+  })
 });
 
 const buildWindowsDir = () => build({
@@ -276,7 +302,12 @@ const buildMicrosoftStore = () => build({
 const buildMac = () => build({
   platformName: 'MAC',
   platformType: 'dmg',
-  manageUpdates: true
+  manageUpdates: true,
+  extraConfig: (archName) => ({
+    mac: {
+      artifactName: getArtifactName('MacOS', null, archName)
+    }
+  })
 });
 
 const buildMacLegacy10131014 = () => build({
@@ -284,12 +315,12 @@ const buildMacLegacy10131014 = () => build({
   platformType: 'dmg',
   manageUpdates: true,
   legacy: true,
-  extraConfig: {
+  extraConfig: (archName) => ({
     mac: {
-      artifactName: '${productName}-${version}-macOS-${arch}-Legacy-10.13-10.14.${ext}'
+      artifactName: getArtifactName('MacOS', 'Legacy-10.13-10.14', archName)
     },
     electronVersion: ELECTRON_26_FINAL
-  }
+  })
 });
 
 const buildMacLegacy1015 = () => build({
@@ -297,12 +328,12 @@ const buildMacLegacy1015 = () => build({
   platformType: 'dmg',
   manageUpdates: true,
   legacy: true,
-  extraConfig: {
+  extraConfig: (archName) => ({
     mac: {
-      artifactName: '${productName}-${version}-macOS-${arch}-Legacy-10.15.${ext}'
+      artifactName: getArtifactName('MacOS', 'Legacy-10.15', archName)
     },
     electronVersion: ELECTRON_32_FINAL
-  }
+  })
 });
 
 const buildMacLegacy11 = () => build({
@@ -310,12 +341,12 @@ const buildMacLegacy11 = () => build({
   platformType: 'dmg',
   manageUpdates: true,
   legacy: true,
-  extraConfig: {
+  extraConfig: (archName) => ({
     mac: {
-      artifactName: '${productName}-${version}-macOS-${arch}-Legacy-11.${ext}'
+      artifactName: getArtifactName('MacOS', 'Legacy-11', archName)
     },
     electronVersion: ELECTRON_37_FINAL
-  }
+  })
 });
 
 const buildMacDir = () => build({
@@ -327,14 +358,33 @@ const buildMacDir = () => build({
 const buildDebian = () => build({
   platformName: 'LINUX',
   platformType: 'deb',
-  manageUpdates: true
+  manageUpdates: true,
+  extraConfig: (archName) => ({
+    linux: {
+      artifactName: getArtifactName('Linux', 'Installer', archName)
+    }
+  })
+});
+
+const buildRPM = () => build({
+  platformName: 'LINUX',
+  platformType: 'rpm',
+  manageUpdates: true,
+  extraConfig: (archName) => ({
+    rpm: {
+      artifactName: getArtifactName('Linux', 'Installer', archName)
+    }
+  })
 });
 
 const buildTarball = () => build({
   platformName: 'LINUX',
   platformType: 'tar.gz',
   manageUpdates: true,
-  extraConfig: {
+  extraConfig: (archName) => ({
+    linux: {
+      artifactName: getArtifactName('Linux', 'Portable', archName)
+    },
     // gzip header contains various non-deterministic fields that we would like to remove.
     // TODO: would be nice to reimplement this small part of strip-nondeterminism in JS to remove dependency.
     artifactBuildCompleted: async (artifact) => new Promise((resolve, reject) => {
@@ -356,13 +406,18 @@ const buildTarball = () => build({
         }
       });
     })
-  }
+  })
 });
 
 const buildAppImage = () => build({
   platformName: 'LINUX',
   platformType: 'appimage',
-  manageUpdates: true
+  manageUpdates: true,
+  extraConfig: (archName) => ({
+    linux: {
+      artifactName: getArtifactName('Linux', 'Portable', archName)
+    }
+  })
 });
 
 const buildLinuxDir = () => build({
@@ -384,6 +439,7 @@ const run = async () => {
     '--mac-legacy-11': buildMacLegacy11,
     '--mac-dir': buildMacDir,
     '--debian': buildDebian,
+    '--rpm': buildRPM,
     '--tarball': buildTarball,
     '--appimage': buildAppImage,
     '--linux-dir': buildLinuxDir

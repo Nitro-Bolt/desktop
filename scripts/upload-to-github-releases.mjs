@@ -95,6 +95,7 @@ const getContentType = (file) => {
     if (file.endsWith('.exe')) return 'application/vnd.microsoft.portable-executable';
     if (file.endsWith('.dmg')) return 'application/x-apple-diskimage';
     if (file.endsWith('.deb')) return 'application/vnd.debian.binary-package';
+    if (file.endsWith('.rpm')) return 'application/x-rpm';
     if (file.endsWith('.appimage')) return 'application/vnd.appimage';
     if (file.endsWith('.tar.gz')) return 'application/gzip';
     return 'application/octet-stream';

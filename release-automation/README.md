@@ -60,7 +60,9 @@ You must specify which platform to build for:
 
 --debian
     Create deb files for Debian, Ubuntu, and derivatives.
-    Does not upload them to the apt repository; see ../debian/README.md.
+
+--rpm
+    Create rpm files for Fedora, RHEL, and derivatives.
 
 --tarball
     Create tar.gz files for Linux.
@@ -112,12 +114,6 @@ Optionally you may also apply:
     Allows notarization on macOS.
 ```
 
-## Linux
-
-In addition to publishing builds on our website and GitHub, we also publish Linux builds on:
-
- - a NitroBolt apt repository
- - flathub.org
  - snapcraft.io
  - aur.archlinux.org
 

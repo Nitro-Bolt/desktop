@@ -45,7 +45,7 @@ jobs:
           if [[ "$PRODUCTION" == "true" ]]; then
             PRODUCTION_ARGUMENT+=(--production)
           fi
-          node release-automation/build.mjs --debian --tarball --appimage --x64 --armv7l --arm64 "${PRODUCTION_ARGUMENT[@]}"
+          node release-automation/build.mjs --debian --rpm --tarball --appimage --x64 --armv7l --arm64 "${PRODUCTION_ARGUMENT[@]}"
       - name: Print file tree
         run: node scripts/print-file-tree.mjs dist
       - name: Verify artifacts
@@ -53,15 +53,18 @@ jobs:
         run: |
           VERSION=$(node -p "require('./package.json').version")
           EXPECTED=(
-            "dist/NitroBolt-$VERSION-Linux-amd64.deb"
-            "dist/NitroBolt-$VERSION-Linux-arm64.deb"
-            "dist/NitroBolt-$VERSION-Linux-armv7l.deb"
-            "dist/NitroBolt-$VERSION-Linux-x86_64.AppImage"
-            "dist/NitroBolt-$VERSION-Linux-arm64.AppImage"
-            "dist/NitroBolt-$VERSION-Linux-armv7l.AppImage"
-            "dist/NitroBolt-$VERSION-Linux-x64.tar.gz"
-            "dist/NitroBolt-$VERSION-Linux-arm64.tar.gz"
-            "dist/NitroBolt-$VERSION-Linux-armv7l.tar.gz"
+            "dist/NitroBolt-Linux-Installer-x86_64-$VERSION.deb"
+            "dist/NitroBolt-Linux-Installer-arm64-$VERSION.deb"
+            "dist/NitroBolt-Linux-Installer-armv7l-$VERSION.deb"
+            "dist/NitroBolt-Linux-Installer-x86_64-$VERSION.rpm"
+            "dist/NitroBolt-Linux-Installer-arm64-$VERSION.rpm"
+            "dist/NitroBolt-Linux-Installer-armv7l-$VERSION.rpm"
+            "dist/NitroBolt-Linux-Portable-x86_64-$VERSION.AppImage"
+            "dist/NitroBolt-Linux-Portable-arm64-$VERSION.AppImage"
+            "dist/NitroBolt-Linux-Portable-armv7l-$VERSION.AppImage"
+            "dist/NitroBolt-Linux-Portable-x86_64-$VERSION.tar.gz"
+            "dist/NitroBolt-Linux-Portable-arm64-$VERSION.tar.gz"
+            "dist/NitroBolt-Linux-Portable-armv7l-$VERSION.tar.gz"
           )
           for FILE in "${EXPECTED[@]}"; do
             if [ ! -f "$FILE" ]; then
@@ -75,6 +78,7 @@ jobs:
           name: linux
           path: |
             dist/*.deb
+            dist/*.rpm
             dist/*.tar.gz
             dist/*.AppImage
           if-no-files-found: error
@@ -120,10 +124,10 @@ jobs:
         run: |
           VERSION=$(node -p "require('./package.json').version")
           EXPECTED=(
-            "dist/NitroBolt-$VERSION-macOS-universal.dmg"
-            "dist/NitroBolt-$VERSION-macOS-universal-Legacy-11.dmg"
-            "dist/NitroBolt-$VERSION-macOS-x64-Legacy-10.15.dmg"
-            "dist/NitroBolt-$VERSION-macOS-x64-Legacy-10.13-10.14.dmg"
+            "dist/NitroBolt-MacOS-universal-$VERSION.dmg"
+            "dist/NitroBolt-MacOS-Legacy-11-universal-$VERSION.dmg"
+            "dist/NitroBolt-MacOS-Legacy-10.15-x86_64-$VERSION.dmg"
+            "dist/NitroBolt-MacOS-Legacy-10.13-10.14-x86_64-$VERSION.dmg"
           )
           for FILE in "${EXPECTED[@]}"; do
             if [ ! -f "$FILE" ]; then
@@ -202,12 +206,12 @@ jobs:
         run: |
           $version = (Get-Content package.json | ConvertFrom-Json).version
           $expected = @(
-            "dist\NitroBolt-$version-Windows-x64-Installer.exe"
-            "dist\NitroBolt-$version-Windows-ia32-Installer.exe"
-            "dist\NitroBolt-$version-Windows-arm64-Installer.exe"
-            "dist\NitroBolt-$version-Windows-x64-Portable.exe"
-            "dist\NitroBolt-$version-Windows-x64-Legacy-Installer.exe"
-            "dist\NitroBolt-$version-Windows-ia32-Legacy-Installer.exe"
+            "dist\NitroBolt-Windows-Installer-x86_64-$version.exe"
+            "dist\NitroBolt-Windows-Installer-x86_32-$version.exe"
+            "dist\NitroBolt-Windows-Installer-arm64-$version.exe"
+            "dist\NitroBolt-Windows-Portable-x86_64-$version.exe"
+            "dist\NitroBolt-WindowsLegacy-Installer-x86_64-$version.exe"
+            "dist\NitroBolt-WindowsLegacy-Installer-x86_32-$version.exe"
           )
           $missing = @($expected | Where-Object { -not (Test-Path -LiteralPath $_ -PathType Leaf) })
           if ($missing.Count -gt 0) {
@@ -241,7 +245,7 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           TAG="v$VERSION-build-$(date +%s)"
           shopt -s nullglob
-          FILES=(linux/*.deb linux/*.tar.gz linux/*.AppImage mac/*.dmg windows/*.exe)
+          FILES=(linux/*.deb linux/*.rpm linux/*.tar.gz linux/*.AppImage mac/*.dmg windows/*.exe)
           if [ ${#FILES[@]} -gt 0 ]; then
             gh release create "$TAG" "${FILES[@]}" \
               --title "Manual Build v$VERSION" \
