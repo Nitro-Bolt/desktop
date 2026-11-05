@@ -1,7 +1,6 @@
-name: Build (Manual)
+name: Build
 
 on:
-  workflow_dispatch:
   workflow_call:
     inputs:
       ref:
@@ -194,7 +193,7 @@ jobs:
           PRODUCTION: ${{ inputs.production }}
         run: |
           $productionArgument = if ($env:PRODUCTION -eq 'true') { '--production' } else { $null }
-          node release-automation/build.mjs --windows --x64 --ia32 --arm64 $productionArgument
+          node release-automation/build.mjs --windows --microsoft-store --x64 --ia32 --arm64 $productionArgument
           node release-automation/build.mjs --windows-portable --x64 $productionArgument
           node release-automation/build.mjs --windows-legacy --ia32 --x64 $productionArgument
       - name: Print file tree
@@ -209,6 +208,9 @@ jobs:
             "dist\NitroBolt-Windows-Installer-x86_64-$version.exe"
             "dist\NitroBolt-Windows-Installer-x86_32-$version.exe"
             "dist\NitroBolt-Windows-Installer-arm64-$version.exe"
+            "dist\NitroBolt-Windows-Store-x86_64-$version.appx"
+            "dist\NitroBolt-Windows-Store-x86_32-$version.appx"
+            "dist\NitroBolt-Windows-Store-arm64-$version.appx"
             "dist\NitroBolt-Windows-Portable-x86_64-$version.exe"
             "dist\NitroBolt-WindowsLegacy-Installer-x86_64-$version.exe"
             "dist\NitroBolt-WindowsLegacy-Installer-x86_32-$version.exe"
@@ -224,35 +226,5 @@ jobs:
           name: windows
           path: |
             D:\repo\dist\*.exe
+            D:\repo\dist\*.appx
           if-no-files-found: error
-
-  create-release:
-    if: github.event_name == 'workflow_dispatch' && !inputs.production
-    needs: [build-linux, build-mac, build-windows]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-      - name: Create Draft Release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          TAG="v$VERSION-build-$(date +%s)"
-          shopt -s nullglob
-          FILES=(linux/*.deb linux/*.rpm linux/*.tar.gz linux/*.AppImage mac/*.dmg windows/*.exe)
-          if [ ${#FILES[@]} -gt 0 ]; then
-            gh release create "$TAG" "${FILES[@]}" \
-              --title "Manual Build v$VERSION" \
-              --notes "Manually triggered build from GitHub Actions." \
-              --draft
-            echo "Created draft release: $TAG"
-          else
-            echo "No files found to upload"
-            exit 1
-          fi

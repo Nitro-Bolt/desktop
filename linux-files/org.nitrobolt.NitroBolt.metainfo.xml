@@ -6,21 +6,19 @@
   <project_license>GPL-3.0</project_license>
   <name>NitroBolt</name>
   <developer id="org.nitrobolt"></developer>
-  <summary>Make games, animations, and stories</summary>
+  <summary>A TurboWarp modification built beyond Scratch compatibility</summary>
   <description>
     <p>NitroBolt is a mod of TurboWarp with tons of new features, and a haven for developers who don't want to be restricted by "compatibility".</p>
     <p>Features:</p>
     <ul>
-      <li>Runs projects up to 100x faster than Scratch</li>
-      <li>Uses significantly less memory and energy than Scratch when idle</li>
-      <li>Dark mode</li>
-      <li>Developer tools, searchable dropdowns, onion skinning</li>
-      <li>Many more addons and customizability options</li>
-      <li>Native filesystem and file explorer integration</li>
-      <li>Less lag when editing large projects</li>
-      <li>Optional support for interpolation, 60 FPS, high quality pen, infinite clones</li>
-      <li>Backpack</li>
-      <li>and more</li>
+      <li>Git Projects with reviewable files and integrated version-control tools</li>
+      <li>Live Collaboration rooms for working on projects together in real time</li>
+      <li>Advanced procedures with global, branched, dual-mode, and typed blocks</li>
+      <li>An integrated debugger with logs, threads, performance data, and timers</li>
+      <li>An Assets tab for viewing and managing project assets</li>
+      <li>A reworked sound editor</li>
+      <li>Custom addons and reusable extension packs</li>
+      <li>Expanded stage and camera controls</li>
     </ul>
     <p>You can also use NitroBolt in your browser at https://nitrobolt.org/editor</p>
     <p>Project shown in screenshots is https://scratch.mit.edu/projects/425020125/</p>

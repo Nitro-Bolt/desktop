@@ -12,31 +12,22 @@ let currentStrings;
 
 const loadTranslations = (locale) => {
   const result = Object.assign({}, englishTranslations);
-
-  // Try with and without the - for regional variants
-  const possible = [locale];
+  const possibleLocales = [locale];
   if (locale.includes('-')) {
-    possible.push(locale.split('-')[0]);
+    possibleLocales.push(locale.split('-')[0]);
   }
-  for (const language of possible) {
-    const translations = otherTranslations[language];
-    if (translations) {
-      Object.assign(result, translations);
+  for (const possibleLocale of possibleLocales) {
+    if (otherTranslations[possibleLocale]) {
+      Object.assign(result, otherTranslations[possibleLocale]);
       break;
     }
   }
-
   return result;
 };
 
 const updateLocale = (locale) => {
-  // don't let weird invalid settings break the app from starting
-  if (typeof locale !== 'string') {
-    locale = 'en';
-  }
-
-  currentLocale = locale;
-  currentStrings = loadTranslations(locale);
+  currentLocale = typeof locale === 'string' ? locale : 'en';
+  currentStrings = loadTranslations(currentLocale);
 };
 
 const translate = (id) => currentStrings[id] || id;

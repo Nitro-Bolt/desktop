@@ -2,8 +2,9 @@
 
 ## Microsoft Store
 
-1. Go to top submission on https://partner.microsoft.com/en-us/dashboard/products/9P4DPZGV5ZKL/overview
+1. Open the NitroBolt product submission in Microsoft Partner Center.
 2. Press "Export listings" and save as "from-microsoft.csv"
-3. Run scratch-l10n `npm run tw:pull`
-4. Run `node generate.mjs`
-5. Press "Import listings" then select "import-to-microsoft.csv"
+3. Run `node generate.mjs`
+4. Press "Import listings" then select "import-to-microsoft.csv"
+
+Only the English listing is maintained until NitroBolt translations are set up.

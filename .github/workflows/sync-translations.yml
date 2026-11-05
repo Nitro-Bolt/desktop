@@ -1,0 +1,67 @@
+name: Sync translations
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 1"
+
+concurrency:
+  group: sync-translations
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sync-translations:
+    if: github.repository == 'Nitro-Bolt/desktop' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          token: ${{ secrets.AUTOMATION }}
+          persist-credentials: true
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Upload source strings
+        run: pnpm run translations:upload
+        env:
+          TRANSIFEX_TOKEN: ${{ secrets.TRANSIFEX }}
+          TRANSIFEX_RESOURCE: desktop
+      - name: Upload website source strings
+        run: pnpm run translations:upload
+        env:
+          TRANSIFEX_TOKEN: ${{ secrets.TRANSIFEX }}
+          TRANSIFEX_RESOURCE: desktop-website
+      - name: Download reviewed translations
+        run: pnpm run translations:download
+        env:
+          TRANSIFEX_TOKEN: ${{ secrets.TRANSIFEX }}
+          TRANSIFEX_RESOURCE: desktop
+      - name: Download reviewed website translations
+        run: pnpm run translations:download
+        env:
+          TRANSIFEX_TOKEN: ${{ secrets.TRANSIFEX }}
+          TRANSIFEX_RESOURCE: desktop-website
+      - name: Commit translation updates
+        run: |
+          if [[ ! $(git status --porcelain -- src-main/l10n/generated-translations.json docs/l10n/generated-translations.json) ]]; then
+            echo "No translation updates."
+            exit 0
+          fi
+          git add src-main/l10n/generated-translations.json docs/l10n/generated-translations.json
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git commit -m "chore: update desktop translations"
+          git pull --rebase origin master
+          git push origin master

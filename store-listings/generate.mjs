@@ -1,11 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const NUMBER_OF_ADDONS = 50;
-const CHANGELOG_LINK = 'https://desktop.nitrobolt.org/?changelog';
-const SCREENSHOT_PROJECT_LINK = 'https://scratch.mit.edu/projects/425020125/';
-const translations = require('./imported.json');
-
 const parseCSV = (contents) => {
   // Enforce consistent newline endings
   contents = contents.replace(/\r\n/g, '\n');
@@ -78,73 +73,9 @@ const generateCSV = (rows) => {
 };
 
 const generateStoreListings = (rows) => {
-  // CSV header: Field, ID, Type (Type), default, en-us, de, nl, fr, ...
-
-  // Remove everything after English
-  rows = rows.map(i => i.slice(0, 5));
-
-  const STRING_ID_MAP = {
-    Description: 'microsoft-store-description',
-    ReleaseNotes: 'microsoft-store-generic-release-notes',
-    DesktopScreenshotCaption1: 'microsoft-store-screenshot-caption',
-    DesktopScreenshotCaption2: 'microsoft-store-screenshot-caption',
-    DesktopScreenshotCaption3: 'microsoft-store-screenshot-addons',
-    DesktopScreenshotCaption4: 'microsoft-store-screenshot-packager',
-  };
-
-  const USE_DEFAULT_ROWS = [
-    'Title',
-    'CopyrightTrademarkInformation',
-    'DesktopScreenshot1',
-    'DesktopScreenshot2',
-    'DesktopScreenshot3',
-    'DesktopScreenshot4',
-    'DesktopScreenshot5',
-    'DesktopScreenshot6',
-    'DesktopScreenshot7',
-    'DesktopScreenshot8',
-    'DesktopScreenshot9',
-    'DesktopScreenshot10',
-    'SearchTerm1',
-    'SearchTerm2',
-    'SearchTerm3',
-    'SearchTerm4',
-    'SearchTerm5',
-    'SearchTerm6',
-    'SearchTerm7',
-  ];
-
-  for (const [localeName, localeValues] of Object.entries(translations)) {
-    const getString = (key) => {
-      if (localeValues[key]) {
-        return localeValues[key]
-          .replace('{number_of_addons}', NUMBER_OF_ADDONS)
-          .replace('{changelog_link}', CHANGELOG_LINK)
-          .replace('{screenshot_project_link}', SCREENSHOT_PROJECT_LINK)
-      }
-
-      console.warn(`Missing translation ${key} for ${localeName}`);
-      return null;
-    };
-
-    rows[0].push(localeName);
-
-    for (let rowIndex = 1; rowIndex < rows.length; rowIndex++) {
-      const row = rows[rowIndex];
-      const rowId = row[0];
-      const englishValue = row[4];
-
-      if (USE_DEFAULT_ROWS.includes(rowId)) {
-        row.push(englishValue);
-      } else if (Object.prototype.hasOwnProperty.call(STRING_ID_MAP, rowId)) {
-        const translation = getString(STRING_ID_MAP[rowId]);
-        // The way the translations are imported, the string should always be defined
-        row.push(translation || englishValue);
-      }
-    }
-  }
-
-  return rows;
+  // CSV header: Field, ID, Type (Type), default, en-us, other locales...
+  // NitroBolt only maintains the English Store listing for now.
+  return rows.map(row => row.slice(0, 5));
 };
 
 const csvRows = parseCSV(fs.readFileSync(path.join(import.meta.dirname, 'from-microsoft.csv'), 'utf8'));

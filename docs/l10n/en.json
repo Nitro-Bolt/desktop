@@ -1,0 +1,197 @@
+{
+  "60": {
+    "string": "60 FPS"
+  },
+  "602": {
+    "string": "Replace Scratch's default 30 FPS with any framerate of your choosing or use interpolation."
+  },
+  "updatewin": {
+    "string": "To update, download and run the new installer."
+  },
+  "updatemac": {
+    "string": "To update, download the new app and replace the old one."
+  },
+  "updateun": {
+    "string": "To update, reinstall the app the same way you installed it."
+  },
+  "win-modern-download": {
+    "string": "Download installer for Windows 10+ (64-bit)"
+  },
+  "win-legacy-download": {
+    "string": "Download installer for Windows 7, 8, 8.1 (64-bit)"
+  },
+  "smartscreen": {
+    "string": "If a Windows SmartScreen alert appears, click \"More info,\" verify that the file came from the official NitroBolt GitHub release, then click \"Run anyway.\""
+  },
+  "mac-modern-download": {
+    "string": "Download for macOS 12 and later"
+  },
+  "mac-legacy-link": {
+    "string": "See downloads for macOS 10.13 - 11 below"
+  },
+  "downlin": {
+    "string": "Read Linux installation instructions"
+  },
+  "downun": {
+    "string": "Unknown operating system"
+  },
+  "otheros": {
+    "string": "Instructions for other operating systems:",
+    "developer_comment": "Followed by a list of links to instructions for other systems"
+  },
+  "webapp": {
+    "string": "Or use our web app in any browser:",
+    "developer_comment": "Followed by link to nitrobolt.org/editor"
+  },
+  "beta": {
+    "string": "Beta version available:",
+    "developer_comment": "Followed by a version number eg. v1.7.2-beta.1 that is a link to learn more about the current beta release."
+  },
+  "caption": {
+    "string": "Project pictured: Full Sphere Path Tracer by piano_miles"
+  },
+  "features": {
+    "string": "Features",
+    "developer_comment": "Header of section listing features"
+  },
+  "live-collaboration": {
+    "string": "Live Collaboration"
+  },
+  "live-collaboration-description": {
+    "string": "Create or join a room to build a project with other people in real time."
+  },
+  "procedures": {
+    "string": "Advanced Procedures"
+  },
+  "procedures-description": {
+    "string": "Create global and branched procedures with dropdowns, typed returns, dual block modes, and additional inputs."
+  },
+  "sound-editor": {
+    "string": "Reworked Sound Editor"
+  },
+  "sound-editor-description": {
+    "string": "Edit project audio with NitroBolt's expanded sound tools."
+  },
+  "git-projects": {
+    "string": "Git Projects"
+  },
+  "git-projects-description": {
+    "string": "Store projects as reviewable files and use integrated tools for commits, branches, remotes, diffs, and synchronization."
+  },
+  "assets": {
+    "string": "Assets Tab"
+  },
+  "assets-description": {
+    "string": "View and manage all of your project's assets from one dedicated tab."
+  },
+  "debugger": {
+    "string": "Integrated Debugger"
+  },
+  "debugger-description": {
+    "string": "Investigate projects through dedicated logs, threads, performance, and timer views."
+  },
+  "variables": {
+    "string": "Variable Manager"
+  },
+  "variables-description": {
+    "string": "Manage variables, lists, tables, and broadcasts from one workspace, with support for types and custom colors."
+  },
+  "addons-packs": {
+    "string": "Custom Addons and Extension Packs"
+  },
+  "addons-packs-description": {
+    "string": "Load custom editor addons and organize reusable groups of extensions into packs."
+  },
+  "stage-camera": {
+    "string": "Stage and Camera Controls"
+  },
+  "stage-camera-description": {
+    "string": "Build with a resizable stage and control the viewport position, direction, and zoom."
+  },
+  "more": {
+    "string": "And a lot more.",
+    "developer_comment": "Appears at the end of a list of features."
+  },
+  "code": {
+    "string": "Source code"
+  },
+  "privacy": {
+    "string": "Privacy"
+  },
+  "bugs": {
+    "string": "Report bugs on Scratch"
+  },
+  "bugg": {
+    "string": "Report bugs on GitHub"
+  },
+  "changelog": {
+    "string": "Changelog"
+  },
+  "win-modern": {
+    "string": "Install on Windows 10 and later"
+  },
+  "w642": {
+    "string": "Download installer (64-bit, recommended)"
+  },
+  "w323": {
+    "string": "32-bit",
+    "developer_comment": "Alternative download button"
+  },
+  "win-legacy": {
+    "string": "Install on Windows 7, 8, and 8.1"
+  },
+  "win-legacy-64": {
+    "string": "Download legacy installer (64-bit, recommended)"
+  },
+  "mac": {
+    "string": "Install on macOS 12 and later"
+  },
+  "mac-legacy-header": {
+    "string": "Install on macOS 10.13 - 11"
+  },
+  "lin": {
+    "string": "Install on Linux"
+  },
+  "subheader": {
+    "string": "NitroBolt is a mod of TurboWarp with tons of new features, and a haven for developers who don't want to be restricted by \"compatibility\". Available for Windows, macOS, and Linux. NitroBolt is not affiliated with the Scratch Team."
+  },
+  "updatelinux": {
+    "string": "To update, download the latest package for your system and install it over your current version."
+  },
+  "noscript-install": {
+    "string": "Read installation instructions"
+  },
+  "noscript-warning": {
+    "string": "Download buttons will go to GitHub instead of direct downloads because JavaScript is disabled."
+  },
+  "view-releases": {
+    "string": "View releases"
+  },
+  "windows-installer-help": {
+    "string": "Choose the installer that matches your computer. Most Windows computers use the 64-bit installer."
+  },
+  "windows-unsigned-warning": {
+    "string": "Because NitroBolt is not code signed, Windows SmartScreen may show a warning. Click \"More info,\" verify that the file came from the official NitroBolt GitHub release, then click \"Run anyway.\""
+  },
+  "windows-legacy-description": {
+    "string": "These builds support older versions of Windows by using an older version of Electron. They are slower and receive fewer security improvements than the standard builds."
+  },
+  "mac-install-help": {
+    "string": "Download the disk image, open it, and drag NitroBolt into Applications. If Finder says NitroBolt already exists, choose \"Replace.\""
+  },
+  "mac-unsigned-warning": {
+    "string": "NitroBolt is not currently signed or notarized. If macOS blocks the first launch, Control-click NitroBolt in Applications, choose \"Open,\" then confirm that you want to open it."
+  },
+  "mac-legacy-description": {
+    "string": "These builds support older macOS versions by using older versions of Electron. They are slower and receive fewer security improvements than the standard build. Open the disk image, then drag NitroBolt into Applications."
+  },
+  "mac-legacy-open-help": {
+    "string": "If macOS blocks the first launch, Control-click NitroBolt in Applications, choose \"Open,\" then confirm that you want to open it."
+  },
+  "linux-format-help": {
+    "string": "Choose the format and processor architecture that match your Linux system."
+  },
+  "linux-deb-help": {
+    "string": "Download and install the appropriate .deb package:"
+  }
+}

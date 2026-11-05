@@ -287,16 +287,21 @@ const buildWindowsPortable = () => build({
   })
 });
 
+const buildMicrosoftStore = () => build({
+  platformName: 'WINDOWS',
+  platformType: 'appx',
+  manageUpdates: false,
+  extraConfig: (archName) => ({
+    appx: {
+      artifactName: getArtifactName('Windows', 'Store', archName)
+    }
+  })
+});
+
 const buildWindowsDir = () => build({
   platformName: 'WINDOWS',
   platformType: 'dir',
   manageUpdates: true
-});
-
-const buildMicrosoftStore = () => build({
-  platformName: 'WINDOWS',
-  platformType: 'appx',
-  manageUpdates: false
 });
 
 const buildMac = () => build({
@@ -431,8 +436,8 @@ const run = async () => {
     '--windows': buildWindows,
     '--windows-legacy': buildWindowsLegacy,
     '--windows-portable': buildWindowsPortable,
-    '--windows-dir': buildWindowsDir,
     '--microsoft-store': buildMicrosoftStore,
+    '--windows-dir': buildWindowsDir,
     '--mac': buildMac,
     '--mac-legacy-10.13-10.14': buildMacLegacy10131014,
     '--mac-legacy-10.15': buildMacLegacy1015,

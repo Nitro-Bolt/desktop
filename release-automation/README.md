@@ -1,187 +1,56 @@
-# Release automation scripts
+# Release automation
 
-These are the bespoke scripts that we use to automate various aspects of releasing new versions of the app.  We publish these scripts because it's easier for us to just put them in the repository. They may be useful as a starting place for other mods. Expect to make changes.
+## Publishing a release
 
-## Creating a release
+Run the `Release` workflow from the Actions tab and choose a release type:
 
-Run the `Release` workflow from the Actions tab. Choose one of these release types:
+- `current` publishes the version already in `package.json`.
+- `update` increments the middle number and resets the bugfix number.
+- `bugfix` increments the final number.
 
- * `current` publishes the version already in `package.json` without incrementing it. Use this for the initial `1.0.0` release.
- * `update` increments the middle number and resets the bugfix number, such as `1.3.2` to `1.4.0`.
- * `bugfix` increments the last number, such as `1.3.2` to `1.3.3`.
+Enter one changelog item per line. The workflow updates the version and generated changelog files, commits and tags the release, builds every supported platform, and publishes the artifacts to GitHub Releases. Windows and macOS artifacts are not code signed.
 
-Enter one changelog item per line. The workflow updates the app version, website version and update manifest, generates changelog files, commits and tags the release, builds every platform in production mode, and publishes a GitHub release. Only one release workflow runs at a time.
-
-The workflow uses the `AUTOMATION` repository secret to push the release commit and tag. Windows artifacts are not code signed.
+The workflow uses the `AUTOMATION` repository secret to push the release commit and tag.
 
 ## Build script
 
-This is what creates most of the downloads that are up on our website and on GitHub.
+`build.mjs` packages the compiled application. At least one target must be provided:
+
+- `--windows`: Windows 10 and later installer.
+- `--windows-legacy`: Windows 7, 8, and 8.1 installer using an older Electron version.
+- `--windows-portable`: Portable Windows executable.
+- `--microsoft-store`: Microsoft Store APPX package.
+- `--windows-dir`: Unpacked Windows application for debugging.
+- `--mac`: Current universal macOS disk image.
+- `--mac-legacy-10.13-10.14`: Intel build for macOS 10.13 and 10.14.
+- `--mac-legacy-10.15`: Intel build for macOS 10.15.
+- `--mac-legacy-11`: Universal build for macOS 11.
+- `--mac-dir`: Unpacked macOS application for debugging.
+- `--debian`: Debian package.
+- `--rpm`: RPM package.
+- `--appimage`: Portable AppImage.
+- `--tarball`: Portable tar.gz archive.
+- `--linux-dir`: Unpacked Linux application for debugging.
+
+Architecture options:
+
+- `--x64`: 64-bit x86.
+- `--ia32`: 32-bit x86 on Windows.
+- `--arm64`: 64-bit ARM.
+- `--armv7l`: 32-bit ARM on Linux.
+- `--universal`: Combined Intel and Apple Silicon macOS build.
+
+`--production` enables production update checks and legacy-build warnings.
+
+Microsoft Store APPX packages use the public product identity from Partner Center. Microsoft signs packages accepted through the Store; the APPX files attached to GitHub releases are not signed for sideloading.
+
+The script builds every requested target for every requested architecture. For example:
+
+```sh
+node release-automation/build.mjs --windows --windows-portable --x64 --arm64 --production
+```
 
 Optional dependencies:
 
- * [Git](https://git-scm.com/) (used to get the time of the most recent commit)
- * [strip-nondeterminism](https://salsa.debian.org/reproducible-builds/strip-nondeterminism) (Linux only, used for tarballs)
-
-You must specify which platform to build for:
-
-```
---windows
-    Create Windows installers for Windows 10 or later.
-
---windows-legacy
-    Create Windows installers for Windows 7 or later (less secure than --windows).
-
---windows-portable
-    Create portable Windows executables for Windows 10 or later.
-
---windows-dir
-    Generate executables for Windows but don't package into a single executable file
-    Primarily for debugging.
-
---microsoft-store
-    Create appx files for uploading to the Microsoft Store.
-
---mac
-    Create app for macOS 10.15 and later.
-
---mac-legacy-10.13-10.14
-    Create app for macOS 10.13 and 10.14 (less secure than --mac).
-
---mac-legacy-10.15
-    Create app for macOS 10.15 (less secure than --mac).
-
---mac-legacy-11
-    Create app for macOS 11 (less secure than --mac).
-
---mac-dir
-    Generate executables for macOS 10.15 and later but don't package into a complete DMG installer.
-    Primarily for debugging.
-
---debian
-    Create deb files for Debian, Ubuntu, and derivatives.
-
---rpm
-    Create rpm files for Fedora, RHEL, and derivatives.
-
---tarball
-    Create tar.gz files for Linux.
-    If strip-nondeterminism is installed, tarballs will be reproducible.
-
---appimage
-    Create AppImage executables for Linux.
-
---linux-dir
-    Generate executables for Linux but don't package into distribution-sepecific installer or format.
-    Primarily for debugging.
-```
-
-You can also specify which architecture you're building for:
-
-```
---x64
-    64-bit x86. Supported on Windows, macOS, Linux.
-    Default on Windows, Linux.
-
---ia32
-    32-bit x86. Windows only.
-
---arm64
-    64-bit ARM. Supported on Windows, macOS, Linux.
-
---armv7l
-    32-bit ARM. Linux only.
-
---universal
-    Combines --x64 (Intel Silicon) and --arm64 (Apple Silicon) into one file. macOS only.
-    Default on macOS.
-```
-
-The script builds the full "matrix" of all options you give. For example, `--windows --windows-portable --x64 --arm64` will create four builds:
-
- - Windows installer for x64
- - Windows installer for ARM64
- - Windows portable for x64
- - Windows portable for ARM64
-
-Optionally you may also apply:
-
-```
---production
-    Enables update checker.
-    Adds "prod-" to the start of the distribution name.
-    Enables some extra warnings for people who install the wrong version of the app.
-    Allows notarization on macOS.
-```
-
- - snapcraft.io
- - aur.archlinux.org
-
-Due to the variety of package managers needed to publish to this many places, this script only strives to support Arch Linux. It's probably not hard to make most of it work elsewhere, but that's not a priority for us. In addition to everything required to build NitroBolt Desktop from source, you also need the following Arch packages:
-
- - base-devel
- - git
- - jq
- - gnupg
- - dpkg
- - rclone
- - gzip
- - python
- - pacman
- - pacman-contrib
- - flatpak
- - flatpak-builder
- - [flatpak-node-generator](https://github.com/flatpak/flatpak-builder-tools/tree/master/node) which also needs:
-   - python-pipx
-   - python-aiohttp
- - [snapd](https://aur.archlinux.org/packages/snapd)
-
-Then for snap uploads, you also need to install and log in to snapcraft:
-
-```bash
-snap install snapcraft --classic
-snapcraft login
-```
-
-For rclone configuration, see [Debian scripts README](../debian/README.md).
-
-## Mac App Store
-
-Some notes related to building for MAS:
-
-Keychain Access.app > Menu bar > Certificate Assistant > Request a certificate from a CA. Email and CN don't seem to matter.
-
-[Certificates](https://developer.apple.com/account/resources/certificates/list). Probably need at least:
-
- * Software > Apple Development
- * Software > Apple Distribution
- * Software > Mac App Distribution
- * Software > Mac Installer Distribution
- * Software > Developer ID Installer
-
-[Apple PKI](https://www.apple.com/certificateauthority/). Probably need at least need:
-
- * Apple Root CA - G3 Root
- * Worldwide Developer Relations - G3 (Expiring 02/20/2030 00:00:00 UTC)
-
-[Provisioning profiles](https://developer.apple.com/account/resources/profiles/list). Need:
-
-| Type | Notes | Download and save at |
-|-|-|-|
-| Development > macOS App Development | Use all certs, devices | build/development.provisionprofile |
-| Distribution > Mac App Store Connect | Use Distribution cert (not "Mac App ...") | build/distribution.provisionprofile |
-
-```bash
-npm ci
-rm -rf dist* # might need to do this manually in finder ...
-npm run fetch
-npm run webpack:prod
-npx electron-builder --mac mas --universal --config.extraMetadata.tw_dist=prod-mas
-```
-
-Upload dist/mas-universal/... to App Store Connect with [Transporter](https://apps.apple.com/us/app/transporter/id1450874784).
-
-Troubleshooting:
-
- * electron-builder error `  ⨯ Cannot find valid "3rd Party Mac Developer Installer" identity to sign MAS installer, please see https://electron.build/code-signing` - see if that exists in Keychain Access AND is trusted. If not trusted, get PKI roots.
- * Transporter error `Validation failed (409) Invalid Code Signing. The executable 'org.nitrobolt.desktop.pkg/Payload/NitroBolt.app/Contents/MacOS/NitroBolt' must be signed with the certificate that is contained in the provisioning profile.` - adjust the distribution provisioning profile to use whatever certificate the executable got signed with
+- Git, used to obtain the most recent commit time.
+- `strip-nondeterminism`, used to make Linux tar archives reproducible.

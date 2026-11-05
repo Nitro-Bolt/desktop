@@ -16,7 +16,9 @@
     "webpack:prod": "cross-env NODE_ENV=production webpack",
     "electron:start": "electron src-main/entrypoint.js",
     "electron:linux": "./electron_build_fix_until_reboot.sh; electron src-main/entrypoint.js",
-    "electron:package:dir": "electron-builder --dir"
+    "electron:package:dir": "electron-builder --dir",
+    "translations:upload": "node scripts/upload-translations.mjs",
+    "translations:download": "node scripts/download-translations.mjs"
   },
   "dependencies": {
     "adm-zip": "^0.5.16",
@@ -28,6 +30,7 @@
     "@babel/preset-react": "^7.13.13",
     "@electron/fuses": "^2.1.2",
     "@nitro-bolt/extensions": "github:Nitro-Bolt/extensions#master",
+    "@transifex/api": "4.3.0",
     "@turbowarp/extensions": "github:TurboWarp/extensions#master",
     "autoprefixer": "^9.8.8",
     "babel-loader": "^8.4.1",
@@ -118,6 +121,16 @@
     "portable": {
       "artifactName": "${productName}-Windows-Portable-${arch}-${version}.${ext}"
     },
+    "appx": {
+      "artifactName": "${productName}-Windows-Store-${arch}-${version}.${ext}",
+      "applicationId": "NitroBolt",
+      "displayName": "NitroBolt",
+      "identityName": "Cubester.NitroBolt",
+      "publisher": "CN=54F4F60F-5369-41E6-BB97-D1795FE27384",
+      "publisherDisplayName": "Cubester",
+      "backgroundColor": "#ff512b",
+      "showNameOnTiles": true
+    },
     "mac": {
       "artifactName": "${productName}-MacOS-${arch}-${version}.${ext}",
       "icon": "build/icon.icns",
@@ -140,22 +153,12 @@
         }
       ]
     },
-    "mas": {
-      "hardenedRuntime": false,
-      "entitlements": "build/entitlements.mas.plist",
-      "entitlementsInherit": "build/entitlements.mas.inherit.plist",
-      "provisioningProfile": "build/distribution.provisionprofile"
-    },
-    "masDev": {
-      "type": "development",
-      "provisioningProfile": "build/development.provisionprofile"
-    },
     "linux": {
       "executableName": "nitrobolt-desktop",
       "artifactName": "${productName}-Linux-Installer-${arch}-${version}.${ext}",
       "maintainer": "Cubester <contact@nitrobolt.org>",
       "icon": "./build/",
-      "synopsis": "Mod of Scratch with a compiler and more features.",
+      "synopsis": "Mod of TurboWarp with tons of powerful new features.",
       "description": "NitroBolt is a mod of TurboWarp with tons of new features, and a haven for developers who don't want to be restricted by \"compatibility\".",
       "category": "Development",
       "desktop": {
@@ -182,29 +185,11 @@
         }
       ]
     },
-    "snap": {
-      "summary": "A mod of TurboWarp with tons of new features, and a haven for developers who don't want to be restricted by \"compatibility\".",
-      "allowNativeWayland": false,
-      "artifactName": "${productName}-Linux-Snap-${arch}-${version}.${ext}",
-      "executableArgs": [
-        "--ozone-platform=x11"
-      ],
-      "plugs": [
-        "default",
-        "camera",
-        "audio-record",
-        "joystick",
-        "removable-media"
-      ]
-    },
     "appImage": {
       "license": null
     },
     "rpm": {
       "artifactName": "${productName}-Linux-Installer-${arch}-${version}.${ext}"
-    },
-    "flatpak": {
-      "artifactName": "${productName}-Linux-Flatpak-${arch}-${version}.${ext}"
     },
     "fileAssociations": [
       {
