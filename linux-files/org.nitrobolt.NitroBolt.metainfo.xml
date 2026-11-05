@@ -21,16 +21,16 @@
       <li>Expanded stage and camera controls</li>
     </ul>
     <p>You can also use NitroBolt in your browser at https://nitrobolt.org/editor</p>
-    <p>Project shown in screenshots is https://scratch.mit.edu/projects/425020125/</p>
+    <p>The screenshots show Tale of Farth by mrgallifrey on Discord running in NitroBolt Desktop.</p>
   </description>
   <screenshots>
     <screenshot type="default">
-      <caption>Default project in light mode</caption>
-      <image width="1153" height="734">https://raw.githubusercontent.com/TurboWarp/desktop-screenshots/bb4612ebefe99d816ae7e60f70f59e18d5fef3b9/flathub/light.png</image>
+      <caption>Tale of Farth by mrgallifrey on Discord in light mode</caption>
+      <image width="1280" height="800">https://raw.githubusercontent.com/Nitro-Bolt/desktop/master/docs/nitrobolt-desktop-light.png</image>
     </screenshot>
-    <screenshot type="default">
-      <caption>Full Sphere Path Tracer by piano_miles in dark mode</caption>
-      <image width="1153" height="734">https://raw.githubusercontent.com/TurboWarp/desktop-screenshots/bb4612ebefe99d816ae7e60f70f59e18d5fef3b9/flathub/pt-dark.png</image>
+    <screenshot>
+      <caption>Tale of Farth by mrgallifrey on Discord in dark mode</caption>
+      <image width="1280" height="800">https://raw.githubusercontent.com/Nitro-Bolt/desktop/master/docs/nitrobolt-desktop-dark.png</image>
     </screenshot>
   </screenshots>
   <url type="homepage">https://desktop.nitrobolt.org/</url>

@@ -16,7 +16,7 @@
     <meta property="og:title" content="NitroBolt Desktop - Beyond Limitations" />
     <meta property="og:description" content="NitroBolt is a mod of TurboWarp with tons of new features, and a haven for developers who don't want to be restricted by &quot;compatibility&quot;." />
     <meta property="og:url" content="https://desktop.nitrobolt.org/" />
-    <meta property="og:image" content="https://desktop.nitrobolt.org/screenshots/windows/light.png" />
+    <meta property="og:image" content="https://desktop.nitrobolt.org/nitrobolt-desktop-light.png" />
     <meta property="og:image:width" content="1280" />
     <meta property="og:image:height" content="800" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -578,6 +578,10 @@
             const translation = messages[element.dataset.l10n];
             if (translation) element.textContent = translation;
           }
+          const desktopScreenshot = document.querySelector('.desktop-screenshot');
+          if (desktopScreenshot && messages.caption) {
+            desktopScreenshot.title = messages.caption;
+          }
         } catch (error) {
           console.warn('Could not load website translations.', error);
         }
@@ -662,20 +666,10 @@
 
     <div class="picture picture-editor">
       <picture>
-        <source srcset="screenshots/windows/dark.webp 1x, screenshots/mac/dark.webp 2x" type="image/webp" media="(prefers-color-scheme: dark)">
-        <source srcset="screenshots/windows/dark.png 1x, screenshots/mac/dark.png 2x" type="image/png" media="(prefers-color-scheme: dark)">
-        <source srcset="screenshots/windows/light.webp 1x, screenshots/mac/light.webp 2x" type="image/webp">
-        <source srcset="screenshots/windows/light.png 1x, screenshots/mac/light.png 2x" type="image/png">
-        <img class="path-tracer" loading="lazy" src="screenshots/windows/light.png" width="1280" height="800" title="Project pictured: Full Sphere Path Tracer by piano_miles">
+        <source srcset="nitrobolt-desktop-dark.png" media="(prefers-color-scheme: dark)">
+        <img class="desktop-screenshot" loading="lazy" src="nitrobolt-desktop-light.png" width="1280" height="800" title="Tale of Farth by mrgallifrey on Discord">
       </picture>
-      <a class="picture-caption" href="https://scratch.mit.edu/projects/425020125/" data-l10n="caption">Project pictured: Full Sphere Path Tracer by piano_miles</a>
-      <script>
-        if (messages.caption) {
-          for (const image of document.getElementsByClassName('path-tracer')) {
-            image.title = messages.caption;
-          }
-        }
-      </script>
+      <div class="picture-caption" data-l10n="caption">Tale of Farth by mrgallifrey on Discord</div>
     </div>
 
     <div class="features section">
