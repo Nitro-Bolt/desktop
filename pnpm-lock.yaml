@@ -77,7 +77,7 @@ importers:
         version: 6.0.3(postcss@8.5.6)
       scratch-gui:
         specifier: github:Nitro-Bolt/scratch-gui#develop
-        version: https://codeload.github.com/Nitro-Bolt/scratch-gui/tar.gz/f4277450ee161ad37c8a2ef5fdde9a8761375d56(react-dom@16.14.0(react@16.14.0))(react-intl-redux@0.7.0(react-intl@2.9.0(prop-types@15.8.1)(react@16.14.0))(react-redux@5.0.7(react@16.14.0)(redux@3.7.2)))(react@16.14.0)(scratch-render-fonts@https://codeload.github.com/TurboWarp/scratch-render-fonts/tar.gz/7b6768fc6dfef6b343a06f992587b74807043961)(tslib@2.8.1)(webpack@4.47.0)
+        version: https://codeload.github.com/Nitro-Bolt/scratch-gui/tar.gz/cfe27fd7669a61bfe18757061ca1dd74a2593d67(react-dom@16.14.0(react@16.14.0))(react-intl-redux@0.7.0(react-intl@2.9.0(prop-types@15.8.1)(react@16.14.0))(react-redux@5.0.7(react@16.14.0)(redux@3.7.2)))(react@16.14.0)(scratch-render-fonts@https://codeload.github.com/TurboWarp/scratch-render-fonts/tar.gz/7b6768fc6dfef6b343a06f992587b74807043961)(tslib@2.8.1)(webpack@4.47.0)
       scratch-render-fonts:
         specifier: github:TurboWarp/scratch-render-fonts#master
         version: https://codeload.github.com/TurboWarp/scratch-render-fonts/tar.gz/7b6768fc6dfef6b343a06f992587b74807043961
@@ -4174,12 +4174,12 @@ packages:
     resolution: {tarball: https://codeload.github.com/TurboWarp/scratch-audio/tar.gz/dc47bf3bc177289531ed8a4fb616fed895dc303a}
     version: 0.1.0
 
-  scratch-blocks@https://codeload.github.com/Nitro-Bolt/scratch-blocks/tar.gz/b947f096739312051e3208bbc50a749c6ffdde86:
-    resolution: {tarball: https://codeload.github.com/Nitro-Bolt/scratch-blocks/tar.gz/b947f096739312051e3208bbc50a749c6ffdde86}
+  scratch-blocks@https://codeload.github.com/Nitro-Bolt/scratch-blocks/tar.gz/04dbed8bf95ed6f67a07e9d018c9c1c3eeff4109:
+    resolution: {tarball: https://codeload.github.com/Nitro-Bolt/scratch-blocks/tar.gz/04dbed8bf95ed6f67a07e9d018c9c1c3eeff4109}
     version: 0.1.0
 
-  scratch-gui@https://codeload.github.com/Nitro-Bolt/scratch-gui/tar.gz/f4277450ee161ad37c8a2ef5fdde9a8761375d56:
-    resolution: {tarball: https://codeload.github.com/Nitro-Bolt/scratch-gui/tar.gz/f4277450ee161ad37c8a2ef5fdde9a8761375d56}
+  scratch-gui@https://codeload.github.com/Nitro-Bolt/scratch-gui/tar.gz/cfe27fd7669a61bfe18757061ca1dd74a2593d67:
+    resolution: {tarball: https://codeload.github.com/Nitro-Bolt/scratch-gui/tar.gz/cfe27fd7669a61bfe18757061ca1dd74a2593d67}
     version: 3.2.37
     peerDependencies:
       react: ^16.0.0
@@ -9815,12 +9815,12 @@ snapshots:
       '@turbowarp/nanolog': 0.2.0
       '@turbowarp/startaudiocontext': 1.0.0
 
-  scratch-blocks@https://codeload.github.com/Nitro-Bolt/scratch-blocks/tar.gz/b947f096739312051e3208bbc50a749c6ffdde86:
+  scratch-blocks@https://codeload.github.com/Nitro-Bolt/scratch-blocks/tar.gz/04dbed8bf95ed6f67a07e9d018c9c1c3eeff4109:
     dependencies:
       exports-loader: 0.7.0
       imports-loader: 0.8.0
 
-  scratch-gui@https://codeload.github.com/Nitro-Bolt/scratch-gui/tar.gz/f4277450ee161ad37c8a2ef5fdde9a8761375d56(react-dom@16.14.0(react@16.14.0))(react-intl-redux@0.7.0(react-intl@2.9.0(prop-types@15.8.1)(react@16.14.0))(react-redux@5.0.7(react@16.14.0)(redux@3.7.2)))(react@16.14.0)(scratch-render-fonts@https://codeload.github.com/TurboWarp/scratch-render-fonts/tar.gz/7b6768fc6dfef6b343a06f992587b74807043961)(tslib@2.8.1)(webpack@4.47.0):
+  scratch-gui@https://codeload.github.com/Nitro-Bolt/scratch-gui/tar.gz/cfe27fd7669a61bfe18757061ca1dd74a2593d67(react-dom@16.14.0(react@16.14.0))(react-intl-redux@0.7.0(react-intl@2.9.0(prop-types@15.8.1)(react@16.14.0))(react-redux@5.0.7(react@16.14.0)(redux@3.7.2)))(react@16.14.0)(scratch-render-fonts@https://codeload.github.com/TurboWarp/scratch-render-fonts/tar.gz/7b6768fc6dfef6b343a06f992587b74807043961)(tslib@2.8.1)(webpack@4.47.0):
     dependencies:
       '@microbit/microbit-universal-hex': 0.2.2(tslib@2.8.1)
       '@nitro-bolt/scratch-storage': 1.0.1(webpack@4.47.0)
@@ -9882,7 +9882,7 @@ snapshots:
       redux: 3.7.2
       redux-throttle: 0.1.1
       scratch-audio: https://codeload.github.com/TurboWarp/scratch-audio/tar.gz/dc47bf3bc177289531ed8a4fb616fed895dc303a
-      scratch-blocks: https://codeload.github.com/Nitro-Bolt/scratch-blocks/tar.gz/b947f096739312051e3208bbc50a749c6ffdde86
+      scratch-blocks: https://codeload.github.com/Nitro-Bolt/scratch-blocks/tar.gz/04dbed8bf95ed6f67a07e9d018c9c1c3eeff4109
       scratch-l10n: https://codeload.github.com/Nitro-Bolt/scratch-l10n/tar.gz/e81f9af4e5cdc33fcb72f5cae8b5b36c833a008f
       scratch-paint: https://codeload.github.com/Nitro-Bolt/scratch-paint/tar.gz/8c73a465cb98be0a295b5add73e3d8104ebdf13f(react-dom@16.14.0(react@16.14.0))(react-intl-redux@0.7.0(react-intl@2.9.0(prop-types@15.8.1)(react@16.14.0))(react-redux@5.0.7(react@16.14.0)(redux@3.7.2)))(react-intl@2.9.0(prop-types@15.8.1)(react@16.14.0))(react-popover@0.5.10)(react-redux@5.0.7(react@16.14.0)(redux@3.7.2))(react-responsive@5.0.0(react@16.14.0))(react-style-proptype@3.2.2)(react-tooltip@3.8.0(react-dom@16.14.0(react@16.14.0))(react@16.14.0))(react@16.14.0)(redux@3.7.2)(scratch-render-fonts@https://codeload.github.com/TurboWarp/scratch-render-fonts/tar.gz/7b6768fc6dfef6b343a06f992587b74807043961)
       scratch-render: https://codeload.github.com/Nitro-Bolt/scratch-render/tar.gz/f973585edf95ce071efc315e4407d8ea72f35e12(webpack@4.47.0)
