@@ -6,11 +6,9 @@ import {transifexApi, RESOURCE, resourceId, projectId} from './transifex-common.
 const root = pathUtil.resolve(pathUtil.dirname(fileURLToPath(import.meta.url)), '..');
 const resources = {
   desktop: {
-    name: 'NitroBolt Desktop',
     source: 'src-main/l10n/en.json'
   },
   'desktop-website': {
-    name: 'NitroBolt Desktop Website',
     source: 'docs/l10n/en.json'
   }
 };
@@ -44,7 +42,7 @@ try {
   await transifexApi.Resource.create({
     attributes: {
       slug: RESOURCE,
-      name: resource.name
+      name: RESOURCE
     },
     relationships: {
       i18n_format: {
