@@ -4,5 +4,5 @@ Prefix notes with "Windows:", "macOS:", or "Linux:" as needed. Do not use **form
 
 # 1.0.0 (2026-10-30)
 
- - NitroBolt Desktop Final Test
+ - Initial release of NitroBolt Desktop!
 
