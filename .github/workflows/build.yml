@@ -156,6 +156,16 @@ jobs:
               exit 1
             fi
           done
+      - name: Verify macOS application signatures
+        shell: bash
+        run: |
+          for DMG in dist/*.dmg; do
+            MOUNT_POINT=$(mktemp -d)
+            hdiutil attach "$DMG" -nobrowse -readonly -mountpoint "$MOUNT_POINT"
+            codesign --verify --deep --strict --verbose=2 "$MOUNT_POINT/NitroBolt.app"
+            hdiutil detach "$MOUNT_POINT"
+            rmdir "$MOUNT_POINT"
+          done
       - name: Upload artifacts to GitHub Actions
         uses: actions/upload-artifact@v4
         with:

@@ -122,6 +122,9 @@ const flipFuses = async (context) => {
   /** @type {import('@electron/fuses').FuseV1Config} */
   const newFuses = {
     version: electronFuses.FuseVersion.V1,
+    // Apple Silicon validates Electron's bundled ad hoc signature when the app launches.
+    // Reset it after changing the fuse bytes so the modified executable remains valid.
+    resetAdHocDarwinSignature: context.electronPlatformName === 'darwin',
     // TODO: When electron-builder updates @electron/fuses to v2.x.x, we can should this in all cases again
     strictlyRequireAllFuses: electronMajorVersion < 41,
   };
