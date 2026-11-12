@@ -2,9 +2,20 @@ const AbstractWindow = require('./abstract');
 const {translate, getLocale, getStrings} = require('../l10n');
 const {APP_NAME} = require('../brand');
 const openExternal = require('../open-external');
+const packageJSON = require('../../package.json');
+
+const getDownloadURL = (currentVersion, latestVersion) => {
+  const url = new URL('https://desktop.nitrobolt.org/');
+  url.searchParams.set('from', currentVersion);
+  url.searchParams.set('to', latestVersion);
+  if (typeof packageJSON.tw_dist === 'string') {
+    url.searchParams.set('distribution', packageJSON.tw_dist);
+  }
+  return url.href;
+};
 
 class UpdateWindow extends AbstractWindow {
-  constructor (currentVersion, latestVersion, security, downloadURL) {
+  constructor (currentVersion, latestVersion, security) {
     super();
 
     this.window.setTitle(`${translate('update.window-title')} - ${APP_NAME}`);
@@ -27,7 +38,7 @@ class UpdateWindow extends AbstractWindow {
 
     this.ipc.handle('download', () => {
       this.window.destroy();
-      openExternal(downloadURL);
+      openExternal(getDownloadURL(currentVersion, latestVersion));
     });
 
     const ignore = (permanently) => {
@@ -83,8 +94,8 @@ class UpdateWindow extends AbstractWindow {
     return true;
   }
 
-  static updateAvailable (currentVersion, latestVersion, isSecurity, downloadURL) {
-    new UpdateWindow(currentVersion, latestVersion, isSecurity, downloadURL);
+  static updateAvailable (currentVersion, latestVersion, isSecurity) {
+    new UpdateWindow(currentVersion, latestVersion, isSecurity);
   }
 }
 

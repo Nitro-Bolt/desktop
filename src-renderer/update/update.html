@@ -8,31 +8,76 @@
         margin: 0;
         padding: 0;
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-        color: black;
-        background-color: white;
+        color: var(--text);
+        background-color: var(--background);
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --background: #fff;
+          --text: #000;
+          --surface: hsla(0, 0%, 0%, 0.04);
+          --surface-border: hsla(0, 0%, 0%, 0.12);
+          --secondary-button: #fff;
+          --secondary-button-hover: #f2f2f2;
+          --accent: hsla(13.55, 100%, 57.45%, 1);
+          --accent-hover: hsla(13.55, 100%, 52%, 1);
+        }
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          color-scheme: dark;
+          --background: #040404;
+          --text: #fff;
+          --surface: #1c1c1c;
+          --surface-border: #3a3a3a;
+          --secondary-button: #333;
+          --secondary-button-hover: #444;
+          --accent: hsla(13.55, 100%, 57.45%, 1);
+          --accent-hover: hsla(13.55, 100%, 62%, 1);
+        }
       }
       main {
-        padding: 20px;
+        padding: 10px;
         box-sizing: border-box;
         width: 100vw;
         height: 100vh;
-        border: 20px solid hsla(13.55, 100%, 57.45%, 1);
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 10px;
       }
 
       h1, h2, p {
         margin: 0;
       }
+      h1 {
+        font-size: 1.5rem;
+      }
+      h2 {
+        font-size: 1.1rem;
+      }
       ul {
         margin: 0.5rem 0;
+      }
+
+      .header {
+        padding: 20px;
+        border-radius: 10px;
+        color: white;
+        background-color: var(--accent);
+      }
+      .header p {
+        margin-top: 5px;
       }
 
       .update-log {
         width: 100%;
         flex-grow: 1;
-        border: 0;
+        min-height: 0;
+        padding: 15px;
+        box-sizing: border-box;
+        border: 1px solid var(--surface-border);
+        border-radius: 10px;
+        background-color: var(--surface);
         overflow: auto;
       }
       .loading, .error, .empty {
@@ -41,25 +86,39 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        text-align: center;
+      }
+      .actions {
+        display: flex;
+        gap: 10px;
       }
       button {
         cursor: pointer;
         font: inherit;
-        color: inherit;
-        padding: 0.5rem;
-        border-radius: 0.25rem;
-        border: 1px solid hsla(0, 0%, 0%, 0.15);
+        padding: 10px 16px;
+        border-radius: 10px;
+        border: 1px solid var(--surface-border);
         font-weight: bold;
       }
       .download-button {
-        color: black;
-        background-color: #24cd11;
+        flex-grow: 1;
+        color: white;
+        border-color: var(--accent);
+        background-color: var(--accent);
+      }
+      .download-button:hover {
+        background-color: var(--accent-hover);
       }
       .ignore-button {
-
+        color: var(--text);
+        background-color: var(--secondary-button);
+      }
+      .ignore-button:hover {
+        background-color: var(--secondary-button-hover);
       }
       label {
         cursor: pointer;
+        align-self: flex-end;
       }
 
       .if-security {
@@ -85,19 +144,18 @@
         }
       </script>
 
-      <h1 class="normal-title if-normal"></h1>
-      <h1 class="security-title if-security"></h1>
+      <header class="header">
+        <h1 class="normal-title if-normal"></h1>
+        <h1 class="security-title if-security"></h1>
+        <p class="normal-description if-normal"></p>
+        <p class="security-description if-security"></p>
+      </header>
       <script>
         document.querySelector('.normal-title').textContent = strings['update.normal-title'];
         document.querySelector('.security-title').textContent = strings['update.security-title'];
-      </script>
-
-      <p class="normal-description if-normal"></p>
-      <p class="security-description if-security"></p>
-      <script>
         const appNameVersion = `${appName} v${info.latestVersion}`;
         document.querySelector('.normal-description').textContent = strings['update.normal-description'].replace('{appNameVersion}', appNameVersion);
-        document.querySelector('.security-description').textContent = strings['update.security-description'].replace('{appNameVersion}', appNameVersion);;
+        document.querySelector('.security-description').textContent = strings['update.security-description'].replace('{appNameVersion}', appNameVersion);
       </script>
 
       <div class="update-log">
@@ -107,8 +165,10 @@
         document.querySelector('.loading').textContent = strings['update.loading'];
       </script>
 
-      <button class="download-button"></button>
-      <button class="ignore-button"></button>
+      <div class="actions">
+        <button class="download-button"></button>
+        <button class="ignore-button"></button>
+      </div>
       <script>
         const downloadButton = document.querySelector('.download-button');
         const ignoreButton = document.querySelector('.ignore-button');

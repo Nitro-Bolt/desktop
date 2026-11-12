@@ -20,7 +20,7 @@ The workflow uses the `AUTOMATION` repository secret to push the release commit 
 
 The `Nightly` workflow runs each day at 05:00 UTC and can also be started manually. It builds all supported platforms from the latest commit on `master`. Nightly versions use the stable version from `package.json` with the first seven characters of the commit hash appended, such as `1.0.0-a1b2c3d`.
 
-Nightly packages are stored as artifacts on the workflow run and replace the assets in the rolling `nightly` GitHub prerelease. They do not create commits on `master`. Nightly packages use the Nightly update channel and compare themselves with the commit attached to the rolling prerelease. Microsoft Store APPX packages are omitted because Store package versions are numeric and updates are managed by Microsoft.
+Nightly packages are stored as artifacts on the workflow run and replace the assets in the rolling `nightly` GitHub prerelease. They do not create commits on `master`. Nightly packages use the Nightly update channel and compare themselves with the commit attached to the rolling prerelease. When an update is available, Desktop opens an unlisted website route that links directly to the matching nightly asset for the installed distribution. Microsoft Store APPX packages are omitted because Store package versions are numeric and updates are managed by Microsoft.
 
 ## Build script
 

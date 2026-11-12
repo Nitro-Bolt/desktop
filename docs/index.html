@@ -444,6 +444,9 @@
       [data-if-os] {
         display: none;
       }
+      [data-if-update-distribution] {
+        display: none;
+      }
       [data-os="windows-modern"] [data-if-os="windows-modern"] {
         display: initial;
       }
@@ -454,7 +457,8 @@
       [data-os="windows-legacy"] [data-if-os="windows-any"] {
         display: initial;
       }
-      [data-os="mac"] [data-if-os="mac"] {
+      [data-os="mac"] [data-if-os="mac"],
+      [data-os="mac"] [data-if-os="mac-any"] {
         display: initial;
       }
       [data-os="linux"] [data-if-os="linux"] {
@@ -462,6 +466,12 @@
       }
       [data-os="unsupported"] [data-if-os="unsupported"] {
         display: initial;
+      }
+      [data-update-distribution] .above-fold-download > [data-if-os] {
+        display: none;
+      }
+      [data-update-distribution] [data-if-update-distribution] {
+        display: inline-flex;
       }
 
       [hidden] {
@@ -555,14 +565,71 @@
       const searchParams = new URLSearchParams(location.search);
       const isChangelogPage = searchParams.has('changelog') || searchParams.has('from') || searchParams.has('to');
       const comingFromVersion = searchParams.get('from') || '0.0.0';
+      const targetVersion = searchParams.get('to') || '';
+      const distribution = searchParams.get('distribution') || '';
+      const stableVersionPattern = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
+      const nightlyVersionPattern = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-[0-9a-f]{7}$/;
+      const updateRelease = nightlyVersionPattern.test(targetVersion)
+        ? {tag: 'nightly', version: targetVersion}
+        : stableVersionPattern.test(targetVersion)
+        ? {tag: `v${targetVersion}`, version: targetVersion}
+        : null;
+      const architectureNames = {
+        arm64: 'arm64',
+        armv7l: 'armv7l',
+        ia32: 'x86_32',
+        x64: 'x86_64'
+      };
+      const assetForDistribution = distribution => {
+        let match = distribution.match(/^release-windows-(nsis|portable)-(x64|ia32|arm64)(-legacy)?$/);
+        if (match) {
+          const kind = match[1] === 'portable' ? 'Portable' : 'Installer';
+          const platform = match[3] ? 'WindowsLegacy' : 'Windows';
+          return `NitroBolt-${platform}-${kind}-${architectureNames[match[2]]}-{version}.exe`;
+        }
+        match = distribution.match(/^release-linux-(deb|rpm|tar\.gz|appimage)-(x64|arm64|armv7l)$/);
+        if (match) {
+          const kind = match[1] === 'deb' || match[1] === 'rpm' ? 'Installer' : 'Portable';
+          const extension = match[1] === 'appimage' ? 'AppImage' : match[1];
+          return `NitroBolt-Linux-${kind}-${architectureNames[match[2]]}-{version}.${extension}`;
+        }
+        if (distribution === 'release-mac-dmg-universal') {
+          return 'NitroBolt-MacOS-universal-{version}.dmg';
+        }
+        if (distribution === 'release-mac-dmg-universal-legacy') {
+          return 'NitroBolt-MacOSLegacy-11-universal-{version}.dmg';
+        }
+        if (distribution === 'release-mac-dmg-x64-legacy-10.13-10.14') {
+          return 'NitroBolt-MacOSLegacy-10.13-10.14-x86_64-{version}.dmg';
+        }
+        if (distribution === 'release-mac-dmg-x64-legacy-10.15') {
+          return 'NitroBolt-MacOSLegacy-10.15-x86_64-{version}.dmg';
+        }
+        if (distribution === 'release-mac-dmg-universal-legacy-11') {
+          return 'NitroBolt-MacOSLegacy-11-universal-{version}.dmg';
+        }
+        return null;
+      };
+      const updateAsset = updateRelease && assetForDistribution(distribution);
       if (isChangelogPage) {
         document.body.setAttribute('is-changelog', '');
       }
+      if (updateAsset) {
+        document.body.setAttribute('data-update-distribution', '');
+      }
 
       document.addEventListener('DOMContentLoaded', () => {
+        if (updateAsset) {
+          const updateDownload = document.querySelector('[data-if-update-distribution]');
+          updateDownload.setAttribute('data-asset', updateAsset);
+          updateDownload.setAttribute('data-asset-version', updateRelease.version);
+          updateDownload.setAttribute('data-release-tag', updateRelease.tag);
+        }
         for (const element of document.querySelectorAll('[data-asset]')) {
           const asset = element.getAttribute('data-asset');
-          element.href = `${element.href}/download/v${VERSION}/${asset.replace(/{version}/g, VERSION)}`;
+          const assetVersion = element.getAttribute('data-asset-version') || VERSION;
+          const releaseTag = element.getAttribute('data-release-tag') || `v${VERSION}`;
+          element.href = `${element.href}/download/${releaseTag}/${asset.replace(/{version}/g, assetVersion)}`;
         }
 
         for (const element of document.querySelectorAll('[data-version]')) {
@@ -664,6 +731,13 @@
           <p data-l10n="noscript-warning">Download buttons will go to GitHub instead of direct downloads because JavaScript is disabled.</p>
         </div>
       </noscript>
+
+      <a
+        class="download-button"
+        data-if-update-distribution
+        data-l10n="download-installed-build"
+        href="https://github.com/Nitro-Bolt/desktop/releases"
+      >Download update for this installation</a>
 
       <div data-if-os="windows-modern">
         <a class="store-badge microsoft-store" href="https://apps.microsoft.com/detail/nitrobolt/9pgz85znvg9q">

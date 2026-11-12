@@ -167,6 +167,9 @@
   "view-releases": {
     "string": "View releases"
   },
+  "download-installed-build": {
+    "string": "Download update for this installation"
+  },
   "microsoft-store-help": {
     "string": "Get it from the Microsoft Store to enable automatic updates."
   },

@@ -31,10 +31,7 @@ if (compareVersions(versionParts, oldestSafeParts) < 0) {
   throw new Error(`Release ${version} can not be older than oldest safe version ${manifest.oldest_safe}.`);
 }
 
-manifest.channels.stable = {
-  version,
-  url: `https://github.com/Nitro-Bolt/desktop/releases/tag/v${version}`
-};
+manifest.channels.stable = {version};
 if (securityUpdate) {
   manifest.oldest_safe = version;
 }

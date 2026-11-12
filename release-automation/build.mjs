@@ -207,6 +207,7 @@ const build = async ({
   platformType, // Passed as first argument into platform.createTarget(...)
   manageUpdates = false,
   legacy = false,
+  distributionVariant = null,
   extraConfig = {}
 }) => {
   const buildForArch = async (archName) => {
@@ -227,6 +228,9 @@ const build = async ({
     }
     if (legacy) {
       distributionName = `${distributionName}-legacy`;
+    }
+    if (distributionVariant) {
+      distributionName = `${distributionName}-${distributionVariant}`;
     }
     console.log(`Building distribution: ${distributionName}`);
 
@@ -326,6 +330,7 @@ const buildMacLegacy10131014 = () => build({
   platformType: 'dmg',
   manageUpdates: true,
   legacy: true,
+  distributionVariant: '10.13-10.14',
   extraConfig: (archName) => ({
     mac: {
       artifactName: getArtifactName('MacOSLegacy', '10.13-10.14', archName)
@@ -339,6 +344,7 @@ const buildMacLegacy1015 = () => build({
   platformType: 'dmg',
   manageUpdates: true,
   legacy: true,
+  distributionVariant: '10.15',
   extraConfig: (archName) => ({
     mac: {
       artifactName: getArtifactName('MacOSLegacy', '10.15', archName)
@@ -352,6 +358,7 @@ const buildMacLegacy11 = () => build({
   platformType: 'dmg',
   manageUpdates: true,
   legacy: true,
+  distributionVariant: '11',
   extraConfig: (archName) => ({
     mac: {
       artifactName: getArtifactName('MacOSLegacy', '11', archName)
