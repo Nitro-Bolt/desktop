@@ -9,6 +9,7 @@ import {
 import {closeFileMenu} from 'scratch-gui/src/reducers/menus';
 import {
   requestProjectUpload,
+  LoadingState,
   setProjectId,
   defaultProjectId,
   onFetchedProjectData,
@@ -142,7 +143,7 @@ const DesktopHOC = function (WrappedComponent) {
 
         await this.props.vm.loadProject(data);
         this.props.onLoadingCompleted();
-        this.props.onLoadedProject(this.props.loadingState, true);
+        this.props.onLoadedProject(true);
 
         const title = getDefaultProjectTitle(name);
         if (title) {
@@ -164,7 +165,7 @@ const DesktopHOC = function (WrappedComponent) {
 
         this.props.onShowErrorModal(error);
         this.props.onLoadingCompleted();
-        this.props.onLoadedProject(this.props.loadingState, false);
+        this.props.onLoadedProject(false);
         this.props.onHasInitialProject(false, this.props.loadingState);
         this.props.onRequestNewProject();
       });
@@ -198,7 +199,7 @@ const DesktopHOC = function (WrappedComponent) {
         this.props.vm.quit();
         await this.props.vm.loadProject(result.data);
         this.props.onLoadingCompleted();
-        this.props.onLoadedProject(this.props.loadingState, true);
+        this.props.onLoadedProject(true);
         this.props.onSetGitProjectPath(repositoryRoot);
         markGitProjectLoaded();
 
@@ -210,7 +211,7 @@ const DesktopHOC = function (WrappedComponent) {
         this.props.onShowErrorModal(error);
         if (loadingStarted) {
           this.props.onLoadingCompleted();
-          this.props.onLoadedProject(this.props.loadingState, false);
+          this.props.onLoadedProject(false);
         }
       } finally {
         if (paused) resumeGitProjectSync();
@@ -391,8 +392,8 @@ const DesktopHOC = function (WrappedComponent) {
       return dispatch(setProjectId(defaultProjectId));
     },
     onFetchedInitialProjectData: (projectData, loadingState) => dispatch(onFetchedProjectData(projectData, loadingState)),
-    onLoadedProject: (loadingState, loadSuccess) => {
-      return dispatch(onLoadedProject(loadingState, /* canSave */ false, loadSuccess));
+    onLoadedProject: loadSuccess => {
+      return dispatch(onLoadedProject(LoadingState.LOADING_VM_FILE_UPLOAD, /* canSave */ false, loadSuccess));
     },
     onRequestNewProject: () => dispatch(requestNewProject(false)),
     onSetFileHandle: fileHandle => dispatch(setFileHandle(fileHandle)),
