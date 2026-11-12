@@ -6,7 +6,7 @@
     "string": "Replace Scratch's default 30 FPS with any framerate of your choosing or use interpolation."
   },
   "updatewin": {
-    "string": "To update, download and run the new installer."
+    "string": "If you installed NitroBolt from the Microsoft Store, update it there. Otherwise, download and run the new installer."
   },
   "updatemac": {
     "string": "To update, download the new app and replace the old one."
@@ -167,11 +167,22 @@
   "view-releases": {
     "string": "View releases"
   },
-  "windows-installer-help": {
-    "string": "Choose the installer that matches your computer. Most Windows computers use the 64-bit installer."
+  "microsoft-store-help": {
+    "string": "Get it from the Microsoft Store to enable automatic updates."
+  },
+  "get-it-from": {
+    "string": "Get it from",
+    "developer_comment": "Used in the Microsoft Store badge before the word Microsoft"
+  },
+  "or": {
+    "string": "or",
+    "developer_comment": "Appears between two different download buttons"
+  },
+  "or-download-installer": {
+    "string": "Or download an installer."
   },
   "windows-unsigned-warning": {
-    "string": "Because NitroBolt is not code signed, Windows SmartScreen may show a warning. Click \"More info,\" verify that the file came from the official NitroBolt GitHub release, then click \"Run anyway.\""
+    "string": "Direct downloads are not code signed, so Windows SmartScreen may show a warning. Click \"More info,\" verify that the file came from the official NitroBolt GitHub release, then click \"Run anyway.\""
   },
   "windows-legacy-description": {
     "string": "These builds support older versions of Windows by using an older version of Electron. They are slower and receive fewer security improvements than the standard builds."

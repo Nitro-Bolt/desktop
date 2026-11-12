@@ -20,6 +20,11 @@ const isFirstLaunch = (
 const desktopVersion = packageJSON.version;
 const electronVersion = process.versions.electron;
 
+const isCommitBuildOf = (version, baseVersion) => {
+  const match = version.match(/^(\d+\.\d+\.\d+)-[0-9a-f]{7}$/);
+  return match?.[1] === baseVersion.split('-', 1)[0];
+};
+
 const writeCurrentVersion = async () => {
   settings.dataVersion = MigrateWindow.LATEST_VERSION;
   settings.desktopVersion = desktopVersion;
@@ -119,10 +124,12 @@ const migrate = async () => {
 
   // Imported lazily as it takes about 10ms to import
   const semverLt = require('semver/functions/lt');
+  const desktopDowngraded = semverLt(desktopVersion, settings.desktopVersion) &&
+    !isCommitBuildOf(desktopVersion, settings.desktopVersion);
 
   if (
     settings.dataVersion > MigrateWindow.LATEST_VERSION ||
-    semverLt(desktopVersion, settings.desktopVersion) ||
+    desktopDowngraded ||
     semverLt(electronVersion, settings.electronVersion)
   ) {
     // Something was downgraded. This is not something we officially support.

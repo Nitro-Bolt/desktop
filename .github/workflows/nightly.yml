@@ -1,0 +1,98 @@
+name: Nightly
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 5 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-nightly
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      ref: ${{ steps.version.outputs.ref }}
+      should_build: ${{ steps.version.outputs.should_build }}
+      version: ${{ steps.version.outputs.version }}
+      version_suffix: ${{ steps.version.outputs.version_suffix }}
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          persist-credentials: false
+      - id: version
+        name: Prepare nightly version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          REF=$(git rev-parse HEAD)
+          VERSION_SUFFIX=${REF:0:7}
+          BASE_VERSION=$(node -p "require('./package.json').version")
+          COMPLETION_MARKER="<!-- nitrobolt-nightly:$REF -->"
+          PUBLISHED_RELEASE=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/nightly" --jq '[.target_commitish, .body] | @tsv' 2>/dev/null || true)
+          IFS=$'\t' read -r PUBLISHED_REF PUBLISHED_NOTES <<< "$PUBLISHED_RELEASE"
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+          echo "version=$BASE_VERSION-$VERSION_SUFFIX" >> "$GITHUB_OUTPUT"
+          echo "version_suffix=$VERSION_SUFFIX" >> "$GITHUB_OUTPUT"
+          if [ "$PUBLISHED_REF" = "$REF" ] && [[ "$PUBLISHED_NOTES" == *"$COMPLETION_MARKER"* ]]; then
+            echo "should_build=false" >> "$GITHUB_OUTPUT"
+            echo "# Nightly already exists for $VERSION_SUFFIX" >> "$GITHUB_STEP_SUMMARY"
+            echo "Skipping build because the rolling nightly release already targets $REF."
+            exit 0
+          fi
+          echo "should_build=true" >> "$GITHUB_OUTPUT"
+          echo "Building NitroBolt Desktop $BASE_VERSION-$VERSION_SUFFIX"
+          echo "# NitroBolt Desktop $BASE_VERSION-$VERSION_SUFFIX" >> "$GITHUB_STEP_SUMMARY"
+
+  build:
+    needs: prepare
+    if: needs.prepare.outputs.should_build == 'true'
+    uses: ./.github/workflows/build.yml
+    with:
+      ref: ${{ needs.prepare.outputs.ref }}
+      version_suffix: ${{ needs.prepare.outputs.version_suffix }}
+      production: true
+      update_channel: nightly
+      microsoft_store: false
+
+  publish:
+    needs: [prepare, build]
+    if: needs.prepare.outputs.should_build == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+      - name: Publish rolling nightly release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REF: ${{ needs.prepare.outputs.ref }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          shopt -s nullglob
+          FILES=(linux/*.deb linux/*.rpm linux/*.tar.gz linux/*.AppImage mac/*.dmg windows/*.exe)
+          if [ ${#FILES[@]} -eq 0 ]; then
+            echo "No files found to upload"
+            exit 1
+          fi
+          if gh release view nightly --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release delete nightly --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes
+          fi
+          gh release create nightly "${FILES[@]}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$REF" \
+            --prerelease \
+            --title "NitroBolt Desktop $VERSION" \
+            --notes "Automated nightly build of commit $REF. Nightly builds may be unstable."
+          gh release edit nightly \
+            --repo "$GITHUB_REPOSITORY" \
+            --notes "Automated nightly build of commit $REF. Nightly builds may be unstable.
+
+          <!-- nitrobolt-nightly:$REF -->"

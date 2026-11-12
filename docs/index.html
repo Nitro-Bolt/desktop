@@ -144,6 +144,8 @@
       }
       [is-changelog] .subheader,
       [is-changelog] .alternative-download-links,
+      [is-changelog] .above-fold-download .store-badge,
+      [is-changelog] .above-fold-download .download-separator,
       [is-changelog] .picture,
       [is-changelog] .features,
       [is-changelog] .links {
@@ -180,6 +182,51 @@
         display: block;
         padding: 0;
         margin: 0;
+      }
+
+      .store-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px;
+        background-color: black;
+        border-radius: 8px;
+        color: white !important;
+        text-decoration: none !important;
+        border: 1px solid black;
+      }
+      .store-badge:active {
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.6) inset;
+      }
+      @media (prefers-color-scheme: dark) {
+        .store-badge {
+          border-color: #aaa;
+        }
+      }
+      .store-icon {
+        background-size: 100%;
+        background-repeat: no-repeat;
+        width: 32px;
+        height: 32px;
+        margin-right: 8px;
+      }
+      .microsoft-icon {
+        background-image: url(microsoft.svg);
+      }
+      .store-badge-text {
+        display: flex;
+        flex-direction: column;
+      }
+      .store-badge-text > :first-child {
+        text-align: left;
+        font-size: 0.9em;
+      }
+      .store-badge-text > :last-child {
+        text-align: left;
+        font-weight: bold;
+        font-size: 1.4em;
+      }
+      [lang="ja"] .store-badge-text {
+        flex-direction: column-reverse;
       }
 
       .download-button {
@@ -604,7 +651,7 @@
     <div class="subheader" data-l10n="subheader">NitroBolt is a mod of TurboWarp with tons of new features, and a haven for developers who don't want to be restricted by "compatibility". Available for Windows, macOS, and Linux. NitroBolt is not affiliated with the Scratch Team.</div>
 
     <div class="changelog-subheader">
-      <p data-if-os="windows-any" data-l10n="updatewin">To update, download and run the new installer.</p>
+      <p data-if-os="windows-any" data-l10n="updatewin">If you installed NitroBolt from the Microsoft Store, update it there. Otherwise, download and run the new installer.</p>
       <p data-if-os="mac-any" data-l10n="updatemac">To update, download the new app and replace the old one.</p>
       <p data-if-os="linux" data-l10n="updatelinux">To update, download the latest package for your system and install it over your current version.</p>
       <p data-if-os="unsupported" data-l10n="updateun">To update, reinstall the app the same way you installed it.</p>
@@ -619,6 +666,14 @@
       </noscript>
 
       <div data-if-os="windows-modern">
+        <a class="store-badge microsoft-store" href="https://apps.microsoft.com/detail/nitrobolt/9pgz85znvg9q">
+          <div class="store-icon microsoft-icon"></div>
+          <div class="store-badge-text">
+            <div data-l10n="get-it-from">Get it from</div>
+            <div>Microsoft</div>
+          </div>
+        </a>
+        <p class="download-separator" data-l10n="or">or</p>
         <a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Windows-Installer-x86_64-{version}.exe" data-l10n="win-modern-download">Download installer for Windows 10+ (64-bit)</a>
       </div>
 
@@ -757,14 +812,22 @@
 
     <div class="manual-installation section" id="windows">
       <h2 data-l10n="win-modern">Install on Windows 10 and later</h2>
-      <p data-l10n="windows-installer-help">Choose the installer that matches your computer. Most Windows computers use the 64-bit installer.</p>
-      <p data-l10n="windows-unsigned-warning">Because NitroBolt is not code signed, Windows SmartScreen may show a warning. Click "More info," verify that the file came from the official NitroBolt GitHub release, then click "Run anyway."</p>
+      <p data-l10n="microsoft-store-help">Get it from the Microsoft Store to enable automatic updates.</p>
+      <a class="store-badge microsoft-store" href="https://apps.microsoft.com/detail/nitrobolt/9pgz85znvg9q">
+        <div class="store-icon microsoft-icon"></div>
+        <div class="store-badge-text">
+          <div data-l10n="get-it-from">Get it from</div>
+          <div>Microsoft</div>
+        </div>
+      </a>
+      <p data-l10n="or-download-installer">Or download an installer.</p>
       <ul class="download-list">
         <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Windows-Installer-x86_64-{version}.exe" data-l10n="w642">Download installer (64-bit, recommended)</a></li>
         <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Windows-Installer-x86_32-{version}.exe" data-l10n="w323">32-bit</a></li>
         <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Windows-Installer-arm64-{version}.exe">ARM64</a></li>
         <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-Windows-Portable-x86_64-{version}.exe">Portable (64-bit)</a></li>
       </ul>
+      <p data-l10n="windows-unsigned-warning">Direct downloads are not code signed, so Windows SmartScreen may show a warning. Click "More info," verify that the file came from the official NitroBolt GitHub release, then click "Run anyway."</p>
     </div>
 
     <div class="manual-installation section" id="windows-legacy">
@@ -789,10 +852,10 @@
       <p data-l10n="mac-legacy-open-help">If macOS blocks the first launch, Control-click NitroBolt in Applications, choose "Open," then confirm that you want to open it.</p>
 
       <ul class="download-list">
-        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-MacOS-Legacy-11-universal-{version}.dmg">macOS 11</a></li>
-        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-MacOS-Legacy-10.15-x86_64-{version}.dmg">macOS 10.15</a></li>
-        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-MacOS-Legacy-10.13-10.14-x86_64-{version}.dmg">macOS 10.14</a></li>
-        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-MacOS-Legacy-10.13-10.14-x86_64-{version}.dmg">macOS 10.13</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-MacOSLegacy-11-universal-{version}.dmg">macOS 11</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-MacOSLegacy-10.15-x86_64-{version}.dmg">macOS 10.15</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-MacOSLegacy-10.13-10.14-x86_64-{version}.dmg">macOS 10.14</a></li>
+        <li><a class="download-button" href="https://github.com/Nitro-Bolt/desktop/releases" data-asset="NitroBolt-MacOSLegacy-10.13-10.14-x86_64-{version}.dmg">macOS 10.13</a></li>
       </ul>
     </div>
 

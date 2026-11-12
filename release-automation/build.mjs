@@ -8,6 +8,11 @@ import './patch-electron-builder.cjs';
 const {Platform, Arch} = builder;
 
 const isProduction = process.argv.includes('--production');
+const updateChannelArgument = process.argv.find(argument => argument.startsWith('--update-channel='));
+const updateChannel = updateChannelArgument?.slice('--update-channel='.length) || 'stable';
+if (updateChannel !== 'stable' && updateChannel !== 'nightly') {
+  throw new Error(`Unknown update channel: ${updateChannel}`);
+}
 
 // Electron 22 is the last version to support Windows 7, 8, 8.1
 const ELECTRON_22_FINAL = '22.3.27';
@@ -231,7 +236,8 @@ const build = async ({
       extraMetadata: {
         tw_dist: distributionName,
         tw_warn_legacy: isProduction,
-        tw_update: isProduction && manageUpdates
+        tw_update: isProduction && manageUpdates,
+        nb_update_channel: updateChannel
       },
       afterPack: arch === Arch.universal ? afterPackForUniversalMac : afterPack,
       afterSign,
@@ -322,7 +328,7 @@ const buildMacLegacy10131014 = () => build({
   legacy: true,
   extraConfig: (archName) => ({
     mac: {
-      artifactName: getArtifactName('MacOS', 'Legacy-10.13-10.14', archName)
+      artifactName: getArtifactName('MacOSLegacy', '10.13-10.14', archName)
     },
     electronVersion: ELECTRON_26_FINAL
   })
@@ -335,7 +341,7 @@ const buildMacLegacy1015 = () => build({
   legacy: true,
   extraConfig: (archName) => ({
     mac: {
-      artifactName: getArtifactName('MacOS', 'Legacy-10.15', archName)
+      artifactName: getArtifactName('MacOSLegacy', '10.15', archName)
     },
     electronVersion: ELECTRON_32_FINAL
   })
@@ -348,7 +354,7 @@ const buildMacLegacy11 = () => build({
   legacy: true,
   extraConfig: (archName) => ({
     mac: {
-      artifactName: getArtifactName('MacOS', 'Legacy-11', archName)
+      artifactName: getArtifactName('MacOSLegacy', '11', archName)
     },
     electronVersion: ELECTRON_37_FINAL
   })

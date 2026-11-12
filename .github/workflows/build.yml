@@ -11,6 +11,18 @@ on:
         description: Enable production behavior, including update checks
         type: boolean
         default: false
+      version_suffix:
+        description: Append a seven-character commit hash to the package version
+        type: string
+        default: ""
+      update_channel:
+        description: Update channel embedded in production builds
+        type: string
+        default: stable
+      microsoft_store:
+        description: Build Microsoft Store APPX packages
+        type: boolean
+        default: true
 
 jobs:
   build-linux:
@@ -22,6 +34,9 @@ jobs:
           ref: ${{ inputs.ref }}
           submodules: recursive
           persist-credentials: false
+      - name: Set build version
+        if: inputs.version_suffix != ''
+        run: node scripts/set-build-version.mjs "${{ inputs.version_suffix }}"
       - name: Install strip-nondeterminism
         run: sudo apt-get install strip-nondeterminism
       - name: Install pnpm
@@ -39,11 +54,13 @@ jobs:
       - name: Package
         env:
           PRODUCTION: ${{ inputs.production }}
+          UPDATE_CHANNEL: ${{ inputs.update_channel }}
         run: |
           PRODUCTION_ARGUMENT=()
           if [[ "$PRODUCTION" == "true" ]]; then
             PRODUCTION_ARGUMENT+=(--production)
           fi
+          PRODUCTION_ARGUMENT+=("--update-channel=$UPDATE_CHANNEL")
           node release-automation/build.mjs --debian --rpm --tarball --appimage --x64 --armv7l --arm64 "${PRODUCTION_ARGUMENT[@]}"
       - name: Print file tree
         run: node scripts/print-file-tree.mjs dist
@@ -91,6 +108,9 @@ jobs:
           ref: ${{ inputs.ref }}
           submodules: recursive
           persist-credentials: false
+      - name: Set build version
+        if: inputs.version_suffix != ''
+        run: node scripts/set-build-version.mjs "${{ inputs.version_suffix }}"
       - name: Install pnpm
         uses: pnpm/action-setup@v4
       - name: Install Node.js
@@ -106,11 +126,13 @@ jobs:
       - name: Package
         env:
           PRODUCTION: ${{ inputs.production }}
+          UPDATE_CHANNEL: ${{ inputs.update_channel }}
         run: |
           PRODUCTION_ARGUMENT=()
           if [[ "$PRODUCTION" == "true" ]]; then
             PRODUCTION_ARGUMENT+=(--production)
           fi
+          PRODUCTION_ARGUMENT+=("--update-channel=$UPDATE_CHANNEL")
           # Need to run the universal builds as separate commands or it breaks when @electron/universal
           # diffs the ASARs and finds spurious differences. Not clear why.
           node release-automation/build.mjs --mac --universal "${PRODUCTION_ARGUMENT[@]}"
@@ -124,9 +146,9 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           EXPECTED=(
             "dist/NitroBolt-MacOS-universal-$VERSION.dmg"
-            "dist/NitroBolt-MacOS-Legacy-11-universal-$VERSION.dmg"
-            "dist/NitroBolt-MacOS-Legacy-10.15-x86_64-$VERSION.dmg"
-            "dist/NitroBolt-MacOS-Legacy-10.13-10.14-x86_64-$VERSION.dmg"
+            "dist/NitroBolt-MacOSLegacy-11-universal-$VERSION.dmg"
+            "dist/NitroBolt-MacOSLegacy-10.15-x86_64-$VERSION.dmg"
+            "dist/NitroBolt-MacOSLegacy-10.13-10.14-x86_64-$VERSION.dmg"
           )
           for FILE in "${EXPECTED[@]}"; do
             if [ ! -f "$FILE" ]; then
@@ -163,6 +185,10 @@ jobs:
         run: |
           Copy-Item -Path repo -Destination D:\repo -Recurse
           Remove-Item -Path repo -Recurse -Force
+      - name: Set build version
+        if: inputs.version_suffix != ''
+        working-directory: D:\repo
+        run: node scripts/set-build-version.mjs "${{ inputs.version_suffix }}"
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -191,30 +217,40 @@ jobs:
         working-directory: D:\repo
         env:
           PRODUCTION: ${{ inputs.production }}
+          UPDATE_CHANNEL: ${{ inputs.update_channel }}
+          MICROSOFT_STORE: ${{ inputs.microsoft_store }}
         run: |
           $productionArgument = if ($env:PRODUCTION -eq 'true') { '--production' } else { $null }
-          node release-automation/build.mjs --windows --microsoft-store --x64 --ia32 --arm64 $productionArgument
-          node release-automation/build.mjs --windows-portable --x64 $productionArgument
-          node release-automation/build.mjs --windows-legacy --ia32 --x64 $productionArgument
+          $updateChannelArgument = "--update-channel=$env:UPDATE_CHANNEL"
+          $storeArgument = if ($env:MICROSOFT_STORE -eq 'true') { '--microsoft-store' } else { $null }
+          node release-automation/build.mjs --windows $storeArgument --x64 --ia32 --arm64 $productionArgument $updateChannelArgument
+          node release-automation/build.mjs --windows-portable --x64 $productionArgument $updateChannelArgument
+          node release-automation/build.mjs --windows-legacy --ia32 --x64 $productionArgument $updateChannelArgument
       - name: Print file tree
         working-directory: D:\repo
         run: node scripts/print-file-tree.mjs dist
       - name: Verify artifacts
         working-directory: D:\repo
         shell: pwsh
+        env:
+          MICROSOFT_STORE: ${{ inputs.microsoft_store }}
         run: |
           $version = (Get-Content package.json | ConvertFrom-Json).version
           $expected = @(
             "dist\NitroBolt-Windows-Installer-x86_64-$version.exe"
             "dist\NitroBolt-Windows-Installer-x86_32-$version.exe"
             "dist\NitroBolt-Windows-Installer-arm64-$version.exe"
-            "dist\NitroBolt-Windows-Store-x86_64-$version.appx"
-            "dist\NitroBolt-Windows-Store-x86_32-$version.appx"
-            "dist\NitroBolt-Windows-Store-arm64-$version.appx"
             "dist\NitroBolt-Windows-Portable-x86_64-$version.exe"
             "dist\NitroBolt-WindowsLegacy-Installer-x86_64-$version.exe"
             "dist\NitroBolt-WindowsLegacy-Installer-x86_32-$version.exe"
           )
+          if ($env:MICROSOFT_STORE -eq 'true') {
+            $expected += @(
+              "dist\NitroBolt-Windows-Store-x86_64-$version.appx"
+              "dist\NitroBolt-Windows-Store-x86_32-$version.appx"
+              "dist\NitroBolt-Windows-Store-arm64-$version.appx"
+            )
+          }
           $missing = @($expected | Where-Object { -not (Test-Path -LiteralPath $_ -PathType Leaf) })
           if ($missing.Count -gt 0) {
             Write-Error "Missing expected Windows artifacts:`n$($missing -join "`n")"

@@ -4,7 +4,7 @@ const {APP_NAME} = require('../brand');
 const openExternal = require('../open-external');
 
 class UpdateWindow extends AbstractWindow {
-  constructor (currentVersion, latestVersion, security) {
+  constructor (currentVersion, latestVersion, security, downloadURL) {
     super();
 
     this.window.setTitle(`${translate('update.window-title')} - ${APP_NAME}`);
@@ -27,11 +27,7 @@ class UpdateWindow extends AbstractWindow {
 
     this.ipc.handle('download', () => {
       this.window.destroy();
-
-      const params = new URLSearchParams();
-      params.set('from', currentVersion);
-      params.set('to', latestVersion);
-      openExternal(`https://desktop.nitrobolt.org/update_available?${params}`);
+      openExternal(downloadURL);
     });
 
     const ignore = (permanently) => {
@@ -87,8 +83,8 @@ class UpdateWindow extends AbstractWindow {
     return true;
   }
 
-  static updateAvailable (currentVersion, latestVersion, isSecurity) {
-    new UpdateWindow(currentVersion, latestVersion, isSecurity);
+  static updateAvailable (currentVersion, latestVersion, isSecurity, downloadURL) {
+    new UpdateWindow(currentVersion, latestVersion, isSecurity, downloadURL);
   }
 }
 

@@ -179,8 +179,8 @@
     "string": "Update Checker",
     "developer_comment": "Label of dropdown to configure the update checker"
   },
-  "desktop-settings.notify-unstable": {
-    "string": "Notify me about unstable updates",
+  "desktop-settings.notify-nightly": {
+    "string": "Notify me about nightly updates",
     "developer_comment": "Update checker configuration option"
   },
   "desktop-settings.notify-stable": {

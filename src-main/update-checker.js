@@ -4,7 +4,71 @@ const packageJSON = require('../package.json');
 const privilegedFetch = require('./fetch');
 
 const currentVersion = packageJSON.version;
-const URL = 'https://desktop.nitrobolt.org/version.json';
+const MANIFEST_URL = 'https://desktop.nitrobolt.org/version.json';
+const STABLE_VERSION_PATTERN = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
+
+const getCommitBuildBase = (version) => version.match(/^(\d+\.\d+\.\d+)-[0-9a-f]{7}$/)?.[1];
+
+const validateURL = (value, hostname, pathname) => {
+  if (typeof value !== 'string') {
+    throw new Error('Update manifest is missing a URL.');
+  }
+  const url = new URL(value);
+  if (url.protocol !== 'https:' || url.hostname !== hostname || url.pathname !== pathname ||
+    url.username || url.password || url.port || url.search || url.hash) {
+    throw new Error(`Invalid update URL: ${value}`);
+  }
+  return url.href;
+};
+
+const getStableChannel = (manifest, semverValid) => {
+  const version = manifest.channels?.stable?.version;
+  if (!STABLE_VERSION_PATTERN.test(version) || !semverValid(version)) {
+    throw new Error('Update manifest has an invalid stable version.');
+  }
+  return {
+    version,
+    url: validateURL(
+      manifest.channels?.stable?.url,
+      'github.com',
+      `/Nitro-Bolt/desktop/releases/tag/v${version}`
+    )
+  };
+};
+
+const getNightlyChannel = async (manifest, semverValid) => {
+  const apiURL = validateURL(
+    manifest.channels?.nightly?.api_url,
+    'api.github.com',
+    '/repos/Nitro-Bolt/desktop/releases/tags/nightly'
+  );
+  const release = await privilegedFetch.json(apiURL);
+  const prefix = 'NitroBolt Desktop ';
+  const version = typeof release.name === 'string' && release.name.startsWith(prefix) ?
+    release.name.slice(prefix.length) : '';
+  const targetCommit = typeof release.target_commitish === 'string' ? release.target_commitish : '';
+  const completionMarker = `<!-- nitrobolt-nightly:${targetCommit} -->`;
+  if (release.tag_name !== 'nightly' || release.draft || !release.prerelease ||
+    !getCommitBuildBase(version) || !semverValid(version) || !/^[0-9a-f]{40}$/.test(targetCommit) ||
+    !version.endsWith(`-${targetCommit.slice(0, 7)}`) || typeof release.body !== 'string' ||
+    !release.body.includes(completionMarker) ||
+    typeof release.html_url !== 'string') {
+    throw new Error('The nightly GitHub release has invalid metadata.');
+  }
+  return {
+    version,
+    url: validateURL(release.html_url, 'github.com', '/Nitro-Bolt/desktop/releases/tag/nightly')
+  };
+};
+
+const isNightlyUpdateAvailable = (current, latest, semverCompare) => {
+  if (current === latest) return false;
+  const currentBase = getCommitBuildBase(current) || current;
+  const latestBase = getCommitBuildBase(latest);
+  const baseComparison = semverCompare(currentBase, latestBase);
+  if (baseComparison !== 0) return baseComparison < 0;
+  return true;
+};
 
 /**
  * Determines whether the update checker is even allowed to be enabled
@@ -25,17 +89,25 @@ const checkForUpdates = async () => {
     return;
   }
 
-  const json = await privilegedFetch.json(URL);
-  const latestStable = json.latest;
-  const latestUnstable = json.latest_unstable;
+  const json = await privilegedFetch.json(MANIFEST_URL);
   const oldestSafe = json.oldest_safe;
 
   // Imported lazily as it takes about 10ms to import
   const semverLt = require('semver/functions/lt');
+  const semverCompare = require('semver/functions/compare');
+  const semverValid = require('semver/functions/valid');
+  const stable = getStableChannel(json, semverValid);
+  if (!STABLE_VERSION_PATTERN.test(oldestSafe) || !semverValid(oldestSafe)) {
+    throw new Error('Update manifest has an invalid oldest safe version.');
+  }
+  if (semverLt(stable.version, oldestSafe)) {
+    throw new Error('Update manifest stable version is older than its oldest safe version.');
+  }
 
   // Security updates can not be ignored.
-  if (semverLt(currentVersion, oldestSafe)) {
-    UpdateWindow.updateAvailable(currentVersion, latestStable, true);
+  const securityComparisonVersion = getCommitBuildBase(currentVersion) || currentVersion;
+  if (semverLt(securityComparisonVersion, oldestSafe)) {
+    UpdateWindow.updateAvailable(currentVersion, stable.version, true, stable.url);
     return;
   }
 
@@ -44,7 +116,9 @@ const checkForUpdates = async () => {
     return;
   }
 
-  const latest = settings.updateChecker === 'unstable' ? latestUnstable : latestStable;
+  const channel = settings.updateChecker === 'nightly' ?
+    await getNightlyChannel(json, semverValid) : stable;
+  const latest = channel.version;
   const now = Date.now();
   const ignoredUpdate = settings.ignoredUpdate;
   const ignoredUpdateUntil = settings.ignoredUpdateUntil * 1000;
@@ -53,8 +127,11 @@ const checkForUpdates = async () => {
     return;
   }
 
-  if (semverLt(currentVersion, latest)) {
-    UpdateWindow.updateAvailable(currentVersion, latest, false);
+  const updateAvailable = settings.updateChecker === 'nightly' ?
+    isNightlyUpdateAvailable(currentVersion, latest, semverCompare) :
+    semverLt(currentVersion, latest);
+  if (updateAvailable) {
+    UpdateWindow.updateAvailable(currentVersion, latest, false, channel.url);
   }
 };
 

@@ -36,12 +36,6 @@ if (releaseType === 'update') {
 
 const version = versionParts.join('.');
 
-const versionManifestPath = pathUtil.join(root, 'docs/version.json');
-const versionManifest = JSON.parse(fs.readFileSync(versionManifestPath, 'utf8'));
-if (typeof versionManifest.oldest_safe !== 'string') {
-  throw new Error('The website version manifest is missing oldest_safe.');
-}
-
 const homepagePath = pathUtil.join(root, 'docs/index.html');
 const homepage = fs.readFileSync(homepagePath, 'utf8');
 const homepageVersionPattern = /const VERSION *= *["'][\d\w.-]+["']/;
@@ -74,10 +68,7 @@ const updatedChangelog = existingRelease ?
 
 // All validation above must finish before any files are changed.
 packageJSON.version = version;
-versionManifest.latest = version;
-versionManifest.latest_unstable = version;
 fs.writeFileSync(packagePath, `${JSON.stringify(packageJSON, null, 2)}\n`);
-fs.writeFileSync(versionManifestPath, `${JSON.stringify(versionManifest, null, 2)}\n`);
 fs.writeFileSync(homepagePath, updatedHomepage);
 fs.writeFileSync(changelogPath, updatedChangelog);
 

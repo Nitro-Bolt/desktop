@@ -2,8 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const {app} = require('electron');
 const {writeFileAtomic} = require('./atomic-write-stream');
+const packageJSON = require('../package.json');
 
 const PATH = path.resolve(app.getPath('userData'), 'tw_config.json');
+const UPDATE_CHANNELS = ['nightly', 'stable', 'security', 'never'];
 
 /**
  * Migrates settings from before v1.9.0.
@@ -95,9 +97,15 @@ class Settings {
   }
 
   get updateChecker () {
-    return this.data.updateChecker || 'stable';
+    if (UPDATE_CHANNELS.includes(this.data.updateChecker)) {
+      return this.data.updateChecker;
+    }
+    return UPDATE_CHANNELS.includes(packageJSON.nb_update_channel) ? packageJSON.nb_update_channel : 'stable';
   }
   set updateChecker (updateChecker) {
+    if (!UPDATE_CHANNELS.includes(updateChecker)) {
+      throw new Error(`Unknown update channel: ${updateChecker}`);
+    }
     this.data.updateChecker = updateChecker;
   }
 
