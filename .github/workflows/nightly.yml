@@ -44,7 +44,7 @@ jobs:
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
           git add pnpm-lock.yaml
-          git commit -m "chore: update nightly dependencies"
+          git commit -m "chore: update dependencies"
           git pull --rebase origin master
           git push origin master
       - id: version
