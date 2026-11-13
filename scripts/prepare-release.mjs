@@ -3,7 +3,7 @@ import * as pathUtil from 'node:path';
 
 const root = pathUtil.join(import.meta.dirname, '..');
 const releaseType = process.argv[2];
-const notes = process.env.RELEASE_NOTES || '';
+const notes = (process.env.RELEASE_NOTES || '').replace(/\\n/g, '\n');
 
 if (releaseType !== 'current' && releaseType !== 'update' && releaseType !== 'bugfix') {
   throw new Error('Release type must be current, update, or bugfix.');

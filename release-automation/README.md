@@ -8,7 +8,7 @@ Run the `Release` workflow from the Actions tab and choose a release type:
 - `update` increments the middle number and resets the bugfix number.
 - `bugfix` increments the final number.
 
-Enter one changelog item per line. The workflow updates the version and generated changelog files, commits and tags the release, builds every supported platform, and publishes the artifacts to GitHub Releases. Windows and macOS artifacts are not code signed.
+Enter changelog items in the release notes field separated by `\n`, for example `Fix project loading\nImprove the updater`. The workflow turns each item into a separate changelog and GitHub release bullet, updates the version and generated changelog files, commits and tags the release, builds every supported platform, and publishes the artifacts to GitHub Releases. Windows and macOS artifacts are not code signed.
 
 The website update manifest is changed only after the GitHub release and its assets exist. Failed builds therefore do not advertise an unavailable version. Retrying a release refreshes its GitHub assets before publishing the version manifest.
 

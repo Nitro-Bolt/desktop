@@ -12,7 +12,7 @@ on:
           - update
           - bugfix
       release_notes:
-        description: Changelog entries, one per line
+        description: Changelog entries separated with \n
         required: true
         type: string
       security_update:
@@ -132,11 +132,12 @@ jobs:
             echo "No files found to upload"
             exit 1
           fi
+          NORMALIZED_RELEASE_NOTES=${RELEASE_NOTES//\\n/$'\n'}
           awk '{
             gsub(/^[ \t]+|[ \t]+$/, "")
             sub(/^[-*][ \t]*/, "")
             if (length) print "- " $0
-          }' <<< "$RELEASE_NOTES" > release-notes.md
+          }' <<< "$NORMALIZED_RELEASE_NOTES" > release-notes.md
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release edit "$TAG" \
               --repo "$GITHUB_REPOSITORY" \
