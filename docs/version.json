@@ -1,8 +1,9 @@
 {
-  "oldest_safe": "1.0.1",
+  "oldest_safe": "1.0.2",
   "channels": {
     "stable": {
-      "version": "1.0.1"
+      "version": "1.0.2",
+      "url": "https://github.com/Nitro-Bolt/desktop/releases/tag/v1.0.2"
     },
     "nightly": {
       "api_url": "https://api.github.com/repos/Nitro-Bolt/desktop/releases/tags/nightly"
