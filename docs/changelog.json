@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.0.2",
+    "date": "2026-11-13",
+    "notes": [
+      "Some Git fixes and improvements",
+      "Rework updater again",
+      "Fix MacOS builds",
+      "Update packager to fix project setting issues"
+    ]
+  },
+  {
     "version": "1.0.1",
     "date": "2026-11-12",
     "notes": [
