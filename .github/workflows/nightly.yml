@@ -34,7 +34,7 @@ jobs:
         with:
           node-version: 24
       - name: Update nightly dependencies
-        run: pnpm update --lockfile-only scratch-gui @nitro-bolt/extensions @turbowarp/extensions
+        run: pnpm update scratch-gui @nitro-bolt/extensions @turbowarp/extensions
       - name: Commit dependency updates
         run: |
           if git diff --quiet -- pnpm-lock.yaml; then
