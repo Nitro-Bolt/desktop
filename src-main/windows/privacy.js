@@ -6,7 +6,7 @@ const {isUpdateCheckerAllowed} = require('../update-checker');
 
 class PrivacyWindow extends AbstractWindow {
   constructor () {
-    super();
+    super({useNativeTheme: true});
 
     this.ipc.on('is-update-checker-allowed', (e) => {
       e.returnValue = isUpdateCheckerAllowed();

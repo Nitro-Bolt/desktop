@@ -6,17 +6,19 @@
   --surface: #ffffff;
   --surface-border: rgba(0, 0, 0, 0.15);
   --interact-border: rgba(0, 0, 0, 0.15);
-  --accent: #ff5726;
-  --accent-hover: #e63e0d;
-  --link: #2255dd;
+  --accent: var(--nb-native-accent, #ff5726);
+  --accent-hover: var(--nb-native-accent-hover, #e63e0d);
+  --link: var(--accent);
   --secondary-button: #e9f1fc;
   --secondary-button-hover: #d9e3f2;
-  --accent-transparent: rgba(255, 87, 38, 0.35);
+  --accent-transparent: var(--nb-native-accent-transparent, rgba(255, 87, 38, 0.35));
+  --accent-light-transparent: var(--nb-native-accent-light-transparent, rgba(255, 87, 38, 0.15));
+  --warning-text: #ff0000;
   --dropdown-caret: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath fill='%23000' d='M4 5c-.275 0-.548-.103-.759-.31L.315 1.807a1.05 1.05 0 0 1 0-1.497C.733-.103 7.267-.103 7.685.31a1.05 1.05 0 0 1 0 1.497L4.76 4.69C4.55 4.897 4.276 5 4 5Z'/%3E%3C/svg%3E");
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-native-theme]) {
     color-scheme: dark;
     --background: #111111;
     --text: #eeeeee;
@@ -24,11 +26,25 @@
     --surface: #1e1e1e;
     --surface-border: rgba(255, 255, 255, 0.15);
     --interact-border: rgba(255, 255, 255, 0.15);
-    --link: #44aaff;
     --secondary-button: #2e2e2e;
     --secondary-button-hover: #3a3a3a;
+    --warning-text: #ffff00;
     --dropdown-caret: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath fill='%23fff' d='M4 5c-.275 0-.548-.103-.759-.31L.315 1.807a1.05 1.05 0 0 1 0-1.497C.733-.103 7.267-.103 7.685.31a1.05 1.05 0 0 1 0 1.497L4.76 4.69C4.55 4.897 4.276 5 4 5Z'/%3E%3C/svg%3E");
   }
+}
+
+:root[data-native-theme="dark"] {
+  color-scheme: dark;
+  --background: #111111;
+  --text: #eeeeee;
+  --highlight: #1e1e1e;
+  --surface: #1e1e1e;
+  --surface-border: rgba(255, 255, 255, 0.15);
+  --interact-border: rgba(255, 255, 255, 0.15);
+  --secondary-button: #2e2e2e;
+  --secondary-button-hover: #3a3a3a;
+  --warning-text: #ffff00;
+  --dropdown-caret: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath fill='%23fff' d='M4 5c-.275 0-.548-.103-.759-.31L.315 1.807a1.05 1.05 0 0 1 0-1.497C.733-.103 7.267-.103 7.685.31a1.05 1.05 0 0 1 0 1.497L4.76 4.69C4.55 4.897 4.276 5 4 5Z'/%3E%3C/svg%3E");
 }
 
 html {
@@ -174,7 +190,7 @@ input[type="checkbox"]:disabled {
 }
 
 .desktop-settings label:has(input[type="checkbox"]):hover {
-  background: rgba(255, 87, 38, 0.12);
+  background: var(--accent-light-transparent);
 }
 
 .desktop-settings label:has(input[type="checkbox"]) input[type="checkbox"] {

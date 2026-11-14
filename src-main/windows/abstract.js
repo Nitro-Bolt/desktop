@@ -5,22 +5,33 @@ const settings = require('../settings');
 
 /** @type {Map<unknown, AbstractWindow[]>} */
 const windowsByClass = new Map();
+let nativeThemeSource = nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
+let nativeThemeControlledByGui = false;
+let nativeThemeColors = {
+  '--nb-native-accent': '#ff5726',
+  '--nb-native-accent-hover': '#e63e0d',
+  '--nb-native-accent-transparent': '#ff5d4d59',
+  '--nb-native-accent-light-transparent': '#ff5d4d26'
+};
 
 /**
  * @typedef AbstractWindowOptions
  * @property {Electron.BrowserWindow} [existingWindow]
  * @property {Electron.BrowserWindow} [parentWindow]
  * @property {boolean} [nodeIntegration]
+ * @property {boolean} [useNativeTheme]
  */
 
 class AbstractWindow {
   /** @param {AbstractWindowOptions} options */
   constructor (options = {}) {
     this.parentWindow = options.parentWindow || null;
+    this.useNativeTheme = !!options.useNativeTheme;
 
     /** @type {Electron.BrowserWindow} */
     this.window = options.existingWindow || new BrowserWindow(this.getWindowOptions(options));
     this.window.webContents.on('before-input-event', this.handleInput.bind(this));
+    this.window.webContents.on('did-finish-load', () => this.applyTheme());
     this.applySettings();
 
     if (!options.existingWindow) {
@@ -81,13 +92,20 @@ class AbstractWindow {
   }
 
   static setTheme (theme) {
-    nativeTheme.themeSource = theme;
-    AbstractWindow.updateBackgroundColors();
+    nativeThemeSource = theme.source;
+    nativeThemeControlledByGui = true;
+    nativeThemeColors = {
+      '--nb-native-accent': theme.accent,
+      '--nb-native-accent-hover': theme.accentHover,
+      '--nb-native-accent-transparent': theme.accentTransparent,
+      '--nb-native-accent-light-transparent': theme.accentLightTransparent
+    };
+    AbstractWindow.updateThemes();
   }
 
-  static updateBackgroundColors () {
+  static updateThemes () {
     for (const window of AbstractWindow.getAllWindows()) {
-      window.window.setBackgroundColor(window.getBackgroundColor());
+      window.applyTheme();
     }
   }
 
@@ -172,7 +190,24 @@ class AbstractWindow {
 
   getBackgroundColor () {
     // to be overridden
-    return nativeTheme.shouldUseDarkColors ? '#111111' : '#ffffff';
+    return this.useNativeTheme && nativeThemeSource === 'dark' ? '#111111' : '#ffffff';
+  }
+
+  applyTheme () {
+    this.window.setBackgroundColor(this.getBackgroundColor());
+    if (!this.useNativeTheme) {
+      return;
+    }
+    const colors = JSON.stringify(nativeThemeColors);
+    const source = JSON.stringify(nativeThemeSource);
+    void this.window.webContents.executeJavaScript(`
+      document.documentElement.dataset.nativeTheme = ${source};
+      for (const [property, value] of Object.entries(${colors})) {
+        document.documentElement.style.setProperty(property, value);
+      }
+    `).catch(() => {
+      // The window may have been closed or navigated while the theme was being applied.
+    });
   }
 
   /**
@@ -405,6 +440,11 @@ class AbstractWindow {
   }
 }
 
-nativeTheme.on('updated', () => AbstractWindow.updateBackgroundColors());
+nativeTheme.on('updated', () => {
+  if (!nativeThemeControlledByGui) {
+    nativeThemeSource = nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
+    AbstractWindow.updateThemes();
+  }
+});
 
 module.exports = AbstractWindow;

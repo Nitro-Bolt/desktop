@@ -30,7 +30,7 @@ const missingFileAccess = async (path) => {
 
 class FileAccessWindow extends AbstractWindow {
   constructor () {
-    super();
+    super({useNativeTheme: true});
 
     /** @type {string[]} */
     this.paths = [];

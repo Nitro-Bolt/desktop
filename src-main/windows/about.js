@@ -6,7 +6,7 @@ const {getDist, getPlatform} = require('../platform');
 
 class AboutWindow extends AbstractWindow {
   constructor () {
-    super();
+    super({useNativeTheme: true});
 
     this.window.setMinimizable(false);
     this.window.setMaximizable(false);

@@ -14,7 +14,7 @@ class MigrateWindow extends AbstractWindow {
    * @param {() => Promise<void>} saveCallback
    */
   constructor (saveCallback) {
-    super();
+    super({useNativeTheme: true});
 
     const oldDataVersion = settings.dataVersion;
 

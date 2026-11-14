@@ -85,23 +85,16 @@ const securityManager = {
 const USERNAME_KEY = 'tw:username';
 const DEFAULT_USERNAME = 'player';
 
-const getNativeThemeSource = () => {
-  let storedTheme;
-  try {
-    storedTheme = localStorage.getItem('tw:theme');
-  } catch (error) {
-    return 'system';
-  }
-  if (storedTheme === 'light' || storedTheme === 'dark') return storedTheme;
-  if (storedTheme) {
-    try {
-      const parsedTheme = JSON.parse(storedTheme);
-      if (parsedTheme.gui === 'light' || parsedTheme.gui === 'dark') return parsedTheme.gui;
-    } catch (error) {
-      // Ignore invalid persisted themes. The GUI will already have fallen back to the system theme.
-    }
-  }
-  return 'system';
+const getNativeTheme = () => {
+  const colors = getComputedStyle(document.documentElement);
+  const getColor = (property, fallback) => colors.getPropertyValue(property).trim() || fallback;
+  return {
+    source: getColor('--color-scheme', 'light') === 'dark' ? 'dark' : 'light',
+    accent: getColor('--looks-secondary', '#ff5726'),
+    accentHover: getColor('--looks-secondary-dark', '#e63e0d'),
+    accentTransparent: getColor('--looks-transparent', '#ff5d4d59'),
+    accentLightTransparent: getColor('--looks-light-transparent', '#ff5d4d26')
+  };
 };
 
 const DesktopHOC = function (WrappedComponent) {
@@ -115,6 +108,7 @@ const DesktopHOC = function (WrappedComponent) {
       this.handleInitializeGitProject = this.handleInitializeGitProject.bind(this);
       this.handleOpenGitProject = this.handleOpenGitProject.bind(this);
       this.handleRuntimeDisposed = this.handleRuntimeDisposed.bind(this);
+      this.syncNativeTheme = this.syncNativeTheme.bind(this);
 
       // Changing locale always re-mounts this component
       const stateFromMain = EditorPreload.setLocale(this.props.locale);
@@ -132,7 +126,12 @@ const DesktopHOC = function (WrappedComponent) {
       }
     }
     componentDidMount () {
-      EditorPreload.setTheme(getNativeThemeSource());
+      this.syncNativeTheme();
+      this.themeObserver = new MutationObserver(this.syncNativeTheme);
+      this.themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['style']
+      });
       EditorPreload.setExportForPackager(() => this.props.vm.saveProjectSb3('arraybuffer')
         .then((buffer) => ({
           name: this.state.title,
@@ -268,9 +267,6 @@ const DesktopHOC = function (WrappedComponent) {
       }
     }
     componentDidUpdate (prevProps, prevState) {
-      if (this.props.theme !== prevProps.theme) {
-        EditorPreload.setTheme(getNativeThemeSource());
-      }
       if (this.props.projectChanged !== prevProps.projectChanged) {
         EditorPreload.setChanged(this.props.projectChanged);
       }
@@ -296,7 +292,16 @@ const DesktopHOC = function (WrappedComponent) {
       }
     }
     componentWillUnmount () {
+      this.themeObserver.disconnect();
       this.props.vm.runtime.off('RUNTIME_DISPOSED', this.handleRuntimeDisposed);
+    }
+    syncNativeTheme () {
+      const theme = getNativeTheme();
+      const serializedTheme = JSON.stringify(theme);
+      if (serializedTheme !== this.lastNativeTheme) {
+        this.lastNativeTheme = serializedTheme;
+        EditorPreload.setTheme(theme);
+      }
     }
     handleRuntimeDisposed () {
       EditorPreload.dropPermissions();
@@ -313,7 +318,6 @@ const DesktopHOC = function (WrappedComponent) {
         projectChanged,
         fileHandle,
         reduxUsername,
-        theme,
         onFetchedInitialProjectData,
         onCloseFileMenu,
         onHasInitialProject,
@@ -373,7 +377,6 @@ const DesktopHOC = function (WrappedComponent) {
     }),
     isFullScreen: PropTypes.bool.isRequired,
     reduxUsername: PropTypes.string.isRequired,
-    theme: PropTypes.object.isRequired,
     onFetchedInitialProjectData: PropTypes.func.isRequired,
     onCloseFileMenu: PropTypes.func.isRequired,
     onHasInitialProject: PropTypes.func.isRequired,
@@ -403,7 +406,6 @@ const DesktopHOC = function (WrappedComponent) {
     preferences: state.scratchGui.preferences,
     fileHandle: state.scratchGui.tw.fileHandle,
     reduxUsername: state.scratchGui.tw.username,
-    theme: state.scratchGui.theme.theme,
     vm: state.scratchGui.vm
   });
 

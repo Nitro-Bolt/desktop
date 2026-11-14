@@ -9,7 +9,7 @@ const RichPresence = require('../rich-presence');
 
 class DesktopSettingsWindow extends AbstractWindow {
   constructor () {
-    super();
+    super({useNativeTheme: true});
 
     this.window.setTitle(`${translate('desktop-settings.title')} - ${APP_NAME}`);
     this.window.setMinimizable(false);

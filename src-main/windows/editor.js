@@ -430,8 +430,13 @@ class EditorWindow extends ProjectRunningWindow {
     });
 
     this.ipc.handle('set-theme', (event, theme) => {
-      if (theme !== 'light' && theme !== 'dark' && theme !== 'system') {
+      if (!theme || (theme.source !== 'light' && theme.source !== 'dark')) {
         throw new Error('Invalid theme');
+      }
+      for (const property of ['accent', 'accentHover', 'accentTransparent', 'accentLightTransparent']) {
+        if (typeof theme[property] !== 'string' || theme[property].length > 100) {
+          throw new Error('Invalid theme color');
+        }
       }
       AbstractWindow.setTheme(theme);
     });

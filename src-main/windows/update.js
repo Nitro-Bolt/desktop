@@ -16,7 +16,7 @@ const getDownloadURL = (currentVersion, latestVersion) => {
 
 class UpdateWindow extends AbstractWindow {
   constructor (currentVersion, latestVersion, security) {
-    super();
+    super({useNativeTheme: true});
 
     this.window.setTitle(`${translate('update.window-title')} - ${APP_NAME}`);
 

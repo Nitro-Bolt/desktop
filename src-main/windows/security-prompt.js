@@ -84,7 +84,8 @@ class SecurityPromptWindow extends AbstractWindow {
    */
   constructor (projectWindow, type) {
     super({
-      parentWindow: projectWindow
+      parentWindow: projectWindow,
+      useNativeTheme: true
     });
 
     this.type = type;

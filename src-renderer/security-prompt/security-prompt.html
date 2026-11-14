@@ -34,26 +34,16 @@
         font-weight: bold;
         padding: 0.75rem 1rem;
         border-radius: 0.25rem;
-        border: rgba(0, 0, 0, 0.15);
+        border: 1px solid var(--interact-border);
         cursor: pointer;
       }
       .deny {
-        background-color: rgb(255 87 38);
+        background-color: var(--accent);
         color: white;
       }
       .allow {
         background-color: #24cd11;
         color: black;
-      }
-
-      @media (prefers-color-scheme: dark) {
-        :root {
-          background-color: #111;
-          color: #eee;
-        }
-        .buttons button {
-          border-color: rgba(255, 255, 255, 0.15);
-        }
       }
     </style>
     <link rel="stylesheet" href="native-window.css">
