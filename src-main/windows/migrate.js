@@ -87,10 +87,6 @@ class MigrateWindow extends AbstractWindow {
     return 'migrate';
   }
 
-  getBackgroundColor () {
-    return '#333333';
-  }
-
   handleRendererProcessGone (details) {
     const button = dialog.showMessageBoxSync(this.window, {
       type: 'error',

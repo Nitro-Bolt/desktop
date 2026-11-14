@@ -21,6 +21,7 @@ exposeInMainWorld('EditorPreload', {
   showOpenFilePicker: () => ipcRenderer.invoke('show-open-file-picker'),
   setLocale: (locale) => ipcRenderer.sendSync('set-locale', locale),
   setChanged: (changed) => ipcRenderer.invoke('set-changed', changed),
+  setTheme: (theme) => ipcRenderer.invoke('set-theme', theme),
   openNewWindow: () => ipcRenderer.invoke('open-new-window'),
   openAddonSettings: (search) => ipcRenderer.invoke('open-addon-settings', search),
   openPackager: () => ipcRenderer.invoke('open-packager'),

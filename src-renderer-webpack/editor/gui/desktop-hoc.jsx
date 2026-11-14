@@ -85,6 +85,25 @@ const securityManager = {
 const USERNAME_KEY = 'tw:username';
 const DEFAULT_USERNAME = 'player';
 
+const getNativeThemeSource = () => {
+  let storedTheme;
+  try {
+    storedTheme = localStorage.getItem('tw:theme');
+  } catch (error) {
+    return 'system';
+  }
+  if (storedTheme === 'light' || storedTheme === 'dark') return storedTheme;
+  if (storedTheme) {
+    try {
+      const parsedTheme = JSON.parse(storedTheme);
+      if (parsedTheme.gui === 'light' || parsedTheme.gui === 'dark') return parsedTheme.gui;
+    } catch (error) {
+      // Ignore invalid persisted themes. The GUI will already have fallen back to the system theme.
+    }
+  }
+  return 'system';
+};
+
 const DesktopHOC = function (WrappedComponent) {
   class DesktopComponent extends React.Component {
     constructor (props) {
@@ -113,6 +132,7 @@ const DesktopHOC = function (WrappedComponent) {
       }
     }
     componentDidMount () {
+      EditorPreload.setTheme(getNativeThemeSource());
       EditorPreload.setExportForPackager(() => this.props.vm.saveProjectSb3('arraybuffer')
         .then((buffer) => ({
           name: this.state.title,
@@ -248,6 +268,9 @@ const DesktopHOC = function (WrappedComponent) {
       }
     }
     componentDidUpdate (prevProps, prevState) {
+      if (this.props.theme !== prevProps.theme) {
+        EditorPreload.setTheme(getNativeThemeSource());
+      }
       if (this.props.projectChanged !== prevProps.projectChanged) {
         EditorPreload.setChanged(this.props.projectChanged);
       }
@@ -290,6 +313,7 @@ const DesktopHOC = function (WrappedComponent) {
         projectChanged,
         fileHandle,
         reduxUsername,
+        theme,
         onFetchedInitialProjectData,
         onCloseFileMenu,
         onHasInitialProject,
@@ -349,6 +373,7 @@ const DesktopHOC = function (WrappedComponent) {
     }),
     isFullScreen: PropTypes.bool.isRequired,
     reduxUsername: PropTypes.string.isRequired,
+    theme: PropTypes.object.isRequired,
     onFetchedInitialProjectData: PropTypes.func.isRequired,
     onCloseFileMenu: PropTypes.func.isRequired,
     onHasInitialProject: PropTypes.func.isRequired,
@@ -378,6 +403,7 @@ const DesktopHOC = function (WrappedComponent) {
     preferences: state.scratchGui.preferences,
     fileHandle: state.scratchGui.tw.fileHandle,
     reduxUsername: state.scratchGui.tw.username,
+    theme: state.scratchGui.theme.theme,
     vm: state.scratchGui.vm
   });
 

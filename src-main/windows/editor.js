@@ -5,6 +5,7 @@ const nodeURL = require('url');
 const zlib = require('zlib');
 const nodeCrypto = require('crypto');
 const {app, dialog} = require('electron');
+const AbstractWindow = require('./abstract');
 const ProjectRunningWindow = require('./project-running-window');
 const AddonsWindow = require('./addons');
 const DesktopSettingsWindow = require('./desktop-settings');
@@ -426,6 +427,13 @@ class EditorWindow extends ProjectRunningWindow {
 
     this.ipc.handle('set-changed', (event, changed) => {
       this.window.setDocumentEdited(changed);
+    });
+
+    this.ipc.handle('set-theme', (event, theme) => {
+      if (theme !== 'light' && theme !== 'dark' && theme !== 'system') {
+        throw new Error('Invalid theme');
+      }
+      AbstractWindow.setTheme(theme);
     });
 
     this.ipc.handle('opened-file', (event, id) => {

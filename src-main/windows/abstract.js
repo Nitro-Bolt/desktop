@@ -1,4 +1,4 @@
-const { BrowserWindow, screen, session } = require('electron');
+const { BrowserWindow, nativeTheme, screen, session } = require('electron');
 const path = require('path');
 const openExternal = require('../open-external');
 const settings = require('../settings');
@@ -77,6 +77,17 @@ class AbstractWindow {
 
     for (const window of AbstractWindow.getAllWindows()) {
       window.applySettings();
+    }
+  }
+
+  static setTheme (theme) {
+    nativeTheme.themeSource = theme;
+    AbstractWindow.updateBackgroundColors();
+  }
+
+  static updateBackgroundColors () {
+    for (const window of AbstractWindow.getAllWindows()) {
+      window.window.setBackgroundColor(window.getBackgroundColor());
     }
   }
 
@@ -161,7 +172,7 @@ class AbstractWindow {
 
   getBackgroundColor () {
     // to be overridden
-    return '#ffffff';
+    return nativeTheme.shouldUseDarkColors ? '#111111' : '#ffffff';
   }
 
   /**
@@ -393,5 +404,7 @@ class AbstractWindow {
     return true;
   }
 }
+
+nativeTheme.on('updated', () => AbstractWindow.updateBackgroundColors());
 
 module.exports = AbstractWindow;

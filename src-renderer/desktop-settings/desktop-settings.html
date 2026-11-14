@@ -5,10 +5,6 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    html {
-      scrollbar-color: var(--interact-border) var(--background);
-    }
-
     label {
       display: block;
       margin: 0.5rem 0;
@@ -17,11 +13,6 @@
     .label {
       font-weight: bold;
       margin-bottom: 0.25rem;
-    }
-
-    select {
-      width: 100%;
-      font: inherit;
     }
 
     button {
@@ -46,62 +37,16 @@
       display: none !important;
     }
 
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-      background-color: var(--background);
-      color: var(--text);
-    }
-
     @media (prefers-color-scheme: light) {
       :root {
-        --background: #fff;
-        --text: black;
-        --highlight: hsla(215, 100%, 95%, 1);
-        --interact-border: #0004;
-        --accent-header: hsla(13.55, 100%, 57.45%, 0.75);
-        --accent: hsla(13.55, 100%, 57.45%, 1);
-        --accent-but-sooo-evil: #f00;
+        --warning-text: #f00;
       }
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --background: #040404;
-        --text: white;
-        --highlight: #333;
-        --interact-border: #fff4;
-        --accent-header: hsla(13.55, 100%, 57.45%, 0.75);
-        --accent: hsla(13.55, 100%, 57.45%, 1);
-        --accent-but-sooo-evil: #ff0;
+        --warning-text: #ff0;
       }
-    }
-
-    button,
-    select {
-      background-color: var(--highlight);
-      color: var(--text);
-      border-style: solid;
-      border-width: 1px;
-      border-color: var(--interact-border);
-      border-radius: 10px;
-      padding: 5px;
-      padding-top: 6px;
-    }
-
-    pre {
-      margin: 10px;
-      padding: 10px;
-      border-radius: 10px;
-      background: var(--highlight);
-      overflow-x: hidden;
-    }
-
-    main {
-      box-sizing: border-box;
-      width: 100%;
-      /* border: 20px solid hsla(13.55, 100%, 57.45%, 1); */
     }
 
     h1 {
@@ -118,19 +63,10 @@
       display: flex;
     }
 
-    div.important {
-      margin: 10px;
-      margin-bottom: 0px;
-      padding: 20px;
-      padding-bottom: 17.5px;
-      border-radius: 10px;
-      background-color: var(--highlight);
-    }
-
     .warning {
       background-color: var(--highlight);
       border-color: var(--text);
-      color: var(--accent-but-sooo-evil);
+      color: var(--warning-text);
       margin: -5px;
       margin-top: -34px;
       margin-bottom: 12.5px;
@@ -167,43 +103,11 @@
       margin-right: 6px;
     }
 
-    /* Selectors REMAKE ‼️ */
-    select,
-    ::picker(select) {
-      appearance: base-select;
-    }
-
-    select:open {
-      border-radius: 10px 10px 0px 0px;
-      border-bottom: 0px;
-      /* background-color: var(--accent-header); */
-    }
-
-    ::picker(select) {
-      margin: 0;
-      border-color: var(--interact-border);
-      background-color: var(--highlight);
-      border-top: 0px;
-      border-radius: 0px 0px 10px 10px;
-      color: var(--text);
-    }
-
-    .crash-dumps-select::picker(select) {
-      bottom: -77.5px;
-    }
-
-    option:nth-of-type(odd) {
-      background-color: var(--background);
-    }
-
-    option:hover {
-      background-color: var(--accent);
-      color: #fff;
-    }
   </style>
+  <link rel="stylesheet" href="native-window.css">
 </head>
 
-<body>
+<body class="desktop-settings">
 
   <div class="header">
     <svg version="1.1" width="48" height="48" viewBox="0 0 511.99999 512" id="svg7" sodipodi:docname="icon.svg"

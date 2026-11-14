@@ -18,6 +18,7 @@ const packageJSON = require('../package.json');
  * @property {string} [directoryIndex] Defaults to none
  * @property {string} [defaultExtension] Defaults to none
  * @property {string} [csp] Defaults to none
+ * @property {boolean} [nativeWindowStyle] Defaults to false
  */
 
 /** @type {Record<string, Metadata>} */
@@ -31,15 +32,18 @@ const FILE_SCHEMES = {
   },
   'nb-desktop-settings': {
     root: path.resolve(__dirname, '../src-renderer/desktop-settings'),
-    csp: "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'"
+    nativeWindowStyle: true,
+    csp: "default-src 'none'; img-src data:; style-src nb-desktop-settings: 'unsafe-inline'; script-src 'unsafe-inline'"
   },
   'nb-privacy': {
     root: path.resolve(__dirname, '../src-renderer/privacy'),
-    csp: "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'"
+    nativeWindowStyle: true,
+    csp: "default-src 'none'; style-src nb-privacy: 'unsafe-inline'; script-src 'unsafe-inline'"
   },
   'nb-about': {
     root: path.resolve(__dirname, '../src-renderer/about'),
-    csp: "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'"
+    nativeWindowStyle: true,
+    csp: "default-src 'none'; style-src nb-about: 'unsafe-inline'; script-src 'unsafe-inline'"
   },
   'nb-packager': {
     root: path.resolve(__dirname, '../src-renderer/packager'),
@@ -68,20 +72,26 @@ const FILE_SCHEMES = {
   },
   'nb-update': {
     root: path.resolve(__dirname, '../src-renderer/update'),
-    csp: "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src https://desktop.nitrobolt.org/"
+    nativeWindowStyle: true,
+    csp: "default-src 'none'; img-src data:; style-src nb-update: 'unsafe-inline'; script-src 'unsafe-inline'; connect-src https://desktop.nitrobolt.org/"
   },
   'nb-security-prompt': {
     root: path.resolve(__dirname, '../src-renderer/security-prompt'),
-    csp: "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline';"
+    nativeWindowStyle: true,
+    csp: "default-src 'none'; style-src nb-security-prompt: 'unsafe-inline'; script-src 'unsafe-inline';"
   },
   'nb-file-access': {
     root: path.resolve(__dirname, '../src-renderer/file-access'),
-    csp: "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'"
+    nativeWindowStyle: true,
+    csp: "default-src 'none'; style-src nb-file-access: 'unsafe-inline'; script-src 'unsafe-inline'"
   }
 };
 
+const NATIVE_WINDOW_STYLESHEET = path.resolve(__dirname, '../src-renderer/shared/native-window.css');
+
 const MIME_TYPES = new Map();
 MIME_TYPES.set('.html', 'text/html');
+MIME_TYPES.set('.css', 'text/css');
 MIME_TYPES.set('.js', 'text/javascript');
 MIME_TYPES.set('.map', 'application/json');
 MIME_TYPES.set('.txt', 'text/plain');
@@ -221,8 +231,10 @@ const createModernProtocolHandler = (metadata) => {
         parsedURL = new URL(metadata.directoryIndex, parsedURL);
       }
 
-      let resolved = path.join(root, parsedURL.pathname);
-      if (!resolved.startsWith(root)) {
+      const isNativeStylesheet = metadata.nativeWindowStyle && parsedURL.pathname === '/native-window.css';
+      let resolved = isNativeStylesheet ?
+        NATIVE_WINDOW_STYLESHEET : path.join(root, parsedURL.pathname);
+      if (!isNativeStylesheet && !resolved.startsWith(root)) {
         return createErrorResponse(new Error('Path traversal blocked'));
       }
 
@@ -359,8 +371,10 @@ const createLegacyFileProtocolHandler = (metadata) => {
         parsedURL = new URL(metadata.directoryIndex, parsedURL);
       }
 
-      let resolved = path.join(root, parsedURL.pathname);
-      if (!resolved.startsWith(root)) {
+      const isNativeStylesheet = metadata.nativeWindowStyle && parsedURL.pathname === '/native-window.css';
+      let resolved = isNativeStylesheet ?
+        NATIVE_WINDOW_STYLESHEET : path.join(root, parsedURL.pathname);
+      if (!isNativeStylesheet && !resolved.startsWith(root)) {
         returnErrorResponse(new Error('Path traversal blocked'), 'path-traversal');
         return;
       }
