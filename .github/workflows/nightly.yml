@@ -81,6 +81,7 @@ jobs:
       production: true
       update_channel: nightly
       microsoft_store: false
+      allow_mac_failure: true
 
   publish:
     needs: [prepare, build]
