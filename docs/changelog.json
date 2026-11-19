@@ -1,5 +1,19 @@
 [
   {
+    "version": "1.0.3",
+    "date": "2026-11-19",
+    "notes": [
+      "Revamp of native windows to look closer to our styling",
+      "Some more Git UI improvements",
+      "Fixed some languages breaking sprite name input",
+      "Comments (and sometimes moving around the editor) no longer bug out the whole editor (multiselection regression)",
+      "OGG files are now supported in projects and also made file type clearer in sound editor",
+      "New text constant block in editor",
+      "Overhauled groups to be a more reliable and not hacky",
+      "Fixed group renaming on desktop"
+    ]
+  },
+  {
     "version": "1.0.2",
     "date": "2026-11-13",
     "notes": [
