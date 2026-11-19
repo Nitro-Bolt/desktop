@@ -45,6 +45,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
+      - name: Install Snapcraft
+        run: sudo snap install snapcraft --classic
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Fetch
