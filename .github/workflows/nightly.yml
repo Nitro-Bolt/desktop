@@ -81,11 +81,10 @@ jobs:
       production: true
       update_channel: nightly
       microsoft_store: false
-      allow_mac_failure: true
 
   publish:
     needs: [prepare, build]
-    if: needs.prepare.outputs.should_build == 'true'
+    if: ${{ always() && needs.prepare.outputs.should_build == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
