@@ -39,7 +39,7 @@ Nightly packages are stored as artifacts on the workflow run and replace the ass
 - `--debian`: Debian package.
 - `--rpm`: RPM package.
 - `--appimage`: Portable AppImage.
-- `--snap`: Snap Store package.
+- `--snap`: x86 64-bit Snap Store package. Architecture options do not affect this target.
 - `--tarball`: Portable tar.gz archive.
 - `--linux-dir`: Unpacked Linux application for debugging.
 

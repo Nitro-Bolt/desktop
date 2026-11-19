@@ -211,6 +211,7 @@ const build = async ({
   manageUpdates = false,
   legacy = false,
   distributionVariant = null,
+  arches = null,
   extraConfig = {}
 }) => {
   const buildForArch = async (archName) => {
@@ -260,7 +261,7 @@ const build = async ({
     });
   };
 
-  for (const archName of getArchesToBuild(platformName)) {
+  for (const archName of arches || getArchesToBuild(platformName)) {
     await buildForArch(archName);
   }
 };
@@ -445,6 +446,7 @@ const buildSnap = () => build({
   platformName: 'LINUX',
   platformType: 'snap',
   manageUpdates: false,
+  arches: ['x64'],
   extraConfig: (archName) => ({
     snap: {
       artifactName: getArtifactName('Linux', 'Snap', archName)

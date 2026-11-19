@@ -45,8 +45,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
-      - name: Install Snapcraft
-        run: sudo snap install snapcraft --classic --channel=8.x
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Fetch
@@ -84,8 +82,6 @@ jobs:
             "dist/NitroBolt-Linux-Portable-arm64-$VERSION.tar.gz"
             "dist/NitroBolt-Linux-Portable-armv7l-$VERSION.tar.gz"
             "dist/NitroBolt-Linux-Snap-x86_64-$VERSION.snap"
-            "dist/NitroBolt-Linux-Snap-arm64-$VERSION.snap"
-            "dist/NitroBolt-Linux-Snap-armv7l-$VERSION.snap"
           )
           for FILE in "${EXPECTED[@]}"; do
             if [ ! -f "$FILE" ]; then
