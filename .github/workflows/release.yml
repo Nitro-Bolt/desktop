@@ -120,6 +120,23 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
 
+      - name: Install Snapcraft
+        run: sudo snap install snapcraft --classic
+
+      - name: Publish Snap to stable
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE }}
+        run: |
+          shopt -s nullglob
+          SNAPS=(linux/*.snap)
+          if [ ${#SNAPS[@]} -eq 0 ]; then
+            echo "No Snap packages found to publish"
+            exit 1
+          fi
+          for SNAP in "${SNAPS[@]}"; do
+            snapcraft upload --release=stable "$SNAP"
+          done
+
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}

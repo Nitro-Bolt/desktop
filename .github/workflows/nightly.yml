@@ -112,6 +112,26 @@ jobs:
             --prerelease \
             --title "NitroBolt Desktop $VERSION" \
             --notes "Automated nightly build of commit $REF. Nightly builds may be unstable."
+      - name: Install Snapcraft
+        run: sudo snap install snapcraft --classic
+      - name: Publish Snap to edge
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE }}
+        run: |
+          shopt -s nullglob
+          SNAPS=(linux/*.snap)
+          if [ ${#SNAPS[@]} -eq 0 ]; then
+            echo "No Snap packages found to publish"
+            exit 1
+          fi
+          for SNAP in "${SNAPS[@]}"; do
+            snapcraft upload --release=edge "$SNAP"
+          done
+      - name: Mark nightly complete
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REF: ${{ needs.prepare.outputs.ref }}
+        run: |
           gh release edit nightly \
             --repo "$GITHUB_REPOSITORY" \
             --notes "Automated nightly build of commit $REF. Nightly builds may be unstable.

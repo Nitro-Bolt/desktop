@@ -185,6 +185,20 @@
         }
       ]
     },
+    "snap": {
+      "summary": "Mod of TurboWarp with tons of powerful new features.",
+      "allowNativeWayland": false,
+      "executableArgs": [
+        "--ozone-platform=x11"
+      ],
+      "plugs": [
+        "default",
+        "camera",
+        "audio-record",
+        "joystick",
+        "removable-media"
+      ]
+    },
     "appImage": {
       "license": null
     },

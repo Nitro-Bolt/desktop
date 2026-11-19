@@ -61,7 +61,7 @@ jobs:
             PRODUCTION_ARGUMENT+=(--production)
           fi
           PRODUCTION_ARGUMENT+=("--update-channel=$UPDATE_CHANNEL")
-          node release-automation/build.mjs --debian --rpm --tarball --appimage --x64 --armv7l --arm64 "${PRODUCTION_ARGUMENT[@]}"
+          node release-automation/build.mjs --debian --rpm --tarball --appimage --snap --x64 --armv7l --arm64 "${PRODUCTION_ARGUMENT[@]}"
       - name: Print file tree
         run: node scripts/print-file-tree.mjs dist
       - name: Verify artifacts
@@ -81,6 +81,9 @@ jobs:
             "dist/NitroBolt-Linux-Portable-x86_64-$VERSION.tar.gz"
             "dist/NitroBolt-Linux-Portable-arm64-$VERSION.tar.gz"
             "dist/NitroBolt-Linux-Portable-armv7l-$VERSION.tar.gz"
+            "dist/NitroBolt-Linux-Snap-x86_64-$VERSION.snap"
+            "dist/NitroBolt-Linux-Snap-arm64-$VERSION.snap"
+            "dist/NitroBolt-Linux-Snap-armv7l-$VERSION.snap"
           )
           for FILE in "${EXPECTED[@]}"; do
             if [ ! -f "$FILE" ]; then
@@ -97,6 +100,7 @@ jobs:
             dist/*.rpm
             dist/*.tar.gz
             dist/*.AppImage
+            dist/*.snap
           if-no-files-found: error
 
   build-mac:

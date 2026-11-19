@@ -441,6 +441,17 @@ const buildAppImage = () => build({
   })
 });
 
+const buildSnap = () => build({
+  platformName: 'LINUX',
+  platformType: 'snap',
+  manageUpdates: false,
+  extraConfig: (archName) => ({
+    snap: {
+      artifactName: getArtifactName('Linux', 'Snap', archName)
+    }
+  })
+});
+
 const buildLinuxDir = () => build({
   platformName: 'LINUX',
   platformType: 'dir',
@@ -463,6 +474,7 @@ const run = async () => {
     '--rpm': buildRPM,
     '--tarball': buildTarball,
     '--appimage': buildAppImage,
+    '--snap': buildSnap,
     '--linux-dir': buildLinuxDir
   };
 

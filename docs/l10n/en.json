@@ -156,7 +156,7 @@
     "string": "NitroBolt is a mod of TurboWarp with tons of new features, and a haven for developers who don't want to be restricted by \"compatibility\". Available for Windows, macOS, and Linux. NitroBolt is not affiliated with the Scratch Team."
   },
   "updatelinux": {
-    "string": "To update, download the latest package for your system and install it over your current version."
+    "string": "If you installed NitroBolt from an app store or package manager, update it there. Otherwise, download and install the latest package for your system."
   },
   "noscript-install": {
     "string": "Read installation instructions"
@@ -207,5 +207,14 @@
   },
   "linux-deb-help": {
     "string": "Download and install the appropriate .deb package:"
+  },
+  "linux-snap-help": {
+    "string": "We maintain an official Snap version:"
+  },
+  "linux-snap-permissions": {
+    "string": "By default, the Snap version can't access your camera, microphone, gamepads, or removable drives. To fix this, run these commands:"
+  },
+  "linux-snap-files": {
+    "string": "By default, the Snap version can't be set as the file opener for sb3, sb2, or sb files without interfering with other file types. To fix this, run these commands:"
   }
 }

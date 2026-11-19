@@ -14,13 +14,13 @@ The website update manifest is changed only after the GitHub release and its ass
 
 Enable `Security update` when the release fixes a vulnerability and should become the minimum safe version. This sets `oldest_safe` in `docs/version.json` to the new release. Leave it disabled for ordinary releases to preserve the existing minimum safe version. Versions below the threshold receive a non-ignorable security notice unless the user has disabled update checks entirely.
 
-The workflow uses the `AUTOMATION` repository secret to push the release commit and tag.
+The workflow uses the `AUTOMATION` repository secret to push the release commit and tag. It uses `SNAPCRAFT_STORE` to publish Snap packages to the Snap Store's stable channel.
 
 ## Nightly builds
 
 The `Nightly` workflow runs each day at 05:00 UTC and can also be started manually. Before checking whether a build is needed, it updates Scratch GUI, NitroBolt Extensions, and TurboWarp Extensions and commits any resulting lockfile changes. It then builds all supported platforms from the latest commit on `master`. Nightly versions use the stable version from `package.json` with the first seven characters of the commit hash appended, such as `1.0.0-a1b2c3d`.
 
-Nightly packages are stored as artifacts on the workflow run and replace the assets in the rolling `nightly` GitHub prerelease. Packaging does not create a version commit on `master`; only the dependency refresh can create a commit. Nightly packages use the Nightly update channel and compare themselves with the commit attached to the rolling prerelease. When an update is available, Desktop opens an unlisted website route that links directly to the matching nightly asset for the installed distribution. Microsoft Store APPX packages are omitted because Store package versions are numeric and updates are managed by Microsoft.
+Nightly packages are stored as artifacts on the workflow run and replace the assets in the rolling `nightly` GitHub prerelease. Packaging does not create a version commit on `master`; only the dependency refresh can create a commit. Nightly packages use the Nightly update channel and compare themselves with the commit attached to the rolling prerelease. When an update is available, Desktop opens an unlisted website route that links directly to the matching nightly asset for the installed distribution. Microsoft Store APPX packages are omitted because Store package versions are numeric and updates are managed by Microsoft. Snap packages are published to the Snap Store's edge channel and use the Store's automatic updates instead of Desktop's update checker.
 
 ## Build script
 
@@ -39,6 +39,7 @@ Nightly packages are stored as artifacts on the workflow run and replace the ass
 - `--debian`: Debian package.
 - `--rpm`: RPM package.
 - `--appimage`: Portable AppImage.
+- `--snap`: Snap Store package.
 - `--tarball`: Portable tar.gz archive.
 - `--linux-dir`: Unpacked Linux application for debugging.
 

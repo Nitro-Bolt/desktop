@@ -720,7 +720,7 @@
     <div class="changelog-subheader">
       <p data-if-os="windows-any" data-l10n="updatewin">If you installed NitroBolt from the Microsoft Store, update it there. Otherwise, download and run the new installer.</p>
       <p data-if-os="mac-any" data-l10n="updatemac">To update, download the new app and replace the old one.</p>
-      <p data-if-os="linux" data-l10n="updatelinux">To update, download the latest package for your system and install it over your current version.</p>
+      <p data-if-os="linux" data-l10n="updatelinux">If you installed NitroBolt from an app store or package manager, update it there. Otherwise, download and install the latest package for your system.</p>
       <p data-if-os="unsupported" data-l10n="updateun">To update, reinstall the app the same way you installed it.</p>
     </div>
 
@@ -951,6 +951,21 @@
     <div class="manual-installation section" id="linux">
       <h2 data-l10n="lin">Install on Linux</h2>
       <p data-l10n="linux-format-help">Choose the format and processor architecture that match your Linux system.</p>
+
+      <h3>Snap Store</h3>
+      <p><span data-l10n="linux-snap-help">We maintain an official snap version:</span> <a href="https://snapcraft.io/nitrobolt-desktop">nitrobolt-desktop</a></p>
+      <p data-l10n="linux-snap-permissions">By default, the snap version can't access your camera, microphone, gamepads, or removable drives. To fix this, run these commands:</p>
+      <code class="terminal">
+        <span class="command">snap connect nitrobolt-desktop:camera</span><br>
+        <span class="command">snap connect nitrobolt-desktop:audio-record</span><br>
+        <span class="command">snap connect nitrobolt-desktop:joystick</span><br>
+        <span class="command">snap connect nitrobolt-desktop:removable-media</span>
+      </code>
+      <p data-l10n="linux-snap-files">By default, the snap version can't be set as the file opener for sb3, sb2, or sb files without interfering with other file types. To fix this, run these commands:</p>
+      <code class="terminal">
+        <span class="command">wget https://desktop.nitrobolt.org/snap-mime.xml -qO- | sudo tee /usr/share/mime/packages/nitrobolt-desktop-snap.xml &gt; /dev/null</span><br>
+        <span class="command">sudo update-mime-database /usr/share/mime</span>
+      </code>
 
       <h3>Debian, Ubuntu, Raspberry Pi OS, Linux Mint</h3>
       <p data-l10n="linux-deb-help">Download and install the appropriate .deb package:</p>

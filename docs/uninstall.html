@@ -96,6 +96,15 @@
         <div class="command">sudo apt remove nitrobolt-desktop</div>
       </code>
 
+      <p>If you installed it from the Snap Store:</p>
+      <code class="terminal">
+        <div class="comment">Remove the app and its Snap user data</div>
+        <div class="command">sudo snap remove --purge nitrobolt-desktop</div>
+        <div class="comment">Remove the optional file association workaround, if installed</div>
+        <div class="command">sudo rm -f /usr/share/mime/packages/nitrobolt-desktop-snap.xml</div>
+        <div class="command">sudo update-mime-database /usr/share/mime</div>
+      </code>
+
       <p>If you installed it manually using the legacy install script:</p>
       <code class="terminal">
         <div class="comment">Remove app files</div>
