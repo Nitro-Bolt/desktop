@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
           submodules: recursive
@@ -42,9 +42,9 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version: 26
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Fetch
@@ -105,7 +105,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
           submodules: recursive
@@ -116,9 +116,9 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version: 26
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Fetch
@@ -187,7 +187,7 @@ jobs:
       # so we have to clone to C: then copy to D: after. This repository itself isn't huge so
       # this is plenty fast.
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
           submodules: recursive
@@ -206,9 +206,9 @@ jobs:
         with:
           version: 10
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version: 26
       # The repository being on D: means that node_modules IO will be fast, but pnpm still caches
       # packages in a folder on C: by default. We need to make sure pnpm uses the D: drive instead
       # otherwise we still get bottlenecked by C:.
