@@ -364,7 +364,7 @@ class AbstractWindow {
     // Don't use webContents.reload() because it allows the page to navigate by using
     // history.pushState() then location.reload()
     if (this.initialURL !== null) {
-      this.window.webContents.loadURL(this.initialURL);
+      return this.window.webContents.loadURL(this.initialURL);
     }
   }
 

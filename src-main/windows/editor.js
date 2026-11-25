@@ -329,8 +329,15 @@ class EditorWindow extends ProjectRunningWindow {
       return operation(selectedPath, ...args);
     };
 
+    this.projectChanged = false;
+    this.reloadState = null;
+
     let processingWillPreventUnload = false;
-    this.window.webContents.on('will-prevent-unload', () => {
+    this.window.webContents.on('will-prevent-unload', event => {
+      if (this.reloadState === 'loading') {
+        event.preventDefault();
+        return;
+      }
       // Using showMessageBoxSync synchronously in the event handler causes broken focus on Windows.
       // See https://github.com/TurboWarp/desktop/issues/1245
       // To work around that, we won't cancel that will-prevent-unload event so the window stays
@@ -426,6 +433,7 @@ class EditorWindow extends ProjectRunningWindow {
     });
 
     this.ipc.handle('set-changed', (event, changed) => {
+      this.projectChanged = !!changed;
       this.window.setDocumentEdited(changed);
     });
 
@@ -753,6 +761,47 @@ class EditorWindow extends ProjectRunningWindow {
 
     this.loadURL('nb-editor://./gui/gui.html');
     this.show();
+  }
+
+  async reload () {
+    if (this.reloadState) {
+      return;
+    }
+    this.reloadState = 'confirming';
+    try {
+      if (this.projectChanged) {
+        const {response} = await dialog.showMessageBox(this.window, {
+          title: APP_NAME,
+          type: 'info',
+          buttons: [translate('unload.stay'), translate('menu.reload')],
+          cancelId: 0,
+          defaultId: 0,
+          message: translate('reload.message'),
+          detail: translate('unload.detail'),
+          noLink: true
+        });
+        if (response !== 1) {
+          return;
+        }
+      }
+
+      if (this.window.isDestroyed()) {
+        return;
+      }
+
+      // Confirm before navigating so before unload cannot enter the quit flow.
+      this.reloadState = 'loading';
+      this.activeFileId = null;
+      this.openedProjectAt = Date.now();
+      this.window.setRepresentedFilename('');
+      this.window.setDocumentEdited(false);
+      this.projectChanged = false;
+      await super.reload();
+    } catch (error) {
+      console.error('Could not reload editor', error);
+    } finally {
+      this.reloadState = null;
+    }
   }
 
   getPreload () {

@@ -11,6 +11,10 @@
     "string": "Are you sure you want to quit?",
     "developer_comment": "Part of confirmation prompt that appears when closing with unsaved changes in desktop app"
   },
+  "reload.message": {
+    "string": "Reload and return to an empty workspace?",
+    "developer_comment": "Confirmation prompt when reloading the editor with unsaved changes"
+  },
   "unload.detail": {
     "string": "Any unsaved changes will be lost.",
     "developer_comment": "Part of confirmation prompt that appears when closing with unsaved changes in desktop app"
